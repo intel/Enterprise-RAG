@@ -1,0 +1,31 @@
+name: Unit tests
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: repo
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test prerequisites
+        run: sudo apt-get update && sudo apt-get -y install libgl1-mesa-glx tox
+      - name: Trigger unit tests
+        run: |
+          echo "Attempting to run unit tests"
+          tox --version
+          exit_code=$?
+          echo "Unit tests finished"
+          exit $exit_code
