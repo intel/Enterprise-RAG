@@ -117,10 +117,6 @@ else
 fi
 
 # Check apt packages
-if ! command_exists jq; then
-    print_err "jq is not installed."
-fi
-
 if ! command_exists aws; then
     print_err "awscli is not installed."
 fi
