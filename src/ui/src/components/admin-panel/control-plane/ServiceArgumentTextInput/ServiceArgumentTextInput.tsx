@@ -5,6 +5,8 @@ import "./ServiceArgumentTextInput.scss";
 
 import classNames from "classnames";
 import { ChangeEvent, useState } from "react";
+import * as Yup from "yup";
+import { ValidationError } from "yup";
 
 import ServiceArgumentInputMessage from "@/components/admin-panel/control-plane/ServiceArgumentInputMessage/ServiceArgumentInputMessage";
 import { ServiceArgumentInputValue } from "@/models/admin-panel/control-plane/serviceArgument";
@@ -35,18 +37,50 @@ const ServiceArgumentTextInput = ({
   const [value, setValue] = useState(initialValue ?? "");
   const [isFocused, setIsFocused] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const isValueEmpty = event.target.value.trim() === "";
-    const isInvalid = emptyValueAllowed ? false : isValueEmpty;
-    setIsInvalid(isInvalid);
-    onArgumentValidityChange(name, isInvalid);
-    setValue(event.target.value);
-    if (!isInvalid) {
-      let argumentValue: string | null = event.target.value;
-      if (isValueEmpty && emptyValueAllowed) {
-        argumentValue = null;
-      }
+  const validationSchema = Yup.object().shape({
+    textInput: Yup.string().test(
+      "no-empty",
+      "This value cannot be empty",
+      (value) => {
+        const nullCharacters = ["%00", "\0", "\\0", "\\x00", "\\u0000"];
+        if (
+          !value ||
+          !nullCharacters.some((char) => value.includes(char)) ||
+          value === undefined
+        ) {
+          return false;
+        }
+
+        const isValueEmpty = value.trim() === "";
+        return emptyValueAllowed ? true : !isValueEmpty;
+      },
+    ),
+  });
+
+  const validateInput = async (value: string) => {
+    try {
+      await validationSchema.validate({ textInput: value });
+      setIsInvalid(false);
+      setError("");
+      return true;
+    } catch (validationError) {
+      setIsInvalid(true);
+      setError((validationError as ValidationError).message);
+      return false;
+    }
+  };
+
+  const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    setValue(newValue);
+    const isValid = await validateInput(newValue);
+    setIsInvalid(!isValid);
+    onArgumentValidityChange(name, !isValid);
+    if (isValid) {
+      const isValueEmpty = newValue.trim() === "";
+      const argumentValue = isValueEmpty && emptyValueAllowed ? null : newValue;
       onArgumentValueChange(name, argumentValue);
     }
   };
@@ -68,12 +102,7 @@ const ServiceArgumentTextInput = ({
 
   return (
     <div className="relative">
-      {isInvalid && (
-        <ServiceArgumentInputMessage
-          message="This value cannot be empty"
-          forInvalid
-        />
-      )}
+      {isInvalid && <ServiceArgumentInputMessage message={error} forInvalid />}
       {showCSTextInputMessage && (
         <ServiceArgumentInputMessage
           message="Please enter values separated by commas"

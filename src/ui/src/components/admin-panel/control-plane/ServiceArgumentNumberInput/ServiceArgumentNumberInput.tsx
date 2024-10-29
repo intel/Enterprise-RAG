@@ -5,6 +5,8 @@ import "./ServiceArgumentNumberInput.scss";
 
 import classNames from "classnames";
 import { ChangeEvent, useState } from "react";
+import * as Yup from "yup";
+import { ValidationError } from "yup";
 
 import ServiceArgumentInputMessage from "@/components/admin-panel/control-plane/ServiceArgumentInputMessage/ServiceArgumentInputMessage";
 import { ServiceArgumentInputValue } from "@/models/admin-panel/control-plane/serviceArgument";
@@ -35,31 +37,59 @@ const ServiceArgumentNumberInput = ({
   const [value, setValue] = useState<number | string>(initialValue || "");
   const [isFocused, setIsFocused] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
+  const [error, setError] = useState("");
 
-  const validateInput = (value: string) => {
-    if (nullable && value.trim() === "") {
+  const validationSchema = Yup.object().shape({
+    numberInput: Yup.string().test(
+      "is-in-range",
+      `Please enter a number between ${range.min} and ${range.max}`,
+      (value) => {
+        const nullCharacters = ["%00", "\0", "\\0", "\\x00", "\\u0000"];
+        if (!value || !nullCharacters.some((char) => value.includes(char))) {
+          return false;
+        }
+
+        if (!nullable && value.trim() === "") {
+          return false;
+        } else {
+          if (value === undefined) {
+            return false;
+          }
+          const isValidNumber = !isNaN(parseFloat(value));
+          if (isValidNumber) {
+            const { min, max } = range;
+            const numericValue = parseFloat(value);
+            const isInRange = numericValue >= min && numericValue <= max;
+            return isInRange;
+          } else {
+            return false;
+          }
+        }
+      },
+    ),
+  });
+
+  const validateInput = async (value: string) => {
+    try {
+      await validationSchema.validate({ numberInput: value });
+      setIsInvalid(false);
+      setError("");
+      return true;
+    } catch (validationError) {
+      setIsInvalid(true);
+      setError((validationError as ValidationError).message);
       return false;
-    } else {
-      const isValidNumber = !isNaN(parseFloat(value));
-      if (isValidNumber) {
-        const numericValue = parseFloat(value);
-        const isInRange =
-          numericValue >= range.min && numericValue <= range.max;
-        return !isInRange;
-      } else {
-        return true;
-      }
     }
   };
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
-    const isNewValueInvalid = validateInput(event.target.value);
-    setIsInvalid(isNewValueInvalid);
-    onArgumentValidityChange(name, isNewValueInvalid);
-    if (!isNewValueInvalid) {
-      const newValue = parseFloat(event.target.value) || null;
-      onArgumentValueChange(name, newValue);
+  const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    setValue(newValue);
+    const isValid = await validateInput(event.target.value);
+    onArgumentValidityChange(name, !isValid);
+    if (isValid) {
+      const argumentValue = parseFloat(event.target.value) || null;
+      onArgumentValueChange(name, argumentValue);
     }
   };
 
@@ -84,12 +114,7 @@ const ServiceArgumentNumberInput = ({
           forFocus
         />
       )}
-      {isInvalid && (
-        <ServiceArgumentInputMessage
-          message={`Please enter a number between ${range.min} and ${range.max}`}
-          forInvalid
-        />
-      )}
+      {isInvalid && <ServiceArgumentInputMessage message={error} forInvalid />}
       <input
         className={inputClassNames}
         type="text"

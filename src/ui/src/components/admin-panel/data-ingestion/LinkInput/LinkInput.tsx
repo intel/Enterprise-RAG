@@ -6,21 +6,25 @@ import "./LinkInput.scss";
 import classNames from "classnames";
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { BsPlus } from "react-icons/bs";
+import * as Yup from "yup";
+import { ValidationError } from "yup";
 
-const isLinkInvalid = (value: string) => {
-  try {
-    const newLink = new URL(value);
-    const hostnameItems = newLink.hostname.split(".");
-    return (
-      !["http:", "https:"].includes(newLink.protocol) ||
-      hostnameItems.length < 2 ||
-      !hostnameItems.every((item) => item.length > 1)
-    );
-  } catch (e) {
-    console.error(e);
-    return true;
-  }
-};
+const inputMessage =
+  "Please enter valid URL that starts with protocol (http:// or https://)";
+
+const validationSchema = Yup.object().shape({
+  link: Yup.string()
+    .url(inputMessage)
+    .required(inputMessage)
+    .test(
+      "improper-characters",
+      "Your URL contains improper characters. Please try again",
+      (value) => {
+        const nullCharacters = ["%00", "\0", "\\0", "\\x00", "\\u0000"];
+        return !nullCharacters.some((char) => value.includes(char));
+      },
+    ),
+});
 
 interface LinkInputProps {
   addLinkToList: (value: string) => void;
@@ -31,9 +35,30 @@ const LinkInput = ({ addLinkToList, disabled }: LinkInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState("");
   const [isInvalid, setIsInvalid] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const validateLink = async (value: string) => {
+    try {
+      await validationSchema.validate({ link: value });
+      setIsInvalid(false);
+      setErrorMessage("");
+    } catch (error) {
+      setIsInvalid(true);
+      setErrorMessage((error as ValidationError).message);
+    }
+  };
 
   useEffect(() => {
-    setIsInvalid(value.length > 0 && isLinkInvalid(value));
+    const checkValidity = async () => {
+      await validateLink(value);
+    };
+
+    if (value) {
+      checkValidity();
+    } else {
+      setIsInvalid(false);
+      setErrorMessage("");
+    }
   }, [value]);
 
   const handleLinkInputKeyDown = (event: KeyboardEvent) => {
@@ -78,11 +103,7 @@ const LinkInput = ({ addLinkToList, disabled }: LinkInputProps) => {
       >
         <BsPlus />
       </button>
-      {isInvalid && (
-        <p className="link-input-error-message">
-          Please enter valid URL that starts with protocol (http:// or https://)
-        </p>
-      )}
+      {isInvalid && <p className="link-input-error-message">{errorMessage}</p>}
     </div>
   );
 };
