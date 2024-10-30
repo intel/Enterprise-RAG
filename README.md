@@ -36,11 +36,12 @@ Intel(R) AI for Enterprise RAG supports systems meeting the following requiremen
 
 ```
 git clone https://github.com/intel-innersource/applications.ai.enterprise-rag.enterprise-ai-solution.git
-cd applications.ai.enterprise-rag.enterprise-ai-solution/deployment/microservices-connector
-./one_click_chatqna.sh -a AWS_ACCESS_KEY_ID -s AWS_SECRET_ACCESS_KEY -r REGION [-p HTTP_PROXY] [-u HTTPS_PROXY] [-n NO_PROXY] -g HUG_TOKEN
+cd applications.ai.enterprise-rag.enterprise-ai-solution/deployment
+./one_click_chatqna.sh -g HUG_TOKEN -z GRAFANA_PASSWORD [-p HTTP_PROXY] [-u HTTPS_PROXY] [-n NO_PROXY] -d PIPELINE -t [TAG] -i IP
 ```
+
 Proxy variables are optional.
-Refer [Deployment](deployment/microservices-connector/README.md#prerequisites) if you prefer to install with multiple options.
+Refer [Deployment](deployment/README.md#prerequisites) if you prefer to install with multiple options.
 
 # Support
 
