@@ -10,6 +10,7 @@ import { ValidationError } from "yup";
 
 import ServiceArgumentInputMessage from "@/components/admin-panel/control-plane/ServiceArgumentInputMessage/ServiceArgumentInputMessage";
 import { ServiceArgumentInputValue } from "@/models/admin-panel/control-plane/serviceArgument";
+import { noEmpty } from "@/utils/validators";
 
 interface ServiceArgumentTextInputProps {
   name: string;
@@ -43,19 +44,7 @@ const ServiceArgumentTextInput = ({
     textInput: Yup.string().test(
       "no-empty",
       "This value cannot be empty",
-      (value) => {
-        const nullCharacters = ["%00", "\0", "\\0", "\\x00", "\\u0000"];
-        if (
-          !value ||
-          !nullCharacters.some((char) => value.includes(char)) ||
-          value === undefined
-        ) {
-          return false;
-        }
-
-        const isValueEmpty = value.trim() === "";
-        return emptyValueAllowed ? true : !isValueEmpty;
-      },
+      noEmpty(emptyValueAllowed),
     ),
   });
 

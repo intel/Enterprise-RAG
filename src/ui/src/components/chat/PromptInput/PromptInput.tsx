@@ -16,10 +16,10 @@ import { BsHurricane, BsSendFill } from "react-icons/bs";
 import { v4 as uuidv4 } from "uuid";
 
 import endpoints from "@/api/endpoints.json";
+import { selectPromptRequestParams } from "@/store/chatQnAGraph.slice";
 import {
   addMessage,
   selectIsMessageStreamed,
-  selectPromptRequestParams,
   setIsMessageStreamed,
   updateMessage,
 } from "@/store/conversationFeed.slice";
@@ -115,7 +115,7 @@ const PromptInput = () => {
       parameters: promptRequestParams,
     };
 
-    const url = window.location.origin + endpoints.chat;
+    const url = endpoints.chat;
     const ctrl = new AbortController();
 
     try {
@@ -136,10 +136,11 @@ const PromptInput = () => {
             response.status !== 429
           ) {
             const error = await response.json();
-            var msg = JSON.stringify(error);
-              if (response.status === 466) { // Guardrails
-                msg = "Guard: " + msg;
-              }
+            let msg = JSON.stringify(error);
+            if (response.status === 466) {
+              // Guardrails
+              msg = "Guard: " + msg;
+            }
             throw new Error(msg);
           } else {
             console.error("Error during opening connection: ", response);
@@ -173,7 +174,7 @@ const PromptInput = () => {
       });
     } catch (error) {
       if (error instanceof Error) {
-        var extract = extractDetail(error.message)
+        const extract = extractDetail(error.message);
         if (extract) {
           dispatch(
             updateMessage({ messageId: chatBotMessageId, chunk: extract }),

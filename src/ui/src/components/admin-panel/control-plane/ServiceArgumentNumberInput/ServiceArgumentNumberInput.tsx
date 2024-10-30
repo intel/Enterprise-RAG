@@ -10,6 +10,7 @@ import { ValidationError } from "yup";
 
 import ServiceArgumentInputMessage from "@/components/admin-panel/control-plane/ServiceArgumentInputMessage/ServiceArgumentInputMessage";
 import { ServiceArgumentInputValue } from "@/models/admin-panel/control-plane/serviceArgument";
+import { isInRange } from "@/utils/validators";
 
 interface ServiceArgumentNumberInputProps {
   name: string;
@@ -43,29 +44,7 @@ const ServiceArgumentNumberInput = ({
     numberInput: Yup.string().test(
       "is-in-range",
       `Please enter a number between ${range.min} and ${range.max}`,
-      (value) => {
-        const nullCharacters = ["%00", "\0", "\\0", "\\x00", "\\u0000"];
-        if (!value || !nullCharacters.some((char) => value.includes(char))) {
-          return false;
-        }
-
-        if (!nullable && value.trim() === "") {
-          return false;
-        } else {
-          if (value === undefined) {
-            return false;
-          }
-          const isValidNumber = !isNaN(parseFloat(value));
-          if (isValidNumber) {
-            const { min, max } = range;
-            const numericValue = parseFloat(value);
-            const isInRange = numericValue >= min && numericValue <= max;
-            return isInRange;
-          } else {
-            return false;
-          }
-        }
-      },
+      isInRange(nullable, range),
     ),
   });
 

@@ -15,6 +15,11 @@ import {
 import * as Yup from "yup";
 import { ValidationError } from "yup";
 
+import {
+  fileNameImproperCharacters,
+  unsupportedFileExtension,
+} from "@/utils/validators";
+
 const acceptedFileTypes =
   ".pdf,.html,.txt,.doc,.docx,.ppt,.pptx,.md,.xml,.json,.jsonl,.yaml,.xls,.xlsx,.csv";
 const acceptedFileTypesArray = acceptedFileTypes.split(",");
@@ -24,20 +29,12 @@ const validationSchema = Yup.array().of(
     .test(
       "unsupported-file-extension",
       "Some of the files you are trying to upload are in an unsupported format. Please try again",
-      (value) => {
-        const file = value as File;
-        return acceptedFileTypesArray.some((type) => file.name.endsWith(type));
-      },
+      unsupportedFileExtension(acceptedFileTypesArray),
     )
     .test(
       "improper-characters",
       "Some of the files you are trying to upload have improper characters. Please try again",
-      (value) => {
-        const file = value as File;
-        const fileName = file.name;
-        const nullCharacters = ["%00", "\0", "\\0", "\\x00", "\\u0000"];
-        return !nullCharacters.some((char) => fileName.includes(char));
-      },
+      fileNameImproperCharacters(),
     ),
 );
 
