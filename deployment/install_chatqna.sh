@@ -580,7 +580,7 @@ TELEMETRY_LOGS_JOURNALCTL="-f $telemetry_logs_path/values-journalctl.yaml"
 HELM_INSTALL_UI_DEFAULT_ARGS="--set image.ui.repository=$REGISTRY/opea/chatqna-conversation-ui --set image.ui.tag=$TAG --set image.fingerprint.repository=$REGISTRY/system-fingerprint --set image.fingerprint.tag=$TAG --set aliasIP=$IP"
 
 # !TODO needs to be verified if we need values.yaml to be deployed
-HELM_INSTALL_INGRESS_DEFAULT_ARGS="--set controller.hostPort.enabled=true --set controller.ingressClass=nginx --set controller.config.proxy-body-size=64m"
+HELM_INSTALL_INGRESS_DEFAULT_ARGS="--set controller.hostPort.enabled=true --set controller.ingressClass=nginx -f $configs_path/ingress-values.yaml"
 HELM_INSTALL_GATEWAY_DEFAULT_ARGS=""
 HELM_INSTALL_GATEWAY_CRD_DEFAULT_ARGS=""
 # !TODO we need to verify if creating ingress object via keycloak helm charts is needed, since we have additional ingress creating via ingress/configs/
