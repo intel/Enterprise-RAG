@@ -115,7 +115,7 @@ Example: ./install_chatqna.sh --deploy gaudi_torch --telemetry --ui --grafana_pa
 ```
 Example command:
 ```
-./install_chatqna.sh --deploy chatQnA_gaudi_torch_guard --auth --telemetry --ui --ip 10.211.187.74 --grafana_password mypassword
+./install_chatqna.sh --deploy gaudi_torch_in_out_guards --auth --telemetry --ui --ip 10.211.187.74 --grafana_password mypassword
 ```
 
 In the above case, the run should end with having all pods defined in [chatQnA_gaudi_torch_guard.yaml](./microservices-connector/config/samples/chatQnA_gaudi_torch.yaml) being in a running state.

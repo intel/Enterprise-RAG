@@ -16,7 +16,7 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-PIPELINE=gaudi_torch_guard
+PIPELINE=gaudi_torch_in_out_guards
 TAG=latest
 REGISTRY=localhost:5000
 
