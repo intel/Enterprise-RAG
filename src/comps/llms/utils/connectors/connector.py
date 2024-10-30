@@ -34,10 +34,10 @@ class LLMConnector(ABC):
 
     def _validate(self) -> None:
         try:
-            tested_params = {"query": "test", "max_new_tokens": 17}
+            tested_params = {"query": "test", "max_new_tokens": 5}
             test_input = LLMParamsDoc(**tested_params, streaming=False)
             self.generate(test_input)
-            logger.debug("Connection validated. LLM initialized successfully.")
+            logger.info("Connection with LLM model server validated successfully.")
         except Exception as e:
             logger.exception(f"Error initializing the LLM: {e}")
             raise RuntimeError(f"Error initializing the LLM: {e}")
