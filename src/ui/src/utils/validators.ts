@@ -4,6 +4,7 @@
 import { TestFunction } from "yup";
 
 const nullCharacters = ["%00", "\0", "\\0", "\\x00", "\\u0000"];
+export const CLIENT_MAX_BODY_SIZE = 64; // 64 MB - src/ui/default.conf - client_max_body_size 64m
 
 export const isInRange =
   (nullable: boolean, range: { min: number; max: number }) =>
@@ -67,4 +68,10 @@ export const fileNameImproperCharacters = (): TestFunction => (value) => {
   const file = value as File;
   const fileName = file.name;
   return !nullCharacters.some((char) => fileName.includes(char));
+};
+
+export const totalFileSizeLimitExceeded = (): TestFunction => (value) => {
+  const files = value as File[];
+  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+  return totalSize <= CLIENT_MAX_BODY_SIZE * 1024 * 1024;
 };
