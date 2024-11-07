@@ -9,14 +9,18 @@ on:
 
 jobs:
   Trivy-scan:
+    if: ${{ github.repository == 'intel-innersource/applications.ai.enterprise-rag.enterprise-ai-solution' }}
     runs-on: [innersource.prod.amr.dind]
     name: Trivy Scan
     container:
       image: cache-registry.caas.intel.com/cache/library/python:3.11
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
             ref: refs/pull/${{ github.event.inputs.PR_number }}/head
+
       - name: Trivy scan
         uses: ./.github/actions/trivy-scan
         with:

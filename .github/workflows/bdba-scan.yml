@@ -9,14 +9,18 @@ on:
 
 jobs:
   Bdba-scan:
+    if: ${{ github.repository == 'intel-innersource/applications.ai.enterprise-rag.enterprise-ai-solution' }}
     runs-on: [innersource.prod.amr.dind]
     name: BDBA Scan
     container:
       image: cache-registry.caas.intel.com/cache/library/python:3.11
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
           ref: refs/pull/${{ github.event.inputs.PR_number }}/head
+
       - name: BDBA scan
         uses: ./.github/actions/bdba-scan
         with:

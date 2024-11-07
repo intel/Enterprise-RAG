@@ -22,6 +22,7 @@ env:
 
 jobs:
   SDLScans:
+    if: ${{ github.repository == 'intel-innersource/applications.ai.enterprise-rag.enterprise-ai-solution' }}
     runs-on: [innersource.prod.amr.dind]
     defaults:
       run:
@@ -35,6 +36,7 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
     - name: SDL scan
       uses: ./.github/actions/sdl-scan
       with:

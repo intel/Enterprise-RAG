@@ -10,19 +10,30 @@ runs:
   steps:
   - name: Checkout Code
     uses: actions/checkout@v4
+    with:
+      path: repo
+
   - name: Fetch code from public repo
     run: |
+      mkdir github-copy
+      cd repo
+      cp -r .github/. ../github-copy
       git config --local user.email "actions@github.com"
       git config --local user.name "Github Actions"
-      git checkout -b external_pr_${{ inputs.PR-number }}
+      git checkout --orphan external_pr_${{ inputs.PR-number }}
       git reset --hard
       git pull https://github.com/intel/Enterprise-RAG.git pull/${{ inputs.PR-number }}/head --allow-unrelated-histories
-      #git commit -a -m "Copy PR ${{ inputs.PR-number}} from public RAG repo"
+      rm -rf .github/*
+      cp -r ../github-copy/. .github
+      git add .github/.
+      git commit -a -m "Copy public PR ${{ inputs.PR-number}} with internal CI/CD merged"
       git push --set-upstream origin external_pr_${{ inputs.PR-number }}
     shell: bash
+
   - name: Install sudo
     run: apt update && apt -y install sudo
     shell: bash
+
   - name: install Github CLI
     run: |
       (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
@@ -33,6 +44,7 @@ runs:
       && sudo apt update \
       && sudo apt install gh -y
     shell: bash
+
   - name: test Github CLI
     run: gh pr create --base main --head external_pr_${{ inputs.PR-number }} --title 'External PR No. ${{ inputs.PR-number }} ' --body 'Copy of external PR No. ${{ inputs.PR-number }}' #--fill --body-file .github/pull_request_template.md
     shell: bash

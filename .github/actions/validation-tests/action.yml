@@ -1,5 +1,7 @@
 name: "Validation tests"
 
+description: "Run microservices validation tests."
+
 inputs:
   PR-number:
     description: 'Pull request number'
@@ -34,7 +36,7 @@ runs:
       with:
         comment-id: ${{ github.event.comment.id }}
         content: |
-          Job run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          Job run: [${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         github-token: ${{ github.token }}
 
     - name: "Parse comment arguments"
@@ -81,7 +83,9 @@ runs:
       shell: bash
 
     - name: "Run all tests"
+      id: run-all
       if: ${{ env.SPECIFIC_TESTS == '' }}
+      continue-on-error: true
       uses: ./.github/actions/execute_remote_script
       env:
         HF_TOKEN: ${{ env.HF_TOKEN }}
@@ -92,7 +96,9 @@ runs:
           HF_TOKEN=${{ env.HF_TOKEN }} tox -e microservices
 
     - name: "Run selected tests"
+      id: run-some
       if: ${{ env.SPECIFIC_TESTS != '' }}
+      continue-on-error: true
       uses: ./.github/actions/execute_remote_script
       env:
         HF_TOKEN: ${{ env.HF_TOKEN }}
@@ -103,7 +109,6 @@ runs:
           HF_TOKEN=${{ env.HF_TOKEN }} tox -e microservices -- -m "${{ env.SPECIFIC_TESTS }}"
 
     - name: Fetch Zephyr script
-      if: always()
       uses: actions/checkout@v4
       with:
         repository: intel-sandbox/rag-solution-infra
@@ -113,18 +118,34 @@ runs:
         token: ${{ inputs.RAG_SOLUTION_INFRA_PAT }}
 
     - name: Download allure-results
-      if: always()
       run: rsync -avzh ${REMOTE_GAUDI_HOST}:${REMOTE_WORKSPACE}/src/tests/microservices/allure-results zephyr-dir/tools
       shell: bash
 
     - name: Upload results to Zephyr
-      if: always()
       run: |
         echo "Attempting to upload results to Zephyr"
         cd zephyr-dir/tools
         python3 upload_test_results_to_zephyr.py -t ${{ env.JIRA_TOKEN }} -r allure-results
         echo "Uploading results to Zephyr finished"
       shell: bash
+
+    - name: Generate test results feedback
+      id: run-conclusion
+      run: |
+        if [[ ${{ steps.run-all.outcome }} == "failure" ]] || [[ ${{ steps.run-some.outcome }} == "failure" ]]; then
+          echo "conclusion_message=:x: Tests failed" >> $GITHUB_OUTPUT;
+        elif [[ ${{ steps.run-all.outcome }} == "success" ]] || [[ ${{ steps.run-some.outcome }} == "success" ]]; then
+          echo "conclusion_message=:white_check_mark: Tests passed" >> $GITHUB_OUTPUT;
+        fi
+      shell: bash
+
+    - name: Update comment with tests feedback
+      if: ${{ github.event_name == 'issue_comment' }}
+      uses: ./.github/actions/update-comment
+      with:
+        comment-id: ${{ github.event.comment.id }}
+        content: ${{ steps.run-conclusion.outputs.conclusion_message }}
+        github-token: ${{ github.token }}
 
     - name: Clean up container
       if: always()
@@ -143,3 +164,10 @@ runs:
         run: |
           rm -rf ${{ env.REMOTE_WORKSPACE }}
           echo "Workspace has been removed"
+
+    - name: Fail whole pipeline if run tests failed
+      run: |
+        if [[ ${{ steps.run-all.outcome }} == "failure" ]] || [[ ${{ steps.run-some.outcome }} == "failure" ]]; then
+          exit 1;
+        fi
+      shell: bash
