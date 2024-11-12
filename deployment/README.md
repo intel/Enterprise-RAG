@@ -33,15 +33,11 @@ To prepare your environment for development and deployment, run the following co
 ```
 The HF access token can be created [here](https://huggingface.co/settings/tokens).
 
-This command will configure various tools in your environment, including `Docker`, `Go`, `Helm`, `make`, `Golang`, `zip`, and `jq`.
+This command will configure various tools in your environment, including `Docker`, `Helm`, `make`, `zip`, and `jq`.
 >**Note**: Before running the script, please be aware that it uses `sudo` privileges to install the mentioned packages and configure settings. **Please use with caution**, as this may overwrite existing configurations.
 
 The script completes successfully with the confirmation: `All installations and configurations are complete`.
 
-load Go environment variables:
-```bash
-source .env
-```
 ## Deployment Options
 There are two ways to install ChatQnA using the Enterprise RAG solution:
 1.  Step-by-Step Installation
