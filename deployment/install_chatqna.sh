@@ -448,6 +448,19 @@ function clear_ui() {
 }
 
 
+function clear_all_ns() {
+    print_header "removing all EnterpriseRAG namespaces"
+    kubectl get ns $DEPLOYMENT_NS > /dev/null 2>&1 && kubectl delete ns $DEPLOYMENT_NS
+    kubectl get ns $DATAPREP_NS > /dev/null 2>&1 && kubectl delete ns $DATAPREP_NS
+    kubectl get ns $TELEMETRY_NS > /dev/null 2>&1 && kubectl delete ns $TELEMETRY_NS
+    kubectl get ns $TELEMETRY_TRACES_NS > /dev/null 2>&1 && kubectl delete ns $TELEMETRY_TRACES_NS
+    kubectl get ns $GMC_NS > /dev/null 2>&1 && kubectl delete ns $GMC_NS
+    kubectl get ns $GATEWAY_NS > /dev/null 2>&1 && kubectl delete ns $GATEWAY_NS
+    kubectl get ns $UI_NS > /dev/null 2>&1 && kubectl delete ns $UI_NS
+    kubectl get ns $INGRESS_NS > /dev/null 2>&1 && kubectl delete ns $INGRESS_NS
+    kubectl get ns $AUTH_NS > /dev/null 2>&1 && kubectl delete ns $AUTH_NS
+}
+
 # Initialize flags
 deploy_flag=false
 test_flag=false
@@ -647,4 +660,5 @@ if $clear_all_flag; then
     clear_telemetry
     clear_ingress
     clear_gateway
+
 fi
