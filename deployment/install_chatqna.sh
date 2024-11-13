@@ -660,5 +660,5 @@ if $clear_all_flag; then
     clear_telemetry
     clear_ingress
     clear_gateway
-
+    clear_all_ns
 fi
