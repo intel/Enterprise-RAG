@@ -29,9 +29,8 @@ local-path-storage   local-path-provisioner-f78b6cbbc-cqw9m     1/1     Running 
 ## Configure the Environment
 To prepare your environment for development and deployment, run the following command (Proxy commands are optional):
 ```bash
-./configure.sh -g HUGGINGFACEHUB_API_TOKEN [-p HTTP_PROXY] [-u HTTPS_PROXY] [-n NO_PROXY]
+./configure.sh [-p HTTP_PROXY] [-u HTTPS_PROXY] [-n NO_PROXY]
 ```
-The HF access token can be created [here](https://huggingface.co/settings/tokens).
 
 This command will configure various tools in your environment, including `Docker`, `Helm`, `make`, `zip`, and `jq`.
 >**Note**: Before running the script, please be aware that it uses `sudo` privileges to install the mentioned packages and configure settings. **Please use with caution**, as this may overwrite existing configurations.
@@ -95,8 +94,10 @@ The `set_values.sh` script automates Helm value configuration for the `microserv
 simplifying customization. Use the following to set your HF token to for services such as LLM, Embedding, Re-ranking: 
 
 ```bash
-./set_values.sh -g HUGGINGFACEHUB_API_TOKEN
+./set_values.sh -g HUGGINGFACEHUB_API_TOKEN [-p HTTP_PROXY] [-u HTTPS_PROXY] [-n NO_PROXY]
 ```
+
+The HF access token can be created [here](https://huggingface.co/settings/tokens).
 
 Run the following command to deploy the `gaudi_torch_in_out_guards` pipeline, along with telemetry and UI services:
 
