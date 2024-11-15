@@ -6,17 +6,17 @@ This comprehensive guide outlines the essential prerequisites for deploying and 
 |         |                                                                                                           |
 |--------------------|--------------------------------------------------------------------------------------------------------------------|
 | Operating System   | Ubuntu 22.04                                                               |
-| Hardware Platforms | 3th Gen Intel Xeon processors and Intel(R) Gaudi(R) 2 AI accelerator <br> 4th Gen Intel Xeon processors and Intel(R) Gaudi(R) 2 AI accelerator |
-| Kubernetes Vesrion   | 1.29
-| Gaudi Firmware Version   | 1.17.1
+| Hardware Platforms | 4th Gen Intel® Xeon® Scalable processors<br>5th Gen Intel® Xeon® Scalable processors<br>3rd Gen Intel® Xeon® Scalable processors and Intel® Gaudi® 2 AI Accelerator<br>4th Gen Intel® Xeon® Scalable processors and Intel® Gaudi® 2 AI Accelerator |
+| Kubernetes Version   | 1.29
+| Gaudi Firmware Version   | 1.18.0
 
 ## Kubernetes Cluster
-Deploy Kubernetes using Kubespray `(version 1.29)` on a remote machine, followed by configuration and installation steps for the master node. The following steps show how this can be done using `Kubespray`.
+Deploy Kubernetes using Kubespray `(v2.25.0)` on a remote machine, followed by configuration and installation steps for the master node. The following steps show how this can be done using `Kubespray`.
 
 -   The following instructions must be executed on a host machine that has network access to the Kubernetes cluster.
 -   It is assumed that Kubespray will not be run directly on the machines where Kubernetes is intended to be installed.
 
-To be executed on a remote machine that has network access to the Gaudo cluster, meaning you should be able to SSH into a machine within the GPU cluster:
+To be executed on a remote machine that has network access to the Gaudi cluster, meaning you should be able to SSH into a machine within the GPU cluster:
 
 ### Kubespray Setup
 
@@ -66,7 +66,7 @@ all:
       ansible_host: <K8s host ip>
       ip: <K8s host ip>
       access_ip: <K8s host ip>
-      ansible_user: ubuntu
+      ansible_user: sdp
   children:
     kube_control_plane:
       hosts:
@@ -87,7 +87,7 @@ all:
   -   `ansible_host`: Specifies the IP address of the node. This is the address Ansible uses to communicate with the node.
     -   `ip`: Typically the same as `ansible_host`, used by Kubernetes components to communicate with the node.
     -   `access_ip`: Also the IP used for accessing the node, can be different in complex network configurations where internal and external IPs differ.
-    -   `ansible_user`: The username is the Linux user account name that Ansible will use when it connects to the node, here set to `ubuntu`.
+    -   `ansible_user`: The username is the Linux user account name that Ansible will use when it connects to the node, here set to `sdp`.
 
 Suppose the IP address of your node is `100.51.110.245`, which you can verify by inspecting the output of `ifconfig` within the Ethernet interface section. Assuming there is a Linux user named `user` with a home directory set up, your `hosts.yaml` file for a Kubespray configuration would be structured as follows:
 
@@ -166,6 +166,9 @@ ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root 
 
 A similar output can be seen after a successful reset:
 ```bash
+PLAY RECAP *****************************************************************************************************
+node1                      : ok=135  changed=30   unreachable=0    failed=0    skipped=118  rescued=0    ignored=0   
+
 Monday 28 October 2024  21:50:29 +0000 (0:00:00.375)       0:00:47.908 ********
 ===============================================================================
 reset : Reset | delete some files and directories --------------------------------------------------------------------------- 10.03s
@@ -201,6 +204,8 @@ ansible-playbook -i inventory/mycluster/hosts.yaml --become --become-user=root -
 
 After a successful execution of the Ansible playbook, a similar output is observed:
 ```bash
+PLAY RECAP *****************************************************************************************************
+node1                      : ok=672  changed=137  unreachable=0    failed=0    skipped=1133 rescued=0    ignored=6 
 Monday 28 October 2024  22:00:03 +0000 (0:00:00.334)       0:07:21.153 ********
 ===============================================================================
 container-engine/docker : Docker | Remove docker configuration files -------------------------------------------------------- 29.49s
@@ -227,18 +232,13 @@ container-engine/containerd : Download_file | Download item --------------------
 
 ## Setting Up and Verifying Kubernetes Cluster Access
 
-Execute following on the master node:
--   create the `.kube` folder  `mkdir ~/.kube`
--   next  `cp /etc/kubernetes/admin.conf ~/.kube/config`
--   verify if the K8s cluster is working  `kubectl get pods -A`.
--   verify that all pods are in running state.
 
 ```bash
 # create the `.kube` folder
 mkdir ~/.kube
 sudo cp /etc/kubernetes/admin.conf ~/.kube/config
 # change owner to user 
-sudo chown -R <username>:<username> .kube
+sudo chown -R <username>:<username> ~/.kube
 ```
 To verify that the K8s cluster is working and all pods are in running state, run `kubectl get pods -A` .
 
@@ -259,15 +259,6 @@ local-path-storage   local-path-provisioner-f78b6cbbc-qfkmd     1/1     Running 
 ## Gaudi Software Stack
 To fully utilize the Enterprise RAG solution, LLMs must be run on Gaudi accelerator hardware, which requires proper setup and preparation prior to use. The following steps must be performed after successful installation and testing of the K8s cluster.
 
-### Install Gaudi Firmware
-For detailed instructions on installing the Gaudi firmware, visit the [Gaudi Firmware Installation](https://docs.habana.ai/en/latest/Installation_Guide/Bare_Metal_Fresh_OS.html#driver-fw-install-bare). The following steps are simplified.
-
-Install the Intel Gaudi SW stack:
-```bash
-wget -nv https://vault.habana.ai/artifactory/gaudi-installer/1.17.1/habanalabs-installer.sh
-chmod +x habanalabs-installer.sh
-./habanalabs-installer.sh install --type base
-```
 Install Habana Container Runtime:
 ```bash
 sudo apt install -y habanalabs-container-runtime
