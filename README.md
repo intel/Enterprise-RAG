@@ -57,7 +57,7 @@ To get the right instances to run Intel® AI for Enterprise RAG, follow these st
 - Select the Machine image - `ubuntu-22.04-gaudi2-v1.18.0-metal-cloudimg-amd64-v20240803` with `Architecture: X86_64 (Baremetal only)`.
 - Upload your public key and launch the instance
 - Navigate to the `Instances` page and verify that the machine has reached its ready state, then click on "How to Connect via SSH" to configure your machine correctly for further installation.
-  
+
 ## Requirements for Building from Source
 
 ### Software Prerequisites
@@ -77,7 +77,7 @@ Refer to the [prerequisites](./docs/prerequisites.md) guide for detailed instruc
 ```
 git clone https://github.com/intel/Enterprise-RAG.git
 cd Enterprise-RAG/deployment
-./one_click_chatqna.sh -g HUGGINGFACEHUB_API_TOKEN -z GRAFANA_PASSWORD [-p HTTP_PROXY] [-u HTTPS_PROXY] [-n NO_PROXY] -d PIPELINE -t [TAG] -i [IP]
+./one_click_chatqna.sh -g HUG_TOKEN -z GRAFANA_PASSWORD -k KEYCLOAK_ADMIN_PASSWORD -i IP [-p HTTP_PROXY] [-u HTTPS_PROXY] [-n NO_PROXY] -d [PIPELINE] -t [TAG] -y [REGISTRY]
 ```
 
 Proxy variables are optional.
