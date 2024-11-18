@@ -19,6 +19,7 @@ runs:
       shell: bash
     - name: Clean up virtualenv
       run: |
+        cd repo/src
         ls -la
         df -h
         sudo rm -rf .tox
