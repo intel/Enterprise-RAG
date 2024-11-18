@@ -15,6 +15,11 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Clean up disk space
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h
       - name: Checkout code
         uses: actions/checkout@v4
         with:
