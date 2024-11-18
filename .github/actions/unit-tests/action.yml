@@ -8,24 +8,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Clean up disk space
-      run: |
-        df -h
-        sudo rm -rf \
-          /usr/lib/mono \
-          /usr/local/julia* \
-          /usr/local/lib/android \
-          /usr/local/lib/node_modules \
-          /usr/local/share/chromium \
-          /usr/local/share/powershell \
-          /usr/share/dotnet \
-          /usr/share/swift \
-          /opt/google/chrome \
-          /opt/microsoft/msedge \
-          /opt/microsoft/powershell \
-          "$AGENT_TOOLSDIRECTORY"
-        df -h /
-      shell: bash
     - name: Checkout code
       uses: actions/checkout@v4
       with:
@@ -35,7 +17,7 @@ runs:
       with:
         python-version: "3.11"
     - name: Install test prerequisites
-      run: sudo apt-get update && sudo apt-get -y install libgl1-mesa-glx 
+      run: sudo apt-get update && sudo apt-get -y install libgl1-mesa-glx tox
       shell: bash
     - name: Trigger unit tests
       run: |
