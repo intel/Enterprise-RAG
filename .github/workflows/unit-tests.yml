@@ -33,6 +33,12 @@ jobs:
           /opt/microsoft/powershell \
           "$AGENT_TOOLSDIRECTORY"
         df -h /
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install test prerequisites
+      run: sudo apt-get update && sudo apt-get -y install libgl1-mesa-glx tox
     - name: Ingestion unit tests
       uses: ./.github/actions/unit-tests
       with:

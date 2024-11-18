@@ -12,23 +12,16 @@ runs:
       uses: actions/checkout@v4
       with:
         path: repo
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    - name: Install test prerequisites
-      run: sudo apt-get update && sudo apt-get -y install libgl1-mesa-glx tox
-      shell: bash
     - name: Trigger unit tests
       run: |
         echo "Attempting to run unit tests"
         cd repo/src
-        sudo tox -e {{ inputs.test-name }}
+        sudo tox -e ${{ inputs.test-name }}
         exit_code=$?
         echo "Unit tests finished"
-        exit $exit_code     
+        exit $exit_code
       shell: bash
     - name: Clean up virtualenv
       run: |
-        sudo rm -rf .tox/{{ inputs.test-name }}
+        sudo rm -rf .tox/${{ inputs.test-name }}
       shell: bash
