@@ -8,10 +8,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        path: repo
     - name: Trigger unit tests
       run: |
         echo "Attempting to run unit tests"
