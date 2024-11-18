@@ -15,7 +15,7 @@ docx2txt==0.8
 easyocr==1.7.1
 huggingface_hub==0.24.5
 langchain==0.2.13
-langchain-community==0.2.12
+langchain-community==0.2.19
 langchain-core==0.2.30
 langchain-text-splitters==0.2.2
 langsmith==0.1.99
