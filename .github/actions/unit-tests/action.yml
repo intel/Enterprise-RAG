@@ -19,5 +19,9 @@ runs:
       shell: bash
     - name: Clean up virtualenv
       run: |
-        sudo rm -rf .tox/${{ inputs.test-name }}
+        ls -la
+        df -h
+        sudo rm -rf .tox
+        ls -la
+        df -h
       shell: bash
