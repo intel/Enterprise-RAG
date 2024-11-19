@@ -20,17 +20,8 @@ jobs:
     - name: Clean up disk space
       run: |
         sudo rm -rf \
-          /usr/lib/mono \
-          /usr/local/julia* \
           /usr/local/lib/android \
-          /usr/local/lib/node_modules \
-          /usr/local/share/chromium \
-          /usr/local/share/powershell \
           /usr/share/dotnet \
-          /usr/share/swift \
-          /opt/google/chrome \
-          /opt/microsoft/msedge \
-          /opt/microsoft/powershell \
           "$AGENT_TOOLSDIRECTORY"
         df -h /
     - name: Setup Python
