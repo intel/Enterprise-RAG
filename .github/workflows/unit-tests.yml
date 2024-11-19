@@ -52,7 +52,7 @@ jobs:
       if: success() || failure()
       uses: ./.github/actions/unit-tests
       with:
-        test-name: prompt_registry_unit_tests_test_suffix
+        test-name: prompt_registry_unit_tests
     - name: Retrievers unit tests
       if: success() || failure()
       uses: ./.github/actions/unit-tests
