@@ -8,7 +8,7 @@ jobs:
   unit-tests:
     if: ${{ (github.event.repository.visibility == 'public') && (github.repository_owner == 'intel') }}
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
