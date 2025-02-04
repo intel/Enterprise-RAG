@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> This project is still actively developed, but it has been moved to a new repository. The latest version and updates can be found here: https://github.com/opea-project/Enterprise-RAG
+
 # Intel® AI for Enterprise RAG
 
 <div align="center">
