@@ -157,7 +157,7 @@ def test_nri_cpu_no_collisions(balloon_pod_data):
 
     Example PASS (no overlap between pods):
         bge-base-en:   CPUs [0, 1, 2, 3]       -> physical cores 0, 1, 2, 3
-        bge-reranker:  CPUs [56, 57, 58, 59]    -> physical cores 56, 57, 58, 59
+        bge-reranker-v2-m3:  CPUs [56, 57, 58, 59]    -> physical cores 56, 57, 58, 59
         llama3-8b-awq: CPUs [4, 5, ..., 19]     -> physical cores 4-19
 
     Example FAIL (collision on physical core 2):

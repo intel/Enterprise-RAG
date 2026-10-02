@@ -41,7 +41,7 @@ Edit `env/<name>/config.erag.yaml`:
 |---------|---------|---------|
 | `pipeline_type` | `chatqna` \| `docsum` \| `translation` | `chatqna` |
 | `pipeline_variant` | `base` \| `query-rewrite` \| `output_guard` \| `retrieve-rerank` \| `upload` | `base` |
-| `inference_models` | List: `name` + `role` (`llm` \| `embedding` \| `reranking`) | `llama3-8b-awq`, `nomic-embed`, `bge-reranker` |
+| `inference_models` | List: `name` + `role` (`llm` \| `embedding` \| `reranking`) | `llama3-8b-awq`, `nomic-embed`, `bge-reranker-v2-m3` |
 | `vector_databases_vector_store` | `redis-cluster` \| `mssql` \| `pgvector` | `redis-cluster` |
 | `mcp_enabled` | `true` \| `false` | `false` |
 | `hpa_enabled` | `true` \| `false` | `true` |
@@ -62,7 +62,7 @@ Flags: `--env <name>`, `--only` (no deps), `--skip <names>`, `-- <ansible-args>`
 
 Models deploy automatically via `app_inference_models` during `install erag`. No manual `./model-manager` step needed.
 
-Default (ChatQnA): `llama3-8b-awq` (LLM), `nomic-embed` (embedding), `bge-reranker` (reranking), all in `llm-inference` namespace. LLM via AI Gateway; embedding/reranking via KServe service names.
+Default (ChatQnA): `llama3-8b-awq` (LLM), `nomic-embed` (embedding), `bge-reranker-v2-m3` (reranking), all in `llm-inference` namespace. LLM via AI Gateway; embedding/reranking via KServe service names.
 
 Customize: edit `inference_models` in `env/<name>/config.erag.yaml`. Each model must exist in `env/<name>/models-rag.yaml`.
 

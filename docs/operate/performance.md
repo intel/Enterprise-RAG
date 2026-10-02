@@ -12,7 +12,7 @@ inference_models:
     role: llm
   - name: nomic-embed
     role: embedding
-  - name: bge-reranker
+  - name: bge-reranker-v2-m3
     role: reranking
 ```
 

@@ -108,7 +108,7 @@ common_registry: &repo "docker.io/intel"
 # vLLM accepts in the request "model" field.
 embedding_model_name: &embedding_model_name "nomic-embed"
 
-reranking_model_name: &reranking_model_name "bge-reranker"
+reranking_model_name: &reranking_model_name "bge-reranker-v2-m3"
 
 ner_model_name: &ner_model_name "tanaos/tanaos-NER-v1"
 

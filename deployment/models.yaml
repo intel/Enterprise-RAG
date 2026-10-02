@@ -145,15 +145,15 @@ models:
     args: [ --gpu-memory-utilization, "0.7" ]
 
   # Reranker — BGE reranker for RAG pipelines
-  - name: bge-reranker
-    model_id: BAAI/bge-reranker-base
+  - name: bge-reranker-v2-m3
+    model_id: BAAI/bge-reranker-v2-m3
     category: rerank
     runtime: vllm
-    server_version: "0.19.1"
+    server_version: "0.24.0"
     cpu: 4
-    memory: 6Gi
-    env:
-      VLLM_CPU_NUM_OF_RESERVED_CPU: 0
+    memory: 8Gi
+    args: [ --gpu-memory-utilization, "0.7" ]
+
 
   # Embedding — multilingual E5 large instruct (1024-dim, 512-token window)
   # 12Gi needed: XLM-RoBERTa-large weights + torch startup exceed 0.7 × 8Gi.
@@ -177,15 +177,16 @@ models:
     memory: 16Gi
     args: [ --runner, pooling, --max-model-len, "8192", --gpu-memory-utilization, "0.7" ]
 
-  # Reranker — BGE reranker v2 m3 (multilingual, 8k window)
-  - name: bge-reranker-v2-m3
-    model_id: BAAI/bge-reranker-v2-m3
+  # Reranker — BGE base reranker (bilingual: English & Chinese, 512 token window)
+  - name: bge-reranker
+    model_id: BAAI/bge-reranker-base
     category: rerank
     runtime: vllm
-    server_version: "0.24.0"
+    server_version: "0.19.1"
     cpu: 4
-    memory: 16Gi
-    args: [ --gpu-memory-utilization, "0.7" ]
+    memory: 6Gi
+    env:
+      VLLM_CPU_NUM_OF_RESERVED_CPU: 0
 
   # Reranker — Polish RoBERTa reranker v3 (8k window)
   - name: polish-reranker-v3
