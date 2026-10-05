@@ -5,14 +5,17 @@
 
 ARG python_version=3.11
 ARG python_image_version=${python_version}-slim-trixie
+# Pinned by digest so the base (and its OpenSSL) only changes when bumped here,
+# keeping it in step with the openssl pin below.
+ARG python_image_digest=sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b
 
-FROM python:${python_image_version}
+FROM python:${python_image_version}@${python_image_digest}
 COPY --from=ghcr.io/astral-sh/uv:0.8.0 /uv /uvx /bin/
 
 ARG python_version
 
 RUN apt-get update -y && \
-    apt-get install -y --only-upgrade openssl=3.5.7-1~deb13u2 libssl3t64=3.5.7-1~deb13u2 openssl-provider-legacy=3.5.7-1~deb13u2 && \
+    apt-get install -y --only-upgrade openssl=3.5.7-1~deb13u3 libssl3t64=3.5.7-1~deb13u3 openssl-provider-legacy=3.5.7-1~deb13u3 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN rm -f /usr/bin/dmesg /usr/bin/base64 /usr/bin/perl
