@@ -1,5 +1,7 @@
 # Setting Up S3 Buckets and SQS for EDP on AWS
 
+[← Customize](../README.md#customize)
+
 This guide creates the AWS resources EDP needs to use external S3 storage:
 
 - an S3 bucket for documents (more buckets can be added, see [Using More Buckets](#using-more-buckets)),
@@ -195,7 +197,7 @@ aws iam create-access-key --user-name "$USER_NAME" \
 > The secret key is shown only once. Store it securely; if it is lost, delete the access key and create a new one.
 
 ### Passing the Values to Intel® AI for Enterprise RAG Deployment
-To use them in [deployment](../../../deployment/README.md), print the queue URL and region:
+To use them in [deployment](../../deployment/README.md), print the queue URL and region:
 
 ```bash
 echo "sqsQueue: $QUEUE_URL"

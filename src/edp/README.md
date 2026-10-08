@@ -34,7 +34,7 @@ The Intel AI for Enterprise RAG Enhanced Data Preparation (EDP) service provides
 - A stand alone `postgresql` server for storing file and link entries is required.
 - A S3 compatible storage (one of the following)
     - A stand alone `SeaweedFS` server for storing files. This is included and optional.
-    - An external AWS S3 bucket. For step-by-step instructions on creating one with the AWS CLI, see [terraform/README.md](terraform/README.md).
+    - An external AWS S3 bucket. For step-by-step instructions on creating one with the AWS CLI, see [docs/customize/aws_s3.md](../../docs/customize/aws_s3.md).
     - External server compatible with the S3 API
 
 - Running application server:
@@ -78,7 +78,7 @@ edp:
     bucketNameRegexFilter: ".*"
 ```
 
-For step-by-step instructions on creating the required AWS resources such as S3 buckets and SQS queues with the AWS CLI, refer to the [terraform/README.md](terraform/README.md).
+For step-by-step instructions on creating the required AWS resources such as S3 buckets and SQS queues with the AWS CLI, refer to [docs/customize/aws_s3.md](../../docs/customize/aws_s3.md).
 
 Optionally, the environment variables (using the same names as in the legacy bash-based deployment, such as `edp_storage_type`, `s3_access_key`, `s3_secret_key`, etc.) can be exported instead of using config.erag.yaml. However, defining configuration in the YAML file is preferred for clarity, consistency, and better integration with automated Ansible-based deployments.
 
