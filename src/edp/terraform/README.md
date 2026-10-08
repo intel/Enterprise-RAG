@@ -2,9 +2,9 @@
 
 This guide creates the AWS resources EDP needs to use external S3 storage:
 
-- three S3 buckets (one read-only, two read-write),
-- an SQS queue that receives object created/removed notifications from those buckets,
-- an IAM user with an access key that EDP uses to read the buckets and the queue.
+- an S3 bucket for documents (more buckets can be added, see [Using More Buckets](#using-more-buckets)),
+- an SQS queue that receives object created/removed notifications from the bucket,
+- an IAM user with an access key that EDP uses to access the bucket and the queue.
 
 ## Prerequisites
  - **AWS CLI v2** and **jq** must be installed.
@@ -58,16 +58,34 @@ SUFFIX=$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 8)
 echo "SUFFIX=$SUFFIX"
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-READ_ONLY_BUCKET=edp-s3-read-only-bucket-$SUFFIX
-READ_WRITE_BUCKET_1=edp-s3-read-write-bucket-1-$SUFFIX
-READ_WRITE_BUCKET_2=edp-s3-read-write-bucket-2-$SUFFIX
-BUCKETS="$READ_ONLY_BUCKET $READ_WRITE_BUCKET_1 $READ_WRITE_BUCKET_2"
+READ_WRITE_BUCKETS="edp-s3-bucket-$SUFFIX"
+READ_ONLY_BUCKETS=""
+BUCKETS="$READ_WRITE_BUCKETS $READ_ONLY_BUCKETS"
 QUEUE_NAME=edp-s3-notification-queue-$SUFFIX
 USER_NAME=edp-iam-user-$SUFFIX
 POLICY_NAME=edp-s3-access-policy-$SUFFIX
+
+# Prints the given bucket names as a JSON array of ARNs, with an optional path appended
+bucket_arns() { local path=$1; shift; printf '%s\n' "$@" | jq -R -s -c --arg path "$path" 'split("\n") | map(select(length > 0) | "arn:aws:s3:::" + . + $path)'; }
 ```
 
 `https://solutions.ai` in the CORS rule below is the default UI address (`base_domain_name` in `env/<name>/global_config.yaml`). Replace it if your deployment uses a different domain.
+
+### Using More Buckets
+`READ_WRITE_BUCKETS` and `READ_ONLY_BUCKETS` are space-separated lists of bucket names, and EDP processes documents from every bucket it can access. To create more buckets, add their names to the lists before running the steps below, keeping `$SUFFIX` in each name:
+
+- **Read-write buckets:** documents can be uploaded and deleted through the Intel® AI for Enterprise RAG UI.
+- **Read-only buckets:** EDP only ingests documents that are placed in the bucket by other means, for example with `aws s3 cp`. Uploads and deletions through the UI are rejected.
+
+For example:
+
+```bash
+READ_WRITE_BUCKETS="edp-s3-hr-$SUFFIX edp-s3-engineering-$SUFFIX"
+READ_ONLY_BUCKETS="edp-s3-policies-$SUFFIX"
+BUCKETS="$READ_WRITE_BUCKETS $READ_ONLY_BUCKETS"
+```
+
+To restrict which of the buckets EDP processes, set `bucketNameRegexFilter` in config.yaml.
 
 ## Usage
 
@@ -107,28 +125,21 @@ QUEUE_ARN=$(aws sqs get-queue-attributes --queue-url "$QUEUE_URL" \
 Allow the buckets to send notifications to the queue:
 
 ```bash
-cat > edp-queue-policy.json <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [{
-    "Sid": "AllowEdpBucketNotifications",
-    "Effect": "Allow",
-    "Principal": { "Service": "s3.amazonaws.com" },
-    "Action": "sqs:SendMessage",
-    "Resource": "$QUEUE_ARN",
-    "Condition": {
-      "ArnLike": {
-        "aws:SourceArn": [
-          "arn:aws:s3:::$READ_ONLY_BUCKET",
-          "arn:aws:s3:::$READ_WRITE_BUCKET_1",
-          "arn:aws:s3:::$READ_WRITE_BUCKET_2"
-        ]
-      },
-      "StringEquals": { "aws:SourceAccount": "$ACCOUNT_ID" }
+jq -n --arg queue "$QUEUE_ARN" --arg account "$ACCOUNT_ID" \
+  --argjson buckets "$(bucket_arns "" $BUCKETS)" '{
+  Version: "2012-10-17",
+  Statement: [{
+    Sid: "AllowEdpBucketNotifications",
+    Effect: "Allow",
+    Principal: { Service: "s3.amazonaws.com" },
+    Action: "sqs:SendMessage",
+    Resource: $queue,
+    Condition: {
+      ArnLike: { "aws:SourceArn": $buckets },
+      StringEquals: { "aws:SourceAccount": $account }
     }
   }]
-}
-EOF
+}' > edp-queue-policy.json
 
 aws sqs set-queue-attributes --queue-url "$QUEUE_URL" \
   --attributes "$(jq -c -n --rawfile policy edp-queue-policy.json '{Policy: $policy}')"
@@ -150,45 +161,26 @@ done
 ```
 
 ### 4. Create the IAM user for EDP
-The policy grants read access to the read-only bucket, read-write access to the other two buckets, permission to consume the queue, and denies any S3 request that does not use TLS.
+The policy grants read-write access to the read-write buckets, read access to the read-only buckets, permission to consume the queue, and denies any S3 request that does not use TLS.
 
 ```bash
-cat > edp-user-policy.json <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
+jq -n --arg queue "$QUEUE_ARN" \
+  --argjson read_write "$(bucket_arns "/*" $READ_WRITE_BUCKETS)" \
+  --argjson read_only "$(bucket_arns "/*" $READ_ONLY_BUCKETS)" '{
+  Version: "2012-10-17",
+  Statement: [
+    { Effect: "Allow", Action: "s3:ListAllMyBuckets", Resource: "*" },
+    { Effect: "Allow", Action: ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"], Resource: $read_write },
+    { Effect: "Allow", Action: "s3:GetObject", Resource: $read_only },
+    { Effect: "Allow", Action: ["sqs:ReceiveMessage", "sqs:DeleteMessage"], Resource: $queue },
     {
-      "Effect": "Allow",
-      "Action": "s3:ListAllMyBuckets",
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::$READ_ONLY_BUCKET/*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
-      "Resource": [
-        "arn:aws:s3:::$READ_WRITE_BUCKET_1/*",
-        "arn:aws:s3:::$READ_WRITE_BUCKET_2/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["sqs:ReceiveMessage", "sqs:DeleteMessage"],
-      "Resource": "$QUEUE_ARN"
-    },
-    {
-      "Effect": "Deny",
-      "Action": "s3:*",
-      "Resource": "*",
-      "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+      Effect: "Deny",
+      Action: "s3:*",
+      Resource: "*",
+      Condition: { Bool: { "aws:SecureTransport": "false" } }
     }
-  ]
-}
-EOF
+  ] | map(select(.Resource != []))
+}' > edp-user-policy.json
 
 aws iam create-user --user-name "$USER_NAME"
 POLICY_ARN=$(aws iam create-policy --policy-name "$POLICY_NAME" \
@@ -230,7 +222,7 @@ Then run deployment as usual, an example for installation from the Enterprise AI
 ```
 
 ## Cleanup
-To remove the created resources, set `AWS_REGION` and `SUFFIX` to the values used during setup, re-run the variable definitions from [Configuration](#configuration) except the `SUFFIX=` line, then run:
+To remove the created resources, set `AWS_REGION` and `SUFFIX` to the values used during setup, re-run the variable definitions from [Configuration](#configuration) except the `SUFFIX=` line (including any bucket names you added), then run:
 
 > [!WARNING]
 > `aws s3 rb --force` permanently deletes all documents stored in the buckets.
