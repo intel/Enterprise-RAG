@@ -3,14 +3,18 @@ name: "Sec :: Dep updater"
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
   read-images:
-    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/read-images-reusable.yml
+    with:
+      ref: main
 
   update-locks:
     needs: read-images
@@ -30,6 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: main
           persist-credentials: false
 
       - name: Configure Git
@@ -169,10 +174,10 @@ jobs:
       - name: Export commits as patches
         id: export
         run: |
-          COMMIT_COUNT=$(git rev-list --count "$GITHUB_SHA..HEAD")
+          COMMIT_COUNT=$(git rev-list --count "origin/main..HEAD")
           echo "commit_count=$COMMIT_COUNT" >> "$GITHUB_OUTPUT"
           if [[ "$COMMIT_COUNT" != "0" ]]; then
-            git format-patch "$GITHUB_SHA..HEAD" -o "$RUNNER_TEMP/patches"
+            git format-patch "origin/main..HEAD" -o "$RUNNER_TEMP/patches"
           fi
 
       - name: Upload patches
@@ -205,6 +210,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
 
       - name: Download patches
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
