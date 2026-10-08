@@ -67,7 +67,7 @@ USER_NAME=edp-iam-user-$SUFFIX
 POLICY_NAME=edp-s3-access-policy-$SUFFIX
 ```
 
-Replace `https://erag.com` in the CORS rule below with the address your Intel® AI for Enterprise RAG UI is served from.
+`https://solutions.ai` in the CORS rule below is the default UI address (`base_domain_name` in `env/<name>/global_config.yaml`). Replace it if your deployment uses a different domain.
 
 ## Usage
 
@@ -89,7 +89,7 @@ for bucket in $BUCKETS; do
     "CORSRules": [{
       "AllowedHeaders": ["*"],
       "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
-      "AllowedOrigins": ["https://erag.com"],
+      "AllowedOrigins": ["https://solutions.ai"],
       "MaxAgeSeconds": 3000
     }]
   }'
