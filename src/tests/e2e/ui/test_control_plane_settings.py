@@ -145,6 +145,30 @@ async def _toggle_checkbox(chat_ui_helper, arg_name: str) -> bool:
     return True
 
 
+def _scanner_field(chat_ui_helper, scanner_title: str, testid: str):
+    """
+    Locate a service argument field belonging to one guard scanner.
+
+    Guard cards render every scanner with the same field names (each has an
+    ``enabled`` checkbox), so testids repeat across scanners.  Each scanner
+    section is a ``p.scanner-inputs-title`` followed by its fields as
+    siblings, so a field belongs to the nearest scanner title before it.
+
+    Args:
+        chat_ui_helper: ChatUIHelper instance
+        scanner_title: Scanner title as shown in the UI (e.g. "Ban Substrings")
+        testid: Field data-testid (e.g. ``service-argument-checkbox-enabled``)
+
+    Returns:
+        Playwright Locator for the field
+    """
+    return chat_ui_helper.page.locator(
+        f"xpath=//*[@data-testid='{testid}']"
+        f"[preceding::p[contains(@class, 'scanner-inputs-title')][1]"
+        f"[normalize-space()='{scanner_title}']]"
+    )
+
+
 async def _confirm_service_changes(chat_ui_helper) -> bool:
     """Click confirm-service-changes-button and wait for it to disappear."""
     page = chat_ui_helper.page
@@ -358,15 +382,10 @@ async def test_guard_blocks_question_after_ui_change(
     then sends a chat message containing that word and asserts the response
     indicates the question was blocked.
 
-    If the guard service node or its settings are not accessible in the
-    Control Plane graph, the test uses a hybrid approach: it enables the
-    guard via the fingerprint API and then verifies the UI correctly
-    displays the blocked response.
-
     Steps:
-    1. Navigate to Control Plane → try to select input-guard node
-    2. If available: enable ban_substrings with word "zerquilloo", confirm
-       If not available: enable guard via API (hybrid fallback)
+    1. Navigate to Control Plane → select input-guard node
+    2. In the Ban Substrings scanner: set substrings to "zerquilloo",
+       tick enabled, confirm
     3. Navigate to Chat → send a message containing "zerquilloo"
     4. Verify the response indicates the question was blocked
     5. Cleanup: disable all guards via API
@@ -374,32 +393,39 @@ async def test_guard_blocks_question_after_ui_change(
     Success criteria:
     - Guard blocks the question (HTTP 466 or blocked message in UI)
     """
-    logger.info("Test: Guard blocks question after UI/hybrid change")
+    logger.info("Test: Guard blocks question after UI change")
 
     page = chat_ui_helper.page
     banned_word = "zerquilloo"
+    scanner_title = "Ban Substrings"
 
     try:
-        # Try pure UI approach
         node_selected = await _navigate_to_cp_and_select_node(
             chat_ui_helper, "input guard"
         )
         if not node_selected:
             pytest.skip("Guard service node not found in Control Plane graph")
 
-        # Check if ban_substrings settings are editable
-        logger.info("Guard node found — checking for editable parameters")
+        # Step 2: Configure the Ban Substrings scanner only
+        substrings_input = _scanner_field(
+            chat_ui_helper, scanner_title,
+            "service-argument-text-input-substrings"
+        )
+        enabled_checkbox = _scanner_field(
+            chat_ui_helper, scanner_title,
+            "service-argument-checkbox-enabled"
+        )
+        try:
+            await substrings_input.wait_for(state="visible", timeout=5000)
+            await enabled_checkbox.wait_for(state="visible", timeout=5000)
+        except Exception as e:
+            pytest.fail(f"{scanner_title} scanner fields not usable on guard card: {e}")
 
-        arg_inputs = page.locator('[data-testid^="service-argument-"]')
-        arg_count = await arg_inputs.count()
-        if arg_count == 0:
-            pytest.skip("No editable guard parameters found in UI")
-
-        logger.info(f"Found {arg_count} guard settings — attempting UI edit")
-        # Look for an "enabled" checkbox
-        enabled_toggled = await _toggle_checkbox(chat_ui_helper, "enabled")
-        if not enabled_toggled:
-            pytest.skip("Guard 'enabled' checkbox not found on service card")
+        await substrings_input.fill(banned_word)
+        if not await enabled_checkbox.locator("input").is_checked():
+            await enabled_checkbox.click()
+        await page.wait_for_timeout(300)
+        logger.info(f"{scanner_title}: substrings='{banned_word}', enabled=True")
 
         confirmed = await _confirm_service_changes(chat_ui_helper)
         assert confirmed, "Failed to confirm service changes"
