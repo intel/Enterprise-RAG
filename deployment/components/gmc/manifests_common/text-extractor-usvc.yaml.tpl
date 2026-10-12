@@ -75,15 +75,13 @@ spec:
                 name: extra-env-config
                 optional: true
           env:
+            # One page-worker process per CPU, one ORT/OpenMP thread per worker; more
+            # threads per worker oversubscribe the CPU limit (same as the EDP chart).
             - name: OMP_NUM_THREADS
-              valueFrom:
-                resourceFieldRef:
-                  resource: limits.cpu
-            - name: OMP_THREAD_LIMIT
-              valueFrom:
-                resourceFieldRef:
-                  resource: limits.cpu
-            - name: PDF_MAX_WORKERS
+              value: "1"
+            - name: DOCLING_NUM_THREADS
+              value: "1"
+            - name: TEXT_EXTRACTOR_MAX_WORKERS
               valueFrom:
                 resourceFieldRef:
                   resource: limits.cpu
