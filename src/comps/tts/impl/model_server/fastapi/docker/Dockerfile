@@ -14,8 +14,8 @@ ENV LANG=C.UTF-8
 ARG python_version
 
 RUN apt-get -y update && \
-    apt-get install -y --no-install-recommends --only-upgrade openssl=3.5.7-1~deb13u3 libssl3t64=3.5.7-1~deb13u3 openssl-provider-legacy=3.5.7-1~deb13u3 && \
-    apt-get install --no-install-recommends --fix-missing -y ffmpeg sox curl google-perftools && \
+    apt-get install -y --no-install-recommends --only-upgrade openssl=3.5.7-1~deb13u3 libssl3t64=3.5.7-1~deb13u3 openssl-provider-legacy=3.5.7-1~deb13u3 libpcre2-8-0=10.46-1~deb13u3 && \
+    apt-get install --no-install-recommends --fix-missing -y ffmpeg curl google-perftools && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libtcmalloc.so.4 /usr/lib/x86_64-linux-gnu/libtcmalloc.so
