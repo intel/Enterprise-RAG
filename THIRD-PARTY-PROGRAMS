@@ -6543,10 +6543,6 @@
     * Origin: npm
     * License: mit
 
-* Component: qwen-tts
-    * Origin: pypi
-    * License: apache 2.0
-
 * Component: rake
     * Origin: apt
     * License: mit
