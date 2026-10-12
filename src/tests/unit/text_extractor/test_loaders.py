@@ -15,6 +15,7 @@ from comps.text_extractor.utils.file_loaders.load_xml import LoadXml
 from comps.text_extractor.utils.file_loaders.load_yaml import LoadYaml
 from comps.text_extractor.utils.file_loaders.load_with_markitdown import LoadWithMarkitdown
 import os
+import pytest
 
 def abs_file_path(file_name):
     file_path = '../../e2e/files/dataprep_upload/'
@@ -26,6 +27,21 @@ def test_adoc_loader():
     text = loader.extract_text()
     assert text is not None
     assert len(text) > 0
+
+@pytest.mark.parametrize("loader_cls", [LoadAsciiDoc, LoadWithMarkitdown])
+def test_adoc_include_does_not_read_local_files(tmp_path, loader_cls):
+    secret = tmp_path / "secret.txt"
+    secret.write_text("SecretMarker7f3a")
+    upload_dir = tmp_path / "upload"
+    upload_dir.mkdir()
+    adoc = upload_dir / "include.adoc"
+    adoc.write_text(f"= Include test\n\nBefore include.\n\ninclude::{secret}[]\n\ninclude::../secret.txt[]\n\nAfter include.\n")
+
+    text = loader_cls(str(adoc)).extract_text()
+
+    assert "SecretMarker7f3a" not in text
+    assert "Before include." in text
+    assert "After include." in text
 
 def test_csv_loader():
     file_name = 'test_dataprep.csv'

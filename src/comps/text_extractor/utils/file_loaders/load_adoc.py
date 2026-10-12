@@ -24,7 +24,7 @@ class LoadAsciiDoc(LoadHtml):
         dir_path = os.path.dirname(self.file_path)
         adoc_html_output_file = os.path.join(dir_path, "temp_output.html")
         try:
-            subprocess.run([ASCIIDOCTOR_BIN, "-b", "html5", "-o", adoc_html_output_file, self.file_path], check=True)
+            subprocess.run([ASCIIDOCTOR_BIN, "-S", "secure", "-B", dir_path, "-b", "html5", "-o", adoc_html_output_file, self.file_path], check=True)
             logger.info(f"Converted adoc to html. Created temporary file: {adoc_html_output_file}")
 
             original_file_path = self.file_path
