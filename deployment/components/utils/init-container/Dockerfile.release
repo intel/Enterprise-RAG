@@ -5,5 +5,7 @@ COPY compliance /compliance
 WORKDIR /compliance/ospdt
 COPY Dockerfile .
 
+USER 1000
+
 # CMD from base Dockerfile
 ENTRYPOINT ["/bin/bash"]

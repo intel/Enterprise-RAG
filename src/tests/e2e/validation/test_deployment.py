@@ -24,13 +24,21 @@ from tests.e2e.validation.constants import LLM_INFERENCE_NAMESPACE
 
 logger = logging.getLogger(__name__)
 
-# NRI balloon tests only apply when the NRI balloons CPU policy is enabled.
-nri_balloons_only = pytest.mark.skipif(
-    cfg.get("kubernetes_cpu_policy") != "nri-balloons",
-    reason="NRI balloons not enabled (kubernetes_cpu_policy != 'nri-balloons')",
-)
-
 NRI_ANN_PREFIX = "balloon.balloons.resource-policy.nri.io/"
+NRI_PLUGIN_NAMESPACE = "kube-system"
+NRI_PLUGIN_DAEMONSET = "nri-resource-policy-balloons"
+
+
+def _nri_plugin_deployed() -> bool:
+    """Return True when the NRI balloons policy DaemonSet exists in the cluster."""
+    daemonsets = kr8s.get("daemonsets", NRI_PLUGIN_DAEMONSET, namespace=NRI_PLUGIN_NAMESPACE)
+    return len(list(daemonsets)) > 0
+
+
+nri_balloons_only = pytest.mark.skipif(
+    not _nri_plugin_deployed(),
+    reason=f"NRI balloons policy not deployed (no DaemonSet '{NRI_PLUGIN_NAMESPACE}/{NRI_PLUGIN_DAEMONSET}')",
+)
 
 
 def _parse_cpuset(spec: str) -> list[int]:

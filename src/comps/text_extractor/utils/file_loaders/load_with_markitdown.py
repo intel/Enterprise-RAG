@@ -90,7 +90,7 @@ class LoadWithMarkitdown(AbstractLoader):
         temp_html_file = os.path.join(temp_dir, f"temp_output_{os.path.basename(self.file_path)}.html")
         
         try:
-            subprocess.run([ASCIIDOCTOR_BIN, "-b", "html5", "-o", temp_html_file, self.file_path], check=True)
+            subprocess.run([ASCIIDOCTOR_BIN, "-S", "secure", "-B", temp_dir, "-b", "html5", "-o", temp_html_file, self.file_path], check=True)
             logger.info(f"Converted adoc to html. Created temporary file: {temp_html_file}")
             
             result = self.md.convert(temp_html_file)

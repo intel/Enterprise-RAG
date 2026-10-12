@@ -49,3 +49,9 @@ spec:
           {{- toYaml .Values.namespaceStatusWatcher.resources | nindent 10 }}
         securityContext:
           {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

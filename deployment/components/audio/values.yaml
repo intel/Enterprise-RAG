@@ -169,6 +169,7 @@ containerSecurityContext:
       - ALL
   runAsNonRoot: true
   allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
 
 podAnnotations: {}
 imagePullSecrets: []

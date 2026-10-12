@@ -4,12 +4,14 @@
 # Using Debian Bookworm (12) - smallest stable Debian with modern glibc 2.36
 FROM debian:bookworm-slim
 
-# Install required utilitiesARG HTTP_PROXY
+ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG http_proxy
 ARG https_proxy
 ARG NO_PROXY
 ARG no_proxy
+
+# Install required utilities
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         bash \
@@ -29,4 +31,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends kubectl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Matches runAsUser in the Helm charts that use this image
+RUN useradd -m -u 1000 -s /bin/bash user
+USER 1000
+
 ENTRYPOINT ["/bin/bash"]

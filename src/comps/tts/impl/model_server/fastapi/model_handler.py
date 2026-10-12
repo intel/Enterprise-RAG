@@ -18,12 +18,11 @@ os.environ['TORCH_MKLDNN_ENABLE'] = '1'
 logger = get_erag_logger("TTS FastAPI Model Server")
 
 DEVICE = torch.device("cpu")
-SUPPORTED_MODELS = {"microsoft/speecht5_tts",
-                    "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice",
-                    "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
-                    "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign"}
+SUPPORTED_MODELS = {"microsoft/speecht5_tts"}
 
 SPEECH_T5_SUPPORTED_VOICES = { "awb": 0, "bdl": 1138, "clb": 2271, "jmk": 3403, "ksp": 4535, "rms": 5667, "slt": 6799 }
+# Commit of the Hub's refs/convert/parquet branch; datasets>=4 cannot run the repo's loading script.
+SPEAKER_EMBEDDINGS_REVISION = "36e87b347a6a70f0420445b02ec40c55556f9ed7"
 
 
 class TTSModel:
@@ -34,8 +33,6 @@ class TTSModel:
         self.model_name = model_name
         if model_name == "microsoft/speecht5_tts":
             self._init_speecht5()
-        elif "Qwen3-TTS" in model_name:
-            self._init_qwen_tts(model_name)
         else:
             raise NotImplementedError(f"Model {model_name} is not yet implemented.")
 
@@ -58,7 +55,7 @@ class TTSModel:
             "microsoft/speecht5_hifigan"
         ).to(DEVICE)
 
-        self.embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
+        self.embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", revision=SPEAKER_EMBEDDINGS_REVISION, split="validation")
 
         self.speaker_embeddings_cache = {}
         for voice, idx in SPEECH_T5_SUPPORTED_VOICES.items():
@@ -69,16 +66,6 @@ class TTSModel:
 
         self.model = self.model.to(memory_format=torch.channels_last)
         self.vocoder = self.vocoder.to(memory_format=torch.channels_last)
-
-    def _init_qwen_tts(self, model_name: str):
-        from qwen_tts import Qwen3TTSModel
-
-        self.model = Qwen3TTSModel.from_pretrained(
-            model_name,
-            device_map="cpu",
-            dtype=torch.bfloat16,
-        )
-        logger.warning("Flash attention doesn't support Intel CPUs. It'll be enabled once support is added.")
 
     @torch.inference_mode()
     def generate_audio(self, text: str, voice: str = "default", instructions: str = None):
@@ -108,32 +95,5 @@ class TTSModel:
             end_time = time.time()
             logger.info(f"Speech generated in {end_time - start_time:.2f} seconds.")
             return audio_output.cpu(), 16000
-        elif "Qwen3-TTS" in self.model_name:
-            if voice == "default":
-                voice = "ryan"
-            else:
-                if voice.lower() not in self.model.get_supported_speakers():
-                    raise ValueError(f"Unsupported speaker {voice} for model {self.model_name}. " \
-                        f"Supported speakers: {self.model.get_supported_speakers()}.")
-
-            if "CustomVoice" in self.model_name:
-                wavs, sr = self.model.generate_custom_voice(
-                    text=text,
-                    language="English",
-                    speaker=voice,
-                    instruct=instructions,
-                )
-            elif "VoiceDesign" in self.model_name:
-                wavs, sr = self.model.generate_voice_design(
-                    text=text,
-                    language="English",
-                    instruct=instructions,
-                )
-            else:
-                raise NotImplementedError(f"Model {self.model_name} is not yet implemented.")
-
-            end_time = time.time()
-            logger.info(f"Speech generated in {end_time - start_time:.2f} seconds.")
-            return wavs[0], sr
         else:
             raise NotImplementedError(f"Model {self.model_name} is not yet implemented.")

@@ -8,6 +8,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_ENDPOINTS, ERROR_MESSAGES } from "@/config/api";
 import { RootState } from "@/store";
 import { DownloadFileRequest, GetFilePresignedUrlRequest } from "@/types/api";
+import { getAudioQnAAppEnv } from "@/utils";
 import { handleOnQueryStarted, transformErrorMessage } from "@/utils/api";
 
 export const selectAppApi = (state: RootState) => state.appApi;
@@ -19,6 +20,15 @@ const appBaseQuery = fetchBaseQuery({
     if (AUTHORIZED_ENDPOINTS.includes(api.endpoint)) {
       await keycloakService.refreshToken();
       headers.set("Authorization", `Bearer ${keycloakService.getToken()}`);
+    } else if (
+      api.endpoint === "downloadFile" &&
+      getAudioQnAAppEnv("S3_SEND_BEARER_TOKEN") === "true"
+    ) {
+      await keycloakService.refreshToken();
+      const token = keycloakService.getToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
     }
     return headers;
   },

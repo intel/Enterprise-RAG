@@ -94,6 +94,12 @@ spec:
             periodSeconds: 30
           resources:
             {{- toYaml .Values.asr.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

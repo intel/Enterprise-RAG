@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
-import secrets
 import socket
 import time
 from urllib.parse import urljoin
@@ -25,30 +24,56 @@ class InvalidChatqnaResponseBody(Exception):
 
 class CustomPortForward(object):
 
+    BIND_ATTEMPTS = 3
+    BIND_TIMEOUT = 5
+
     def __init__(self, remote_port, namespace, label_selector, local_port=None):
-        local_port = self._find_unused_port() if local_port is None else local_port
-        pod = self._get_pod(namespace, label_selector)
-        self.pf = kr8s.portforward.PortForward(pod, remote_port=remote_port, local_port=local_port)
+        self.remote_port = remote_port
+        self.local_port = local_port
+        self.pod = self._get_pod(namespace, label_selector)
+        self.pf = None
 
     def __enter__(self):
-        self.pf.start()
-        time.sleep(1)
-        return self.pf
+        # Retry with a new port if the port forward fails to bind, e.g. when another
+        # socket takes the port between _find_unused_port() and the bind.
+        attempts = 1 if self.local_port is not None else self.BIND_ATTEMPTS
+        for attempt in range(1, attempts + 1):
+            local_port = self.local_port or self._find_unused_port()
+            self.pf = kr8s.portforward.PortForward(self.pod, remote_port=self.remote_port, local_port=local_port)
+            self.pf.start()
+            if self._wait_for_bind():
+                return self.pf
+            self.pf.stop()
+            logger.warning(f"Port forward failed to bind on 127.0.0.1:{local_port} (attempt {attempt}/{attempts})")
+        raise RuntimeError(f"Could not start port forward to {self.pod.name}:{self.remote_port}")
 
     def __exit__(self, type, value, traceback):
         self.pf.stop()
         time.sleep(1)
 
-    def _find_unused_port(self, start=10000, end=60000):
+    def _wait_for_bind(self):
         """
-        Return a random unused port between start and end
+        Wait until the port forward listens on its local port.
+        Return False if its background thread exited, e.g. because the bind failed.
         """
-        while True:
-            port = secrets.randbelow(end - start) + start
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                result = sock.connect_ex(("127.0.0.1", port))
-                if result != 0:  # Port is not in use
-                    return port
+        deadline = time.monotonic() + self.BIND_TIMEOUT
+        while time.monotonic() < deadline:
+            if self.pf.servers:
+                return True
+            if not self.pf._bg_thread.is_alive():
+                return False
+            time.sleep(0.1)
+        return False
+
+    def _find_unused_port(self):
+        """
+        Return a free local port chosen by the OS.
+        Probing random ports with connect() misses ports that are bound but not
+        listening, e.g. local ends of outgoing connections in the ephemeral range.
+        """
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.bind(("127.0.0.1", 0))
+            return sock.getsockname()[1]
 
     def _get_pod(self, namespace, label_selector):
         pods = list(kr8s.get("pods",
