@@ -65,7 +65,7 @@ When making changes, follow the [coding guidelines](#coding-guidelines) and the 
 > Never commit credentials, secrets, or confidential information. Do not include unexplained binary or generated files.
 
 
-#### 4. Sign your work
+### 4. Sign your work
 Every commit requires a Developer Certificate of Origin sign-off:
 
 ```bash
@@ -88,8 +88,7 @@ Push your branch to your fork and open a pull request to the `main` branch that 
 
 Your pull request will be automatically tested by pre-commit and marked as "green" if all checks have passed and the pull request is ready for maintainer review.
 
-If any builders fail, the status is "red," you need to fix the issues listed in console logs. Any change to the pull request branch will automatically trigger a new set of checks.
-
+If any checks fail and the status is marked as red, review the console logs and fix the reported issues. Any change to the pull request branch will automatically trigger a new set of checks.
 
 > [!NOTE]
 > Include links to related pull requests in other repositories when applicable. See [Contributing across the AI Solutions portfolio](#contributing-across-the-ai-solutions-portfolio) for guidance on coordinating changes across repositories.
@@ -105,8 +104,8 @@ All source files must carry the standard AI Solutions copyright header. For new 
 
 Python (`.py`):
 ```python
-  # Copyright (C) 2025-2026 Intel Corporation
-  # SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2025-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 ```
 
 ## Commits guidelines
@@ -131,7 +130,7 @@ Write commit messages following the [Conventional Commits](https://www.conventio
 * Your pull request should be rebased against the current main branch.
 * Make your PRs small - each PR should address one issue. Remove all changes unrelated to the PR.
 * Link your Pull Request to an issue if it addresses one.
-* For Work In Progress, or checking test results early, use a Draft PR. you can submit it with the PR title including [WIP] and list Todo items in the desciption to easier follow what is still missing
+* For Work In Progress, or checking test results early, use a Draft PR. You can submit it with the PR title including [WIP] and list Todo items in the description to easier follow what is still missing
 
 
 ### Before requesting a review
@@ -208,12 +207,12 @@ Repositories relevant to Enterprise RAG include:
 
 
 When implementing a feature or a fix, contributors should make changes in the repository that owns the functionality:
-  - changes to Enterprise RAG functionality belongs to this repository.
+  - changes to Enterprise RAG functionality belong to this repository.
   - If the change requires adjustments in the inference layer that Enterprise RAG consumes, the corresponding changes must also be made in [`enterprise-inference`][ai-inference].
-  - If the change affects the integration layer provided by [`enterprise-ai-solutions`][ai-solutions], the corresponding updates must also be be made in that repository.
+  - If the change affects the integration layer provided by [`enterprise-ai-solutions`][ai-solutions], the corresponding changes must also be applied in that repository.
 
 
-This may involved:
+This may involve:
 - updating the component revision reference in configs/repos (required only in the parent repository,[`enterprise-ai-solutions`][ai-solutions])
 - adjusting solution or deployment configuration when required,
 - updating documentation,
@@ -296,6 +295,5 @@ In such cases, credit to the original author will be preserved.
 
 [ai-solutions]: https://github.com/intel/enterprise-ai-solutions
 [ai-inference]: https://github.com/intel/enterprise-inference
-[ai-erag]: https://github.com/intel/enterprise-rag
 [ai-erag-issues]: https://github.com/intel/enterprise-rag/issues
 [ai-erag-pulls]: https://github.com/intel/enterprise-rag/pulls
