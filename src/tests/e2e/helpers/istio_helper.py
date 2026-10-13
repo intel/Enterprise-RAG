@@ -562,20 +562,20 @@ def _query_node_capacity(default: int = MAX_RUNNING_QUERIES) -> NodeCapacity:
     # Find the node with the most free pod slots; fall back to defaults on error.
     try:
         nodes = list(kr8s.get("nodes"))
-        if not nodes:
-            logger.warning("[capacity] No nodes returned, using default max_running_queries=%d", default)
-            return NodeCapacity(
-                pod_limit=default + NODE_POD_BUFFER,
-                node_name=None,
-                running_pods=0,
-                max_running_queries=default,
-            )
         # Pick the node with the most free slots
         best_node_name = None
         best_alloc = None
         best_running = None
         best_free = None
         for node in nodes:
+            if getattr(node.spec, "unschedulable", False):
+                continue
+            if not any(condition.type == "Ready" and condition.status == "True"
+                       for condition in node.status.conditions):
+                continue
+            if any(taint.effect in ("NoSchedule", "NoExecute")
+                   for taint in (getattr(node.spec, "taints", None) or [])):
+                continue
             alloc = int(node.status.allocatable.get("pods", str(default + NODE_POD_BUFFER)))
             running = count_pods_on_node(node.metadata.name)
             free = alloc - running
@@ -584,6 +584,14 @@ def _query_node_capacity(default: int = MAX_RUNNING_QUERIES) -> NodeCapacity:
                 best_alloc = alloc
                 best_running = running
                 best_node_name = node.metadata.name
+        if best_node_name is None:
+            logger.warning("[capacity] No schedulable nodes found, using default max_running_queries=%d", default)
+            return NodeCapacity(
+                pod_limit=default + NODE_POD_BUFFER,
+                node_name=None,
+                running_pods=0,
+                max_running_queries=default,
+            )
         available = best_free - NODE_POD_BUFFER
         result = min(default, max(1, available))
         logger.info(
