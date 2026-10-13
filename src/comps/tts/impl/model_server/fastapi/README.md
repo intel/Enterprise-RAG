@@ -6,14 +6,11 @@ The FastAPI TTS Model Server provides an OpenAI-compatible API endpoint for gene
 
 ## Supported Models
 
-The FastAPI TTS Model Server has been validated on following models:
+The FastAPI TTS Model Server has been validated on following model:
 
 | Model | Description | Default voice | Features |
 |-------|-------------|------------------|----------|
 | [microsoft/speecht5_tts](https://huggingface.co/microsoft/speecht5_tts) **(default)** | Microsoft's SpeechT5 Text-to-Speech model | `awb` | Fastest generation but produces robotic-style voice |
-| [Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice) | Qwen3 TTS model with custom voice support | `ryan` | Voice customization through instructions parameter |
-| [Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) | Larger Qwen3 TTS model with custom voice support | `ryan` | Voice customization through instructions parameter |
-| [Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign) | Qwen3 TTS model with voice design capabilities | N/A (voice-agnostic) | Generates voices based on natural language descriptions (instructions) |
 
 ## Table of Contents
 
@@ -101,25 +98,13 @@ docker compose down
             }' --output speech1.wav
         ```
 
-        **WAV format output:**
-        ```bash
-        curl -X POST http://127.0.0.1:8008/v1/audio/speech \
-            -H "Content-Type: application/json" \
-            -d '{
-                "input": "Hello, this is a test of the text to speech system.",
-                "voice": "bdl",
-                "response_format": "wav"
-            }' --output speech.wav
-        ```
-
-     - For testing the `Qwen` family of models:
-
         **MP3 format output:**
         ```bash
         curl -X POST http://127.0.0.1:8008/v1/audio/speech \
             -H "Content-Type: application/json" \
             -d '{
                 "input": "Hello, this is a test of the text to speech system.",
-                "voice": "ryan",
+                "voice": "bdl",
                 "response_format": "mp3"
             }' --output speech.mp3
+        ```
