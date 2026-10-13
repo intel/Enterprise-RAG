@@ -45,7 +45,7 @@ edp_s3_sqs_event_queue_url: "https://sqs.us-east-1.amazonaws.com/123456789012/my
 edp_s3_bucket_name_regex_filter: ""  # optional: restrict which buckets EDP tracks
 ```
 
-Requires SQS event notifications configured on the S3 bucket for automatic ingestion.
+Requires SQS event notifications configured on the S3 bucket for automatic ingestion. To create the buckets, the queue, and the IAM user with the AWS CLI, see [AWS S3 and SQS Setup](aws_s3.md).
 
 ### S3-compatible (without SQS)
 
@@ -188,6 +188,7 @@ The scheduled task polls buckets for changes at the specified interval and inges
 
 | Topic | Link |
 |-------|------|
+| AWS S3 and SQS setup with the AWS CLI | [aws_s3.md](aws_s3.md) |
 | SharePoint integration (another EDP storage source) | [sharepoint.md](sharepoint.md) |
 | NetApp ONTAP persistent volumes | [NetApp ONTAP and Trident](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/netapp_ontap.md) |
 | EDP source code and detailed settings | [`src/edp/README.md`](../../src/edp/README.md) |
