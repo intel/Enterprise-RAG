@@ -4,7 +4,7 @@
 ---
 
 - name: "app_generate_password | Check if key already exists in password file"
-  ansible.builtin.shell: "grep -q '^{{ item.name }}:' {{ password_file }}"
+  ansible.builtin.command: "grep -q '^{{ item.name }}:' {{ password_file }}"
   register: key_exists_check
   changed_when: false
   ignore_errors: true
@@ -34,7 +34,9 @@
     no_log: "{{ secure_logs }}"
 
 - name: "app_generate_password | Get existing key from file if it exists"
-  ansible.builtin.shell: "grep '^{{ item.name }}:' {{ password_file }} | cut -d ':' -f 2 | sed 's/ //g'"
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && grep '^{{ item.name }}:' {{ password_file }} | cut -d ':' -f 2 | sed 's/ //g'"
+    executable: /bin/bash
   register: existing_key_content
   changed_when: false
   when: key_exists_check.rc == 0

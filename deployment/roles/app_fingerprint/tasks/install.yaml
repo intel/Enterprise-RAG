@@ -9,6 +9,7 @@
     cmd: helm dependency build
     chdir: "{{ fingerprint_helm_chart_directory }}"
   register: helm_repo_add_result
+  changed_when: true
   until: helm_repo_add_result is succeeded
   retries: "{{ helm_retries }}"
   delay: 15
