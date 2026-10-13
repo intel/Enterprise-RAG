@@ -57,7 +57,7 @@ llm-guard = [
   # compatible and the transformers/torch versions affect scanner inference results.
   "optimum[onnxruntime]==2.1.0",
   "torch>=2.13.0,<3.0.0",
-  "transformers==4.57.3",
+  "transformers==5.10.4",
 ]
 
 [tool.uv]
@@ -67,6 +67,10 @@ llm-guard = [
 # once presidio-anonymizer allows cryptography>=50.
 override-dependencies = [
   "cryptography>=50.0.0,<51.0.0",
+  # optimum-onnx (pulled in by optimum[onnxruntime]) caps transformers <4.58, which
+  # leaves GHSA-29pf-2h5f-8g72, GHSA-fgcw-684q-jj6r and GHSA-xrqw-3rrv-vx5w unfixed.
+  # Drop this override once optimum-onnx allows transformers>=5.10.4.
+  "transformers==5.10.4",
 ]
 
 [tool.uv.sources]

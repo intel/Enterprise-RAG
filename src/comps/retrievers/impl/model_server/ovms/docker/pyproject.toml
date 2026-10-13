@@ -8,7 +8,7 @@ requires-python = ">=3.11,<3.12"
 
 dependencies = [
     "optimum-intel==2.1.0",
-    "transformers>=5.5.0,<5.6",
+    "transformers==5.10.4",
     "torch>=2.13.0,<3.0.0",
     "nncf==2.19.0",
     "flask==3.1.3",
@@ -24,6 +24,14 @@ dependencies = [
 security-overrides = [
   "pillow>=12.3.0",
   "protobuf>=6.33.5",
+]
+
+[tool.uv]
+# optimum-intel 2.1.0 (latest 2.2.0 too) caps transformers <5.6, which leaves
+# GHSA-xrqw-3rrv-vx5w unfixed. Drop this override once optimum-intel allows
+# transformers>=5.10.4.
+override-dependencies = [
+  "transformers==5.10.4",
 ]
 
 [tool.uv.sources]
