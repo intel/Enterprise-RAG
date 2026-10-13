@@ -1,8 +1,9 @@
 # Copyright (C) 2024-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import pytest
-
+import json
 from unittest.mock import patch, Mock
+
 
 from comps.cores.proto.docarray import PrevQuestionDetails
 from comps.prompt_template.utils.chat_history_handler import ChatHistoryHandler
@@ -42,6 +43,10 @@ def mock_api_response_long_history():
             {"question": "Previous question 6", "answer": "Previous answer 6"},
         ]
     }
+
+def mock_api_response_history_malformed():
+    """Raw response body that is not a valid JSON (trailing comma, unterminated object)."""
+    return '{"history": [{"question": "Previous question 1", "answer": "Previous answer 1",]'
 
 @patch('comps.prompt_template.utils.chat_history_handler.requests.get')
 def test_chat_history_handler_init_with_valid_endpoint(mock_get):
@@ -155,6 +160,24 @@ def test_chat_history_handler_bad_request(mock_get):
         handler.retrieve_chat_history("test_history_id", "test_token")
 
     assert "Bad request while retrieving conversation history" in str(error.value)
+
+@patch('comps.prompt_template.utils.chat_history_handler.requests.get')
+def test_chat_history_handler_malformed_json(mock_get):
+    health_response = Mock()
+    health_response.status_code = 200
+    health_response.text = "chat_history service is healthy"
+
+    history_response = Mock()
+    history_response.status_code = 200
+    history_response.text = mock_api_response_history_malformed()
+    history_response.json.side_effect = lambda: json.loads(history_response.text)
+
+    mock_get.side_effect = [health_response, history_response]
+
+    handler = ChatHistoryHandler("http://localhost:8080")
+
+    with pytest.raises(json.JSONDecodeError):
+        handler.retrieve_chat_history("test_history_id", "test_token")
 
 def test_validate_chat_history_with_valid_data():
     handler = ChatHistoryHandler()

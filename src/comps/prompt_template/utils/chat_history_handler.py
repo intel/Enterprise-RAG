@@ -91,7 +91,7 @@ class ChatHistoryHandler:
         except JSONDecodeError as e:
             err_msg = f"Error decoding JSON response while retrieving conversation history: {str(e)}"
             logger.error(err_msg)
-            raise JSONDecodeError(err_msg) from e
+            raise
         except Exception as e:
             err_msg = f"Error retrieving conversation history: {str(e)}"
             logger.error(err_msg)
