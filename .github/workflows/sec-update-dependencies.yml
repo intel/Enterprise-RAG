@@ -10,18 +10,11 @@ on:
 permissions:
   contents: read
 
-env:
-  # Updates start from the PR head (not the merge commit) or the dispatched ref, so they
-  # build on top of that branch's changes instead of on main
-  START_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-  # Branch the dependency update PR is opened against
-  BASE_BRANCH: ${{ github.head_ref || github.ref_name }}
-
 jobs:
   read-images:
     uses: ./.github/workflows/read-images-reusable.yml
     with:
-      ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      ref: main
 
   update-locks:
     needs: read-images
@@ -41,7 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.START_SHA }}
+          ref: main
           persist-credentials: false
 
       - name: Configure Git
@@ -181,10 +174,10 @@ jobs:
       - name: Export commits as patches
         id: export
         run: |
-          COMMIT_COUNT=$(git rev-list --count "$START_SHA..HEAD")
+          COMMIT_COUNT=$(git rev-list --count "origin/main..HEAD")
           echo "commit_count=$COMMIT_COUNT" >> "$GITHUB_OUTPUT"
           if [[ "$COMMIT_COUNT" != "0" ]]; then
-            git format-patch "$START_SHA..HEAD" -o "$RUNNER_TEMP/patches"
+            git format-patch "origin/main..HEAD" -o "$RUNNER_TEMP/patches"
           fi
 
       - name: Upload patches
@@ -218,7 +211,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.START_SHA }}
+          ref: main
 
       - name: Download patches
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -333,6 +326,6 @@ jobs:
               repo: context.repo.repo,
               title: prTitle,
               head: branchName,
-              base: process.env.BASE_BRANCH,
+              base: 'main',
               body: prBody
             });
