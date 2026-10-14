@@ -41,7 +41,7 @@ dependencies = [
     "pdfminer-six==20260107", # dependency of all-docs
     "pypdf>=6.19.0", # dependency of unstructured/all-docs; security update
     "pyasn1==0.6.4", # dependency of unstructured
-    "cairosvg==2.9.0",
+    "cairosvg==2.9.1",
     "python-magic==0.4.27",
     "python-multipart==0.0.32", # required by FastAPI Form/UploadFile; no longer pulled in by unstructured
     "pathvalidate==3.2.2",
@@ -55,11 +55,11 @@ dependencies = [
     "transformers>=5.10.0,<6.0.0",
     "markitdown==0.1.6",
     "setuptools == 80.10.2",     # security update
-    "requests == 2.33.1",
+    "requests == 2.34.2",
     "urllib3>=2.8.0,<3.0.0",
     "opencv-python==4.13.0.90",
     "aiohttp>=3.14.3,<4.0.0",
-    "docling>=2.118.1,<3.0.0",
+    "docling>=2.132.0,<3.0.0",
     "tabulate==0.9.0",
 ]
 
