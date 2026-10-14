@@ -47,6 +47,7 @@ Change models, wire up identity and external data sources, and tune every knob.
 | [SharePoint](customize/sharepoint.md) | Ingesting from SharePoint Online, scheduled sync, and per-user site filtering |
 | [MCP Integration](customize/mcp.md) | Exposing retrieval and ingestion to AI agents over Model Context Protocol |
 | [Object Store](customize/object_store.md) | EDP storage backends, and serving documents from NetApp ONTAP S3 |
+| [AWS S3 and SQS Setup](customize/aws_s3.md) | Creating the buckets, queue, and IAM user for external S3 with the AWS CLI |
 | [Building Images](customize/images.md) | Building the component images locally and pointing the deployment at your registry |
 
 ## Operate
