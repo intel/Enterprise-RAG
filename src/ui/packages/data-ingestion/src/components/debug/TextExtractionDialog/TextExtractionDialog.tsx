@@ -1,17 +1,16 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./TextExtractionDialog.scss";
+import "./TextExtractionDialog.css";
 
 import {
   Button,
-  CheckboxInput,
+  Checkbox,
   Dialog,
+  Input,
   LoadingFallback,
-  TextInput,
 } from "@intel-enterprise-rag-ui/components";
-import { useDebug } from "@intel-enterprise-rag-ui/utils";
-import classNames from "classnames";
+import { cn, useDebug } from "@intel-enterprise-rag-ui/utils";
 import { ChangeEventHandler, FormEvent, useMemo, useState } from "react";
 
 import { PostToExtractTextQueryParams } from "@/types/api";
@@ -64,16 +63,16 @@ export const TextExtractionForm = ({
   const isFormDisabled = isLoadingExtractedText || !isFormEnabled;
 
   return (
-    <div className="text-extraction-dialog__content-form-column">
-      <CheckboxInput
+    <div className="text-extraction-dialog__content-form-column sticky top-3 self-start">
+      <Checkbox
         label="Use Parameters"
         name="use-parameters"
         isSelected={isFormEnabled}
         isDisabled={isLoadingExtractedText}
         onChange={handleEnableFormCheckboxChange}
       />
-      <form onSubmit={handleSubmit}>
-        <TextInput
+      <form onSubmit={handleSubmit} className="px-7 pb-2">
+        <Input
           data-testid="chunk-size-input"
           label="Chunk Size (0-9999)"
           type="number"
@@ -82,7 +81,7 @@ export const TextExtractionForm = ({
           isDisabled={isFormDisabled}
           onChange={handleRangeInputChange}
         />
-        <TextInput
+        <Input
           data-testid="chunk-overlap-input"
           label="Chunk Overlap (0-9999)"
           type="number"
@@ -91,7 +90,7 @@ export const TextExtractionForm = ({
           isDisabled={isFormDisabled}
           onChange={handleRangeInputChange}
         />
-        <CheckboxInput
+        <Checkbox
           label="Use Semantic Chunking"
           name="use_semantic_chunking"
           isSelected={formData.use_semantic_chunking}
@@ -142,18 +141,20 @@ const ExtractedText = ({ extractedText, isError }: ExtractedTextProps) => {
     setVisibleTextOffset((prevOffset) => prevOffset + linesPerPage);
   };
 
-  const preClassNames = classNames({
-    "error-message": isError,
-  });
+  const preClassNames = cn(
+    "text-foreground w-full p-3 text-sm text-wrap [overflow-wrap:anywhere]",
+    // mb-3/min-h-14/italic used to come from control-plane's global .error-message rule
+    isError && "error-message text-destructive mb-3 min-h-14 italic",
+  );
 
   return (
-    <div className="extracted-text">
+    <div className="bg-card flex w-full flex-col items-start p-3">
       <pre className={preClassNames}>{visibleFormattedExtractedText}</pre>
       {isLoadMoreButtonVisible && (
         <Button
           data-testid="load-more-text-button"
           size="sm"
-          variant="outlined"
+          variant="outline"
           onPress={handleLoadMoreTextButtonPress}
           fullWidth
         >
@@ -198,7 +199,7 @@ const TextExtractionDialog = ({
     <Button
       data-testid="extract-text-trigger-button"
       size="sm"
-      variant="outlined"
+      variant="outline"
       onPress={handlePress}
     >
       Extract Text
@@ -230,7 +231,7 @@ const TextExtractionDialog = ({
       title={dialogTitle}
       data-testid="text-extraction-dialog"
     >
-      <div className="text-extraction-dialog__content">
+      <div className="grid grid-cols-[16rem_1fr]">
         <TextExtractionForm
           isLoadingExtractedText={isLoading}
           onFormSubmit={onFormSubmit}

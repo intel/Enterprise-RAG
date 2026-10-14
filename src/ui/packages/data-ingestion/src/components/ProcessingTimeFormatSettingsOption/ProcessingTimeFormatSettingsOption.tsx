@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ProcessingTimeFormatSettingsOption.scss";
-
 import { Switch } from "@intel-enterprise-rag-ui/components";
 
 import DataIngestionSettingsOption from "@/components/DataIngestionSettingsOption/DataIngestionSettingsOption";
@@ -20,7 +18,7 @@ const options = {
   },
 };
 
-const ProcessingTimeFormatSettingsOption = () => {
+export const ProcessingTimeFormatSettingsOption = () => {
   const { processingTimeFormat, setFormat } = useProcessingTimeFormat();
 
   const isCompactFormat = processingTimeFormat === "compact";
@@ -33,14 +31,10 @@ const ProcessingTimeFormatSettingsOption = () => {
     <DataIngestionSettingsOption
       name="Processing Time Format"
       input={
-        <div className="processing-time-format-settings-option">
-          <span className="processing-time-format-settings-option__label">
-            {options.standard.label}
-          </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs">{options.standard.label}</span>
           <Switch isSelected={isCompactFormat} onChange={handleChange} />
-          <span className="processing-time-format-settings-option__label">
-            {options.compact.label}
-          </span>
+          <span className="text-xs">{options.compact.label}</span>
         </div>
       }
       description={options[processingTimeFormat].description}

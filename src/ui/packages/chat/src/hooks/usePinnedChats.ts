@@ -73,11 +73,24 @@ export const usePinnedChats = () => {
     [isPinned, pinChat, unpinChat],
   );
 
+  const reorderPinnedChats = useCallback(
+    (newOrderIds: string[]): void => {
+      try {
+        setPinnedChatsToStorage(newOrderIds);
+        setPinnedIds(newOrderIds);
+      } catch {
+        handleError("Failed to reorder pinned chats. Please try again.");
+      }
+    },
+    [handleError],
+  );
+
   return {
     pinnedIds,
     isPinned,
     pinChat,
     unpinChat,
     togglePinChat,
+    reorderPinnedChats,
   };
 };

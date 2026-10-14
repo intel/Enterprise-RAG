@@ -3,6 +3,7 @@
 
 import { keycloakService } from "@intel-enterprise-rag-ui/auth";
 import {
+  CONFIGURABLE_SERVICE_IDS,
   ControlPlaneTab,
   PostRetrieverQueryRequest,
   ServiceCard,
@@ -28,7 +29,6 @@ import {
   onAudioQnAGraphConnect,
   onAudioQnAGraphEdgesChange,
   onAudioQnAGraphNodesChange,
-  setAudioQnAGraphIsAutorefreshEnabled,
   setAudioQnAGraphSelectedServiceNode,
 } from "@/features/admin-panel/control-plane/store/audioQnAGraph.slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -46,15 +46,16 @@ const AudioQnAControlPlaneTab = () => {
   );
   const nodes = useAppSelector(audioQnAGraphNodesSelector);
   const edges = useAppSelector(audioQnAGraphEdgesSelector);
+  const selectedServiceNode = useAppSelector(
+    audioQnAGraphSelectedServiceNodeSelector,
+  );
+  const isConfigPanelDisabled =
+    selectedServiceNode === null ||
+    !CONFIGURABLE_SERVICE_IDS.includes(
+      selectedServiceNode.id as (typeof CONFIGURABLE_SERVICE_IDS)[number],
+    );
 
   const [getServicesData, { isFetching }] = useLazyGetServicesDataQuery();
-
-  const handleAutorefreshChange = useCallback(
-    (enabled: boolean) => {
-      dispatch(setAudioQnAGraphIsAutorefreshEnabled(enabled));
-    },
-    [dispatch],
-  );
 
   const handleRefresh = useCallback(() => {
     getServicesData();
@@ -101,8 +102,6 @@ const AudioQnAControlPlaneTab = () => {
       edges={edges}
       isLoading={isLoading}
       isRenderable={isRenderable}
-      isAutorefreshEnabled={isAutorefreshEnabled}
-      onAutorefreshChange={handleAutorefreshChange}
       onRefresh={handleRefresh}
       isFetching={isFetching}
       onNodesChange={handleNodesChange}
@@ -111,6 +110,7 @@ const AudioQnAControlPlaneTab = () => {
       onSelectionChange={handleSelectionChange}
       fitViewOptions={fitViewOptions}
       ConfigPanel={<AudioQnAServiceCard />}
+      isConfigPanelDisabled={isConfigPanelDisabled}
     />
   );
 };

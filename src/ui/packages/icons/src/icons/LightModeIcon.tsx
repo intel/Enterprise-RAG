@@ -1,7 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { PiSunFill } from "react-icons/pi";
+import { IconProps, SunIcon } from "@phosphor-icons/react";
 
-export const LightModeIcon = (props: IconBaseProps) => <PiSunFill {...props} />;
+export const LightModeIcon = (props: IconProps) => (
+  <SunIcon {...props} weight="fill" />
+);

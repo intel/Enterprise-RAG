@@ -2,28 +2,49 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  DocFileIcon,
-  DocxFileIcon,
-  MdFileIcon,
-  PdfFileIcon,
+  FileDocIcon,
+  FileDocxIcon,
+  FileMdIcon,
+  FilePdfIcon,
+  FileTextIcon,
+  IconName,
   PlainTextIcon,
-  TextFileIcon,
 } from "@intel-enterprise-rag-ui/icons";
 
 import { HistoryItemData } from "@/features/docsum/types/history";
 
+const fileIconNames: Record<string, IconName> = {
+  pdf: "file-pdf",
+  docx: "file-docx",
+  doc: "file-doc",
+  md: "file-md",
+};
+
+export const getItemIconName = (
+  itemData: HistoryItemData,
+): IconName | undefined => {
+  if (itemData.sourceType === "file") {
+    const fileExtension = itemData.title.split(".").pop()?.toLowerCase() ?? "";
+    return fileIconNames[fileExtension] ?? "file-text";
+  } else if (itemData.sourceType === "plainText") {
+    return "plain-text";
+  } else {
+    return undefined;
+  }
+};
+
 export const getFileIcon = (fileName: string) => {
   const fileExtension = fileName.split(".").pop()?.toLowerCase();
   if (fileExtension === "pdf") {
-    return <PdfFileIcon />;
+    return <FilePdfIcon />;
   } else if (fileExtension === "docx") {
-    return <DocxFileIcon />;
+    return <FileDocxIcon />;
   } else if (fileExtension === "doc") {
-    return <DocFileIcon />;
+    return <FileDocIcon />;
   } else if (fileExtension === "md") {
-    return <MdFileIcon />;
+    return <FileMdIcon />;
   } else {
-    return <TextFileIcon />;
+    return <FileTextIcon />;
   }
 };
 

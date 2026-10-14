@@ -24,7 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@intel-enterprise-rag-ui/tailwind-theme": "workspace:^",
+    "@intel-enterprise-rag-ui/shadcn-preset": "workspace:^",
     "@intel-enterprise-rag-ui/utils": "workspace:^",
     "highlight.js": "^11.11.1",
     "marked": "^17.0.1"

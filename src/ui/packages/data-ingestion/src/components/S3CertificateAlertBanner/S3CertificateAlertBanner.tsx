@@ -1,9 +1,14 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./S3CertificateAlertBanner.scss";
-
-import { Anchor, Button } from "@intel-enterprise-rag-ui/components";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Anchor,
+  Button,
+} from "@intel-enterprise-rag-ui/components";
+import { ErrorIcon } from "@intel-enterprise-rag-ui/icons";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -59,34 +64,42 @@ const S3CertificateAlertBanner = ({
   }
 
   return (
-    <div className="s3-certificate-alert-banner">
-      <p className="s3-certificate-alert-banner__text">
-        It seems there was an error with your file action, possibly due to a
-        self-signed certificate issue.
-        <br /> Please click the link below to accept the certificate, then try
-        the action again.
-      </p>
-      <Anchor
-        data-testid="s3-certificate-link"
-        href={s3Url}
-        className="s3-certificate-alert-banner__text"
-        onPress={handleS3UrlPress}
-      >
-        {s3Url}
-      </Anchor>
-      <p className="s3-certificate-alert-banner__dismiss-hint">
-        If you believe this is a false positive, you can dismiss this alert
-        using the button below.
-      </p>
+    <Alert
+      variant="error"
+      className="mb-4"
+      data-testid="s3-certificate-alert-banner"
+    >
+      <ErrorIcon />
+      <AlertTitle>Certificate error</AlertTitle>
+      <AlertDescription>
+        <p>
+          It seems there was an error with your file action, possibly due to a
+          self-signed certificate issue.
+          <br /> Please click the link below to accept the certificate, then try
+          the action again.
+        </p>
+        <Anchor
+          data-testid="s3-certificate-link"
+          href={s3Url}
+          onPress={handleS3UrlPress}
+        >
+          {s3Url}
+        </Anchor>
+        <p className="my-2">
+          If you believe this is a false positive, you can dismiss this alert
+          using the button below.
+        </p>
+      </AlertDescription>
       <Button
         data-testid="dismiss-s3-certificate-alert-button"
-        variant="outlined"
+        variant="outline"
         size="sm"
         onPress={handleDismissBtnPress}
+        className="mt-2"
       >
         Dismiss
       </Button>
-    </div>
+    </Alert>
   );
 };
 

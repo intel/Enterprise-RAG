@@ -1,9 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { LuFolderSync } from "react-icons/lu";
+import { CloudIcon, IconProps } from "@phosphor-icons/react";
 
-export const BucketSynchronizationIcon = (props: IconBaseProps) => (
-  <LuFolderSync {...props} />
+export const BucketSynchronizationIcon = (props: IconProps) => (
+  <CloudIcon {...props} />
 );

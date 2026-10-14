@@ -27,7 +27,9 @@
     "@intel-enterprise-rag-ui/components": "workspace:^",
     "@intel-enterprise-rag-ui/icons": "workspace:^",
     "@intel-enterprise-rag-ui/input-validation": "workspace:^",
-    "@intel-enterprise-rag-ui/utils": "workspace:^"
+    "@intel-enterprise-rag-ui/shadcn-preset": "workspace:^",
+    "@intel-enterprise-rag-ui/utils": "workspace:^",
+    "sonner": "^2.0.8"
   },
   "peerDependencies": {
     "@reduxjs/toolkit": ">=2.0.0",

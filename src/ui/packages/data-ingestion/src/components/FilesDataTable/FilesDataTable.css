@@ -1,0 +1,47 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+/* Kept in CSS: per-column widths/pinned offsets target the th/td cells DataTable renders
+   internally, which no className on this component reaches. Wrapper/header styles are inline. */
+
+/* Column order: (1) checkbox (2) Name (3) Status (4) Source (5) Size (6) Chunks
+   (7) Processing Time (8) Actions. (1)/(2)/(8) are pinned (see meta.pin in
+   utils/data-tables/files.tsx); everything between them scrolls horizontally.
+   (1)/(8) also carry the pl-16/pr-16 that TableViewLayout's negative margin
+   dropped, so the table's own border can reach the true edge while the
+   checkbox/actions content itself still gets normal breathing room. */
+.files-data-table th:nth-child(1),
+.files-data-table td:nth-child(1) {
+  @apply w-[6.5rem] pl-16;
+}
+.files-data-table th:nth-child(2),
+.files-data-table td:nth-child(2) {
+  @apply w-64;
+  left: 6.5rem;
+}
+.files-data-table th:nth-child(3),
+.files-data-table td:nth-child(3) {
+  @apply w-36;
+}
+.files-data-table th:nth-child(4),
+.files-data-table td:nth-child(4) {
+  @apply w-44;
+}
+.files-data-table th:nth-child(5),
+.files-data-table td:nth-child(5) {
+  @apply w-28;
+}
+.files-data-table th:nth-child(6),
+.files-data-table td:nth-child(6) {
+  @apply w-44;
+}
+.files-data-table th:nth-child(7),
+.files-data-table td:nth-child(7) {
+  @apply w-44;
+}
+.files-data-table th:nth-child(8),
+.files-data-table td:nth-child(8) {
+  @apply w-[13rem] pr-16;
+}

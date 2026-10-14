@@ -1,12 +1,14 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./FilesDataTable.scss";
+import "./FilesDataTable.css";
 
 import {
   DataTable,
+  IconButton,
   RowSelectionState,
   SearchBar,
+  Tooltip,
 } from "@intel-enterprise-rag-ui/components";
 import {
   S3BucketIcon,
@@ -23,6 +25,7 @@ import {
 } from "@/api/edpApi";
 import BatchActionsDropdown from "@/components/BatchActionsDropdown/BatchActionsDropdown";
 import BatchDeleteDialog from "@/components/BatchDeleteDialog/BatchDeleteDialog";
+import RefreshButton from "@/components/RefreshButton/RefreshButton";
 import useConditionalPolling from "@/hooks/useConditionalPolling";
 import { selectIsAutorefreshEnabled } from "@/store/dataIngestionSettings.slice";
 import { FileDataItem, GetFilePresignedUrl } from "@/types";
@@ -62,6 +65,7 @@ const FilesDataTable = ({
   const [filter, setFilter] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   const downloadHandler = useCallback(
     async (
@@ -129,6 +133,19 @@ const FilesDataTable = ({
     [deleteFile, getFilePresignedUrl, deleteSharePointFile],
   );
 
+  const defaultData = useMemo(() => {
+    return files ?? [];
+  }, [files]);
+
+  const sourceFilterOptions = useMemo(() => {
+    const sources = new Set<string>();
+    defaultData.forEach(({ site_name, bucket_name }) => {
+      const source = site_name || bucket_name;
+      if (source) sources.add(source);
+    });
+    return Array.from(sources).sort();
+  }, [defaultData]);
+
   const filesTableColumns = useMemo(
     () =>
       createFilesColumnDefs(getAppEnv, {
@@ -136,13 +153,17 @@ const FilesDataTable = ({
         retryHandler,
         deleteHandler,
         sourceMap,
+        sourceFilterOptions,
       }),
-    [getAppEnv, deleteHandler, downloadHandler, retryHandler, sourceMap],
+    [
+      getAppEnv,
+      deleteHandler,
+      downloadHandler,
+      retryHandler,
+      sourceMap,
+      sourceFilterOptions,
+    ],
   );
-
-  const defaultData = useMemo(() => {
-    return files ?? [];
-  }, [files]);
 
   const selectedFiles = useMemo(() => {
     return Object.keys(rowSelection)
@@ -194,29 +215,53 @@ const FilesDataTable = ({
   const getRowId = useCallback((row: FileDataItem) => row.id, []);
 
   return (
-    <div className="files-data-table-wrapper">
-      <div className="files-data-table-wrapper__header">
-        <SearchBar
-          data-testid="files-search-bar"
-          value={filter}
-          placeholder="Filter files by status, bucket, or name"
-          onChange={setFilter}
-        />
-        <BatchActionsDropdown
-          selectedCount={selectedFiles.length}
-          retryableCount={retryableFiles.length}
-          reingestableCount={reingestableFiles.length}
-          onRetry={handleBatchRetry}
-          onReingest={handleBatchReingest}
-          onDelete={() => setIsDeleteDialogOpen(true)}
-        />
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-2">
+      <div className="flex shrink-0 items-center justify-between gap-2">
+        <div className="flex items-center gap-4">
+          <div className="flex w-[6.5rem] items-center pl-16">
+            <Tooltip
+              title={showFilters ? "Hide filters" : "Show filters"}
+              trigger={
+                <IconButton
+                  data-testid="files-toggle-filters-button"
+                  icon={showFilters ? "filter" : "filter-active"}
+                  size="sm"
+                  variant="ghost"
+                  aria-label={showFilters ? "Hide filters" : "Show filters"}
+                  aria-pressed={showFilters}
+                  onPress={() => setShowFilters((current) => !current)}
+                />
+              }
+            />
+          </div>
+          <RefreshButton />
+          <SearchBar
+            data-testid="files-search-bar"
+            value={filter}
+            placeholder="Filter files by status, bucket, or name"
+            onChange={setFilter}
+            className="max-w-[500px]"
+          />
+        </div>
+        {/* pr-16 matches the last column's pr-16 so the batch-actions button lines up with the
+            Actions column instead of being pushed past TableViewLayout's bled-out right edge. */}
+        <div className="flex items-center gap-4 pr-16">
+          <BatchActionsDropdown
+            selectedCount={selectedFiles.length}
+            retryableCount={retryableFiles.length}
+            reingestableCount={reingestableFiles.length}
+            onRetry={handleBatchRetry}
+            onReingest={handleBatchReingest}
+            onDelete={() => setIsDeleteDialogOpen(true)}
+          />
+        </div>
       </div>
       {Object.keys(sourceMap).length > 0 && (
-        <div className="files-data-table-wrapper__legend">
-          <span className="files-data-table-wrapper__legend-item">
+        <div className="text-foreground flex gap-4 px-2 py-1 text-xs">
+          <span className="flex items-center gap-1">
             <S3BucketIcon aria-hidden="true" /> S3 Bucket
           </span>
-          <span className="files-data-table-wrapper__legend-item">
+          <span className="flex items-center gap-1">
             <SharePointSiteIcon aria-hidden="true" /> SharePoint Site
           </span>
         </div>
@@ -226,11 +271,13 @@ const FilesDataTable = ({
         columns={filesTableColumns}
         isDataLoading={isLoading}
         globalFilter={filter}
-        className="files-data-table"
+        className="files-data-table data-table--plain-header"
         rowSelection={rowSelection}
         onRowSelectionChange={setRowSelection}
         getRowId={getRowId}
+        showFilterRow={showFilters}
         enableRowSelection
+        fillHeight
       />
       <BatchDeleteDialog
         isOpen={isDeleteDialogOpen}

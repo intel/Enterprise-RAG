@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { MdCheck } from "react-icons/md";
+import { CheckIcon, IconProps } from "@phosphor-icons/react";
 
-export const CopySuccessIcon = (props: IconBaseProps) => <MdCheck {...props} />;
+export const CopySuccessIcon = (props: IconProps) => <CheckIcon {...props} />;

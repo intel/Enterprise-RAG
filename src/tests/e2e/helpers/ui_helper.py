@@ -868,17 +868,17 @@ class ChatUIHelper(BaseUIHelper):
     async def is_sidebar_open(self) -> bool:
         """Check whether the sidebar is currently open.
 
-        Uses the aria-label on side-menu-icon-button to determine state.
-        When sidebar is open, aria-label is 'Close Side Menu'.
-        When sidebar is closed, aria-label is 'Open Side Menu'.
+        Uses the aria-label on sidebar-toggle-button to determine state.
+        When sidebar is open, aria-label is 'Close Sidebar'.
+        When sidebar is closed, aria-label is 'Open Sidebar'.
 
         Returns:
             True if sidebar is open, False otherwise
         """
         try:
-            btn = self.page.locator('[data-testid="side-menu-icon-button"]')
+            btn = self.page.locator('[data-testid="sidebar-toggle-button"]')
             aria = await btn.get_attribute("aria-label")
-            return aria == "Close Side Menu"
+            return aria == "Close Sidebar"
         except Exception as e:
             logger.warning(f"Could not determine sidebar state: {e}")
             return False
@@ -894,7 +894,7 @@ class ChatUIHelper(BaseUIHelper):
                 logger.info("Sidebar already open")
                 return True
 
-            await self.click_by_testid("side-menu-icon-button")
+            await self.click_by_testid("sidebar-toggle-button")
             await self.page.wait_for_timeout(500)
 
             # Verify it opened
@@ -919,7 +919,7 @@ class ChatUIHelper(BaseUIHelper):
                 logger.info("Sidebar already closed")
                 return True
 
-            await self.click_by_testid("side-menu-icon-button")
+            await self.click_by_testid("sidebar-toggle-button")
             await self.page.wait_for_timeout(500)
 
             if not await self.is_sidebar_open():
@@ -947,9 +947,9 @@ class ChatUIHelper(BaseUIHelper):
     async def start_new_chat(self) -> bool:
         """Click the New Chat button to start a fresh conversation.
 
-        The new-chat-button only appears after at least one message has been
-        sent. This method checks visibility first and returns False gracefully
-        if the button is not present.
+        new-chat-button is always visible in the chat sidebar. This method still checks
+        visibility first (e.g. the sidebar itself may be closed) and returns False
+        gracefully if the button is not present.
 
         Returns:
             True if successful, False otherwise
@@ -957,7 +957,7 @@ class ChatUIHelper(BaseUIHelper):
         try:
             visible = await self.is_visible_by_testid("new-chat-button", timeout=3000)
             if not visible:
-                logger.warning("new-chat-button not visible (appears only after first message)")
+                logger.warning("new-chat-button not visible (sidebar may be closed)")
                 return False
             return await self.click_by_testid("new-chat-button")
         except Exception as e:

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { CheckboxInput } from "@intel-enterprise-rag-ui/components";
+import { Checkbox } from "@intel-enterprise-rag-ui/components";
 import { titleCaseString } from "@intel-enterprise-rag-ui/utils";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -23,7 +23,7 @@ const getDescription = (isAutorefreshEnabled: boolean) =>
     ? `Automatic data refresh occurs every ${pollingIntervalInSeconds} seconds until all data objects reach one of the following statuses: ${titleCasedStatuses}.`
     : "Autorefresh is currently disabled. Data will not be automatically refreshed.";
 
-const AutorefreshSettingsOption = () => {
+export const AutorefreshSettingsOption = () => {
   const isAutorefreshEnabled = useSelector(selectIsAutorefreshEnabled);
   const dispatch = useDispatch();
 
@@ -38,7 +38,7 @@ const AutorefreshSettingsOption = () => {
     <DataIngestionSettingsOption
       name="Autorefresh"
       input={
-        <CheckboxInput
+        <Checkbox
           data-testid="autorefresh-checkbox"
           name="data-ingestion-autorefresh"
           label={label}

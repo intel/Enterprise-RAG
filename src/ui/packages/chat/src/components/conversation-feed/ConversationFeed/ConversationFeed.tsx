@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ConversationFeed.scss";
-
 import classNames from "classnames";
 import debounce from "lodash.debounce";
 import {
@@ -165,13 +163,13 @@ export const ConversationFeed = ({
   }, [debouncedScrollToBottomButtonUpdate]);
 
   return (
-    <div className="conversation-feed__wrapper">
+    <div className="relative overflow-y-auto">
       <div
         ref={conversationFeedRef}
-        className="conversation-feed__scroll"
+        className="h-full [scrollbar-gutter:stable] overflow-y-auto pb-8"
         onScroll={handleScroll}
       >
-        <div className="conversation-feed" data-testid="conversation-feed">
+        <div className="flex w-full flex-col" data-testid="conversation-feed">
           {conversationTurns.map(
             ({ id, question, answer, error, isPending, sources }) => {
               // Only pass active state if this turn matches the current playing turn
@@ -182,9 +180,12 @@ export const ConversationFeed = ({
                 <div
                   key={id}
                   ref={isPending ? pendingTurnRef : null}
-                  className={classNames("conversation-turn", {
-                    "conversation-turn--pending": isPending,
-                  })}
+                  className={classNames(
+                    "conversation-turn flex w-full flex-col",
+                    {
+                      "conversation-turn--pending": isPending,
+                    },
+                  )}
                 >
                   <UserMessage id={id} question={question} />
                   <BotMessage

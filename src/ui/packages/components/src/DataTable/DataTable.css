@@ -1,0 +1,108 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+table.data-table {
+  @apply min-w-full text-xs;
+}
+table.data-table thead th {
+  @apply bg-primary;
+  @apply text-primary-foreground;
+  @apply text-left font-semibold;
+  @apply h-8 px-3 py-1;
+  @apply border-t-border border-t;
+}
+table.data-table.data-table--plain-header thead th {
+  @apply bg-background;
+  @apply text-foreground;
+}
+table.data-table thead th:first-of-type {
+  @apply rounded-tl;
+}
+table.data-table thead th:last-of-type {
+  @apply rounded-tr;
+}
+table.data-table thead th::selection {
+  @apply bg-primary-foreground;
+  @apply text-primary;
+}
+table.data-table td {
+  @apply h-12 px-3 py-2 text-nowrap;
+}
+table.data-table.data-table--dense td {
+  @apply h-8;
+}
+table.data-table thead,
+table.data-table tbody {
+  @apply block min-w-full;
+}
+table.data-table thead tr,
+table.data-table tbody tr {
+  @apply table min-w-full table-fixed;
+}
+
+th.sortable {
+  @apply cursor-pointer select-none;
+}
+
+table.data-table thead tr.data-table-filter-row th {
+  @apply bg-background text-foreground h-auto rounded-none py-1 font-normal normal-case;
+  @apply border-t-0;
+}
+
+.data-table-filter-row__range {
+  @apply w-full;
+}
+
+/* Pinned columns stay fixed while the rest of the table scrolls horizontally
+   underneath them (see .data-table-wrapper's overflow-x below) — the exact
+   `left`/`right` offset for a given pinned column comes from the consumer's
+   own column-width CSS (e.g. nth-child rules), not from here. */
+th[data-pin],
+td[data-pin] {
+  @apply sticky z-10;
+}
+th[data-pin="left"],
+td[data-pin="left"] {
+  left: 0;
+}
+th[data-pin="right"],
+td[data-pin="right"] {
+  right: 0;
+}
+tbody td[data-pin] {
+  @apply bg-background;
+}
+
+.data-table-wrapper {
+  @apply overflow-x-auto;
+  scrollbar-width: thin;
+}
+.data-table-wrapper::-webkit-scrollbar {
+  @apply h-1.5;
+}
+.data-table-wrapper::-webkit-scrollbar-thumb {
+  @apply bg-scrollbar-thumb rounded-full;
+}
+.data-table-wrapper::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.data-table-body {
+  @apply max-h-[500px] min-h-[50px] overflow-y-auto;
+}
+
+.data-table-wrapper--fill {
+  @apply flex h-full min-h-0 flex-col;
+}
+.data-table-wrapper--fill table.data-table {
+  @apply flex h-full min-h-0 flex-col;
+}
+.data-table-wrapper--fill .data-table-body {
+  @apply max-h-none min-h-0 flex-1;
+}
+
+.virtual-row-spacer td {
+  @apply border-none p-0;
+}

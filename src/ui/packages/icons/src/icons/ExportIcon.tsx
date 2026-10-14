@@ -1,9 +1,9 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsCloudArrowUp } from "react-icons/bs";
+import * as Phosphor from "@phosphor-icons/react";
+import { IconProps } from "@phosphor-icons/react";
 
-export const ExportIcon = (props: IconBaseProps) => (
-  <BsCloudArrowUp {...props} />
+export const ExportIcon = (props: IconProps) => (
+  <Phosphor.ExportIcon {...props} />
 );

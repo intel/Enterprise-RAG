@@ -1,17 +1,16 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./HistoryItem.scss";
-
-import { Anchor, Tooltip } from "@intel-enterprise-rag-ui/components";
-import classNames from "classnames";
-import { useMemo, useState } from "react";
+import { HistoryItem as SharedHistoryItem } from "@intel-enterprise-rag-ui/layouts";
 
 import HistoryItemMenu from "@/features/docsum/components/tabs/history/HistoryItemMenu/HistoryItemMenu";
+import { renameHistoryItem } from "@/features/docsum/store/history.slice";
 import { HistoryItemData } from "@/features/docsum/types/history";
-import { getItemIcon } from "@/features/docsum/utils/render";
+import { getItemIconName } from "@/features/docsum/utils/render";
+import { useAppDispatch } from "@/store/hooks";
 
 const TITLE_OVERFLOW_LIMIT = 22;
+const NAME_CHAR_LIMIT = 250;
 
 interface HistoryItemProps {
   itemData: HistoryItemData;
@@ -24,49 +23,29 @@ const HistoryItem = ({
   isActive,
   onItemSelect,
 }: HistoryItemProps) => {
-  const { title } = itemData;
-
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const handleEntryPress = () => {
-    onItemSelect(itemData);
-  };
-
-  const className = classNames("history-item", {
-    "history-item--active": isActive,
-    "history-item--has-menu-open": isMenuOpen,
-  });
-
-  let titleElement = <span className="history-item__title">{title}</span>;
-
-  if (title.length > TITLE_OVERFLOW_LIMIT) {
-    const truncatedTitle = `${title.slice(0, TITLE_OVERFLOW_LIMIT)}...`;
-    titleElement = (
-      <Tooltip
-        title={title}
-        trigger={<span className="history-item__title">{truncatedTitle}</span>}
-        placement="right"
-        className="history-item__title"
-      />
-    );
-  }
-
-  const icon = useMemo(() => getItemIcon(itemData), [itemData]);
+  const dispatch = useAppDispatch();
 
   return (
-    <Anchor
+    <SharedHistoryItem
       data-testid="history-item"
-      className={className}
-      onPress={handleEntryPress}
-    >
-      {icon}
-      {titleElement}
-      <HistoryItemMenu
-        itemData={itemData}
-        isOpen={isMenuOpen}
-        onOpenChange={setIsMenuOpen}
-      />
-    </Anchor>
+      title={itemData.title}
+      isActive={isActive}
+      onPress={() => onItemSelect(itemData)}
+      icon={getItemIconName(itemData)}
+      titleOverflowLimit={TITLE_OVERFLOW_LIMIT}
+      onRename={(newName) =>
+        dispatch(renameHistoryItem({ id: itemData.id, newName }))
+      }
+      renameMaxLength={NAME_CHAR_LIMIT}
+      renameAriaLabel="Rename summary"
+      renderMenu={({ isOpen, onOpenChange }) => (
+        <HistoryItemMenu
+          itemData={itemData}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )}
+    />
   );
 };
 

@@ -62,9 +62,8 @@ const config: Config = {
     "hr",
     "div",
     "span",
-    // Links and images
+    // Links (images render as links, see renderer.ts)
     "a",
-    "img",
     // Homoglyph warnings
     "mark",
     // Task list checkboxes
@@ -80,11 +79,8 @@ const config: Config = {
   ],
   ALLOWED_ATTR: [
     "href",
-    "src",
-    "alt",
     "title",
     "class",
-    "id",
     "target",
     "rel",
     "aria-label",
@@ -93,7 +89,6 @@ const config: Config = {
     "type",
     "data-lang",
     "data-markdown-copy",
-    "style",
     // SVG attributes
     "width",
     "height",

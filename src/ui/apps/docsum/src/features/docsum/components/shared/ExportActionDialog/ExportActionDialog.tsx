@@ -1,12 +1,9 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  ActionDialog,
-  addNotification,
-  SelectInput,
-} from "@intel-enterprise-rag-ui/components";
+import { AlertDialog, Select } from "@intel-enterprise-rag-ui/components";
 import { memo, useState } from "react";
+import { toast } from "sonner";
 
 import { ExportFormat } from "@/features/docsum/types/export";
 import {
@@ -14,7 +11,6 @@ import {
   exportSummary,
   generateExportFileName,
 } from "@/features/docsum/utils/export";
-import { useAppDispatch } from "@/store/hooks";
 
 interface ExportActionDialogProps {
   summary: string;
@@ -33,7 +29,6 @@ const ExportActionDialog = memo(
     isDisabled = false,
   }: ExportActionDialogProps) => {
     const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("txt");
-    const dispatch = useAppDispatch();
 
     if (!summary || isDisabled) return null;
 
@@ -45,28 +40,20 @@ const ExportActionDialog = memo(
       try {
         await exportSummary(summary, fileName, selectedFormat);
 
-        dispatch(
-          addNotification({
-            severity: "success",
-            text: `Summary exported successfully as ${exportFileName}`,
-          }),
-        );
+        toast.success(`Summary exported successfully as ${exportFileName}`);
 
         onOpenChange(false);
       } catch (error) {
         console.error("Error exporting summary:", error);
 
-        dispatch(
-          addNotification({
-            severity: "error",
-            text: "An error occurred while exporting the summary. Please try again.",
-          }),
+        toast.error(
+          "An error occurred while exporting the summary. Please try again.",
         );
       }
     };
 
     return (
-      <ActionDialog
+      <AlertDialog
         data-testid="export-summary-action-dialog"
         title="Export Summary"
         confirmLabel="Export"
@@ -75,7 +62,7 @@ const ExportActionDialog = memo(
         onOpenChange={onOpenChange}
       >
         <div className="mb-4">
-          <SelectInput
+          <Select
             data-testid="export-summary-format-select"
             label="Export Format"
             value={selectedFormat}
@@ -90,7 +77,7 @@ const ExportActionDialog = memo(
             {generateExportFileName(fileName, selectedFormat)}
           </strong>
         </p>
-      </ActionDialog>
+      </AlertDialog>
     );
   },
 );

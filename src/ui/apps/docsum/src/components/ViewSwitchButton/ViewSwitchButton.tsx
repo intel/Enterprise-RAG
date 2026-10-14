@@ -2,28 +2,32 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { keycloakService } from "@intel-enterprise-rag-ui/auth";
-import { IconButton, Tooltip } from "@intel-enterprise-rag-ui/components";
-import { IconName } from "@intel-enterprise-rag-ui/icons";
+import {
+  ViewSwitchButton as SharedViewSwitchButton,
+  ViewSwitchOption,
+} from "@intel-enterprise-rag-ui/components";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { paths } from "@/config/paths";
 
-const options = {
+type ViewKey = "docsum" | "admin-panel";
+
+const options: Record<ViewKey, ViewSwitchOption> = {
   docsum: {
-    tooltip: "Switch to Admin Panel",
-    routePath: paths.adminPanel,
-    icon: "admin-panel" as IconName,
-    ariaLabel: "Switch to Admin Panel",
-    dataTestId: "view-switch-btn--to-admin-panel",
+    id: "docsum",
+    label: "DocSum",
+    icon: "plain-text",
+    ariaLabel: "Switch to Document Summarization",
+    "data-testid": "view-switch-btn--to-docsum",
   },
   "admin-panel": {
-    tooltip: "Switch to Document Summarization",
-    routePath: paths.docsum,
-    icon: "plain-text" as IconName,
-    ariaLabel: "Switch to Document Summarization",
-    dataTestId: "view-switch-btn--to-docsum",
+    id: "admin-panel",
+    label: "Admin Panel",
+    icon: "admin-panel",
+    ariaLabel: "Switch to Admin Panel",
+    "data-testid": "view-switch-btn--to-admin-panel",
   },
-} as const;
+};
 
 const ViewSwitchButton = () => {
   const navigate = useNavigate();
@@ -40,28 +44,17 @@ const ViewSwitchButton = () => {
     return null;
   }
 
-  const currentView = isDocSumPage ? "docsum" : "admin-panel";
+  const currentView: ViewKey = isDocSumPage ? "docsum" : "admin-panel";
 
-  const handlePress = () => {
-    if (isAdminPanelPage) {
-      navigate(paths.docsum);
-    } else {
-      navigate(paths.adminPanel);
-    }
+  const navigateToView = (view: ViewKey) => {
+    navigate(view === "docsum" ? paths.docsum : paths.adminPanel);
   };
 
   return (
-    <Tooltip
-      title={options[currentView].tooltip}
-      trigger={
-        <IconButton
-          data-testid={options[currentView].dataTestId}
-          icon={options[currentView].icon}
-          aria-label={options[currentView].ariaLabel}
-          onPress={handlePress}
-        />
-      }
-      placement="bottom"
+    <SharedViewSwitchButton
+      options={Object.values(options)}
+      selected={currentView}
+      onSelectionChange={(id) => navigateToView(id as ViewKey)}
     />
   );
 };

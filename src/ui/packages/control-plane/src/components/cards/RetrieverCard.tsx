@@ -4,7 +4,7 @@
 import { RetrieverDebugDialog } from "@/components/cards/debug/RetrieverDebugDialog/RetrieverDebugDialog";
 import { SelectedServiceCard } from "@/components/SelectedServiceCard/SelectedServiceCard";
 import { ServiceArgumentNumberInput } from "@/components/ServiceArgumentNumberInput/ServiceArgumentNumberInput";
-import { ServiceArgumentSelectInput } from "@/components/ServiceArgumentSelectInput/ServiceArgumentSelectInput";
+import { ServiceArgumentSelect } from "@/components/ServiceArgumentSelect/ServiceArgumentSelect";
 import { ServiceArgumentsTitle } from "@/components/ServiceArgumentsTitle/ServiceArgumentsTitle";
 import { RerankerArgs } from "@/configs/services/reranker";
 import {
@@ -82,7 +82,7 @@ export const RetrieverCard = ({
       isReadOnly={isReadOnly}
     >
       <ServiceArgumentsTitle>Service Arguments</ServiceArgumentsTitle>
-      <ServiceArgumentSelectInput
+      <ServiceArgumentSelect
         {...config.search_type}
         value={argumentsForm.search_type}
         onArgumentValueChange={onArgumentValueChange}
@@ -134,7 +134,7 @@ export const RetrieverCard = ({
         />
       )}
       <ServiceArgumentsTitle>Metadata Filtering</ServiceArgumentsTitle>
-      <ServiceArgumentSelectInput
+      <ServiceArgumentSelect
         {...config.metadata_extraction_mode}
         options={[
           ...(nerEnabled

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { ActionDialog } from "@intel-enterprise-rag-ui/components";
+import { AlertDialog } from "@intel-enterprise-rag-ui/components";
 
 import { removeHistoryItem } from "@/features/docsum/store/history.slice";
 import { HistoryItemData } from "@/features/docsum/types/history";
@@ -25,11 +25,11 @@ const DeleteActionDialog = ({
   };
 
   return (
-    <ActionDialog
+    <AlertDialog
       data-testid="delete-summary-dialog"
       title="Delete Summary"
       confirmLabel="Delete"
-      confirmColor="error"
+      confirmVariant="destructive"
       isOpen={isOpen}
       onConfirm={handleDeleteConfirm}
       onOpenChange={onOpenChange}
@@ -38,7 +38,7 @@ const DeleteActionDialog = ({
         Are you sure you want to delete this summary?
         <br /> This action cannot be undone.
       </p>
-    </ActionDialog>
+    </AlertDialog>
   );
 };
 

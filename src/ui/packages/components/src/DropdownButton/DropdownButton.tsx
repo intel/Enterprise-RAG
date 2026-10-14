@@ -1,13 +1,15 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./DropdownButton.scss";
+import { Button as ButtonPrimitive } from "@base-ui/react/button";
+import { SelectInputArrowIcon } from "@intel-enterprise-rag-ui/icons";
+import { cn } from "@intel-enterprise-rag-ui/utils";
 
-import { SelectInputArrowDown } from "@intel-enterprise-rag-ui/icons";
-import classNames from "classnames";
-import { Button as AriaButton, Selection } from "react-aria-components";
-
-import { Menu, MenuItem, MenuTrigger } from "@/Menu/Menu";
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/DropdownMenu/DropdownMenu";
 
 export interface DropdownButtonOption {
   value: string;
@@ -51,47 +53,40 @@ export const DropdownButton = ({
     ? `${label} (${selectedOption.label})`
     : label;
 
-  const handleSelectionChange = (keys: Selection) => {
-    const key = Array.from(keys)[0] as string;
-    if (key) {
-      onSelectionChange(key);
-    }
-  };
-
   return (
-    <div className={classNames("dropdown-button", className)}>
-      <AriaButton
-        className="dropdown-button__main"
-        onPress={onPress}
-        isDisabled={isDisabled}
+    <div className={cn("relative flex w-full gap-0", className)}>
+      <ButtonPrimitive
+        className="bg-primary text-primary-foreground disabled:bg-muted disabled:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30 flex h-7 flex-1 cursor-pointer items-center justify-center gap-1 rounded-l-md px-2 text-xs/relaxed font-medium whitespace-nowrap transition-colors outline-none select-none hover:opacity-90 focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={onPress}
+        disabled={isDisabled}
       >
         {buttonLabel}
-      </AriaButton>
-      <MenuTrigger
+      </ButtonPrimitive>
+      <DropdownMenuTrigger
         placement="bottom end"
         ariaLabel={ariaLabel}
         trigger={
-          <AriaButton
-            className="dropdown-button__trigger"
-            isDisabled={isDisabled}
+          <ButtonPrimitive
+            className="bg-primary text-primary-foreground disabled:bg-muted disabled:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30 flex h-7 cursor-pointer items-center justify-center rounded-r-md border-l border-white/20 px-2 transition-colors outline-none select-none hover:opacity-90 focus-visible:ring-2 disabled:cursor-not-allowed disabled:border-transparent disabled:opacity-50"
+            disabled={isDisabled}
             aria-label={ariaLabel}
           >
-            <SelectInputArrowDown fontSize={12} />
-          </AriaButton>
+            <SelectInputArrowIcon fontSize={12} />
+          </ButtonPrimitive>
         }
       >
-        <Menu
+        <DropdownMenu
           selectionMode="single"
           selectedKeys={[selectedValue]}
-          onSelectionChange={handleSelectionChange}
+          onSelectionChange={(keys) => onSelectionChange(keys[0])}
         >
           {options.map((option) => (
-            <MenuItem key={option.value} id={option.value}>
+            <DropdownMenuItem key={option.value} id={option.value}>
               {option.label}
-            </MenuItem>
+            </DropdownMenuItem>
           ))}
-        </Menu>
-      </MenuTrigger>
+        </DropdownMenu>
+      </DropdownMenuTrigger>
     </div>
   );
 };

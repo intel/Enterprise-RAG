@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./FileSelectedToSummarize.scss";
-
 import { Button } from "@intel-enterprise-rag-ui/components";
 import { useMemo } from "react";
 
@@ -25,27 +23,27 @@ const FileSelectedToSummarize = ({
 
   return (
     <div
-      className="file-selected-to-summarize"
+      className="bg-secondary border-border text-foreground flex h-48 flex-col items-center justify-center gap-2 rounded border-2 px-16"
       data-testid="file-selected-to-summarize"
     >
-      <span className="file-selected-to-summarize__icon">{icon}</span>
-      <p className="file-selected-to-summarize__filename">{fileName}</p>
-      <div className="file-selected-to-summarize__actions">
+      <span className="text-3xl">{icon}</span>
+      <p className="text-center text-xl font-semibold">{fileName}</p>
+      <div className="mt-2 flex items-center gap-2">
         <Button
           data-testid="change-file-button"
           size="sm"
-          variant="outlined"
+          variant="outline"
           isDisabled={isGeneratingSummary}
-          onClick={onChangeFile}
+          onPress={onChangeFile}
         >
           Change
         </Button>
         <Button
           data-testid="delete-file-button"
-          color="error"
+          variant="destructive"
           size="sm"
           isDisabled={isGeneratingSummary}
-          onClick={onDeleteFile}
+          onPress={onDeleteFile}
         >
           Delete
         </Button>

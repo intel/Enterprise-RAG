@@ -139,12 +139,13 @@ async def test_control_plane_panel_and_graph_controls(chat_ui_helper):
 @pytest.mark.asyncio
 async def test_control_plane_refresh(chat_ui_helper):
     """
-    Test control plane refresh button and auto-refresh checkbox.
+    Test control plane refresh button and the Settings-tab auto-refresh checkbox.
 
     Steps:
     1. Navigate to control-plane tab
     2. Verify control-plane-refresh-button exists and is clickable
-    3. Verify control-plane-autorefresh-checkbox exists
+    3. Navigate to settings tab
+    4. Verify control-plane-autorefresh-checkbox exists
 
     Success criteria:
     - Both elements are accessible via data-testid
@@ -167,7 +168,10 @@ async def test_control_plane_refresh(chat_ui_helper):
     await page.wait_for_timeout(1000)
     logger.info("Refresh button clicked successfully")
 
-    # Assert: autorefresh checkbox
+    # Assert: autorefresh checkbox, now on the Settings tab
+    nav_ok = await chat_ui_helper.navigate_to_admin_tab("settings")
+    assert nav_ok, "Failed to navigate to settings"
+
     auto_visible = await chat_ui_helper.is_visible_by_testid(
         "control-plane-autorefresh-checkbox", timeout=5000
     )

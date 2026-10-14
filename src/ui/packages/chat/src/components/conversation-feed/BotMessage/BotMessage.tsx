@@ -1,20 +1,21 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./BotMessage.scss";
-
-import { CopyButton } from "@intel-enterprise-rag-ui/components";
-import { ChatBotIcon, ErrorIcon } from "@intel-enterprise-rag-ui/icons";
+import {
+  Alert,
+  AlertDescription,
+  CopyButton,
+} from "@intel-enterprise-rag-ui/components";
+import { ErrorIcon } from "@intel-enterprise-rag-ui/icons";
 import { Markdown } from "@intel-enterprise-rag-ui/markdown";
-import { sanitizeString } from "@intel-enterprise-rag-ui/utils";
 import classNames from "classnames";
 import { memo } from "react";
 
+import { AnimatedAiIcon } from "@/components/conversation-feed/AnimatedAiIcon/AnimatedAiIcon";
 import {
   PlaySpeechButton,
   PlaySpeechButtonState,
 } from "@/components/conversation-feed/PlaySpeechButton/PlaySpeechButton";
-import { PulsingDot } from "@/components/conversation-feed/PulsingDot/PulsingDot";
 import { SourcesGrid } from "@/components/sources/SourcesGrid/SourcesGrid";
 import { ChatTurn } from "@/types";
 
@@ -42,22 +43,27 @@ const BotMessage = ({
   onPlayMessage,
 }: BotMessageProps) => {
   const isWaitingForAnswer = isPending && (answer === "" || error !== null);
-  const sanitizedAnswer = sanitizeString(answer);
-  const showActions = !isPending && (sanitizedAnswer !== "" || error !== null);
+  // The raw answer goes to <Markdown>: parseMarkdown sanitizes the rendered HTML, which is the
+  // XSS boundary. Sanitizing the markdown source here would mangle code (`->`, `<vector>`).
+  const answerText = answer ?? "";
+  const showActions = !isPending && (answerText !== "" || error !== null);
   const showSources = showActions && Array.isArray(sources);
 
   const botResponse =
     error !== null ? (
-      <div className="bot-message__error">
+      <Alert variant="error" className="mt-1" data-testid="bot-message__error">
         <ErrorIcon />
-        <p>{error}</p>
-      </div>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     ) : (
-      <div className="bot-message__text" data-testid="bot-message__text">
-        <Markdown text={sanitizedAnswer} />
+      <div
+        className="max-w-[calc(100vw_-_8rem)] text-sm/relaxed md:max-w-[40rem]"
+        data-testid="bot-message__text"
+      >
+        <Markdown text={answerText} />
         {showActions && (
-          <footer className="bot-message__footer">
-            <CopyButton textToCopy={sanitizedAnswer} />
+          <footer className="flex items-center justify-start gap-2 pt-3">
+            <CopyButton textToCopy={answerText} />
             {onPlayMessage && (
               <PlaySpeechButton
                 turnId={id}
@@ -73,15 +79,23 @@ const BotMessage = ({
       </div>
     );
 
-  const className = classNames("bot-message", {
-    "bot-message--waiting": isWaitingForAnswer,
-    "bot-message--completed": !isWaitingForAnswer,
-  });
+  const className = classNames(
+    "mx-auto w-full self-start px-9 md:w-[42rem] md:px-0",
+    {
+      "mb-6": isWaitingForAnswer,
+      "mb-8": !isWaitingForAnswer,
+    },
+  );
 
   return (
     <div className={className} data-testid={`bot-message-${id}`}>
-      <ChatBotIcon className="bot-message__chat-bot-icon" />
-      {isWaitingForAnswer ? <PulsingDot /> : botResponse}
+      {isWaitingForAnswer ? (
+        <div className="text-primary flex h-10 w-4 items-center justify-center">
+          <AnimatedAiIcon />
+        </div>
+      ) : (
+        botResponse
+      )}
     </div>
   );
 };

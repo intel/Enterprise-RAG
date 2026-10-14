@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./RetrieverDebugDialog.scss";
-
 import {
   ChatTurn,
   ConversationFeed,
@@ -10,16 +8,16 @@ import {
 } from "@intel-enterprise-rag-ui/chat";
 import {
   Button,
-  CheckboxInput,
-  CheckboxInputChangeHandler,
+  Checkbox,
+  CheckboxChangeHandler,
   Dialog,
 } from "@intel-enterprise-rag-ui/components";
 import { ChangeEventHandler, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { ServiceArgumentNumberInput } from "@/components/ServiceArgumentNumberInput/ServiceArgumentNumberInput";
-import { ServiceArgumentSelectInput } from "@/components/ServiceArgumentSelectInput/ServiceArgumentSelectInput";
-import { ServiceArgumentTextArea } from "@/components/ServiceArgumentTextArea/ServiceArgumentTextArea";
+import { ServiceArgumentSelect } from "@/components/ServiceArgumentSelect/ServiceArgumentSelect";
+import { ServiceArgumentTextarea } from "@/components/ServiceArgumentTextarea/ServiceArgumentTextarea";
 import { ERROR_MESSAGES } from "@/configs/api";
 import {
   RerankerArgs,
@@ -137,7 +135,7 @@ export const RetrieverDebugDialog = ({
     changeArguments: () => {}, // Debug mode - don't persist changes
   });
 
-  const handleRerankerEnabledCheckboxChange: CheckboxInputChangeHandler = (
+  const handleRerankerEnabledCheckboxChange: CheckboxChangeHandler = (
     isSelected,
   ) => {
     setIsRerankerEnabled(isSelected);
@@ -206,15 +204,15 @@ export const RetrieverDebugDialog = ({
         <Button
           data-testid="retriever-debug-trigger-button"
           size="sm"
-          className="retriever-debug-dialog__trigger-button"
+          className="absolute top-4 right-4"
         >
           Debug
         </Button>
       }
       title="Retriever Debug"
     >
-      <div className="retriever-debug-dialog__container">
-        <div className="retriever-debug-dialog__left-panel">
+      <div className="grid grid-cols-[14rem_1fr]">
+        <div className="h-[calc(100vh_-_12rem)] [scrollbar-gutter:stable] overflow-y-auto pr-3 pl-1">
           <RetrieverDebugParamsForm
             retrieverArgumentsForm={retrieverArgumentsForm}
             rerankerArgumentsForm={rerankerArgumentsForm}
@@ -230,7 +228,7 @@ export const RetrieverDebugDialog = ({
               handleRerankerEnabledCheckboxChange
             }
           />
-          <ServiceArgumentTextArea
+          <ServiceArgumentTextarea
             value={searchByParam}
             placeholder="Enter search_by parameters in JSON format"
             isInvalid={!isSearchByJSONValid()}
@@ -243,7 +241,7 @@ export const RetrieverDebugDialog = ({
             onChange={handleSearchByParamChange}
           />
           {!isSearchByJSONValid() && (
-            <p className="retriever-debug-dialog__error-message">
+            <p className="mb-2 text-xs text-[color:var(--error-color,#dc2626)] italic">
               Invalid search_by parameter. It won&apos;t be included in the
               query.
             </p>
@@ -258,8 +256,8 @@ export const RetrieverDebugDialog = ({
             Format JSON
           </Button>
         </div>
-        <div className="retriever-debug-dialog__right-panel">
-          <div className="retriever-debug-dialog__chat-grid">
+        <div className="flex h-[calc(100vh_-_12rem)] flex-col text-sm">
+          <div className="grid h-full grid-rows-[1fr_auto]">
             <RetrieverDebugChat
               conversationTurns={conversationTurns}
               query={query}
@@ -282,7 +280,7 @@ interface RetrieverDebugParamsFormProps {
   onRetrieverArgumentValidityChange: OnArgumentValidityChangeHandler;
   onRerankerArgumentValueChange: OnArgumentValueChangeHandler;
   onRerankerArgumentValidityChange: OnArgumentValidityChangeHandler;
-  onRerankerEnabledCheckboxChange: CheckboxInputChangeHandler;
+  onRerankerEnabledCheckboxChange: CheckboxChangeHandler;
 }
 
 const RetrieverDebugParamsForm = ({
@@ -302,9 +300,9 @@ const RetrieverDebugParamsForm = ({
 
   return (
     <>
-      <p className="retriever-debug-dialog__params-heading">Parameters</p>
-      <p className="retriever-debug-dialog__section-heading">Retriever</p>
-      <ServiceArgumentSelectInput
+      <p className="text-lg font-medium">Parameters</p>
+      <p className="mt-3 mb-2">Retriever</p>
+      <ServiceArgumentSelect
         {...retrieverFormConfig.search_type}
         value={retrieverArgumentsForm.search_type}
         onArgumentValueChange={onRetrieverArgumentValueChange}
@@ -357,7 +355,7 @@ const RetrieverDebugParamsForm = ({
           onArgumentValidityChange={onRetrieverArgumentValidityChange}
         />
       )}
-      <ServiceArgumentSelectInput
+      <ServiceArgumentSelect
         {...retrieverFormConfig.metadata_extraction_mode}
         options={[
           ...(nerEnabled
@@ -367,8 +365,8 @@ const RetrieverDebugParamsForm = ({
         value={retrieverArgumentsForm.metadata_extraction_mode}
         onArgumentValueChange={onRetrieverArgumentValueChange}
       />
-      <p className="retriever-debug-dialog__section-heading">Reranker</p>
-      <CheckboxInput
+      <p className="mt-3 mb-2">Reranker</p>
+      <Checkbox
         data-testid="reranker-enabled-checkbox"
         label="Enable Reranker"
         size="sm"

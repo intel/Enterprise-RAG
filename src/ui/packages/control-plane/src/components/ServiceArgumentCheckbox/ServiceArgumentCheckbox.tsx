@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  CheckboxInput,
-  CheckboxInputChangeHandler,
+  Checkbox,
+  CheckboxChangeHandler,
 } from "@intel-enterprise-rag-ui/components";
 import { useCallback, useEffect, useState } from "react";
 
@@ -15,17 +15,23 @@ import {
 interface ServiceArgumentCheckboxProps {
   value: ServiceArgumentCheckboxValue;
   name: string;
+  /** Overrides the visible label; falls back to `name` (e.g. when this checkbox doubles as a panel's expand/collapse control) */
+  label?: string;
   tooltipText?: string;
   onArgumentValueChange: OnArgumentValueChangeHandler;
   isDisabled?: boolean;
+  "aria-expanded"?: boolean;
+  "aria-controls"?: string;
 }
 
 export const ServiceArgumentCheckbox = ({
   value,
   name,
+  label,
   tooltipText,
   onArgumentValueChange,
   isDisabled = false,
+  ...rest
 }: ServiceArgumentCheckboxProps) => {
   const [isSelected, setIsSelected] =
     useState<ServiceArgumentCheckboxValue>(value);
@@ -34,7 +40,7 @@ export const ServiceArgumentCheckbox = ({
     setIsSelected(value);
   }, [value]);
 
-  const handleChange: CheckboxInputChangeHandler = useCallback(
+  const handleChange: CheckboxChangeHandler = useCallback(
     (isSelected) => {
       setIsSelected(isSelected);
       onArgumentValueChange(name, isSelected);
@@ -43,9 +49,10 @@ export const ServiceArgumentCheckbox = ({
   );
 
   return (
-    <CheckboxInput
+    <Checkbox
+      {...rest}
       data-testid={`service-argument-checkbox-${name}`}
-      label={name}
+      label={label ?? name}
       size="sm"
       tooltipText={tooltipText}
       isSelected={isSelected}

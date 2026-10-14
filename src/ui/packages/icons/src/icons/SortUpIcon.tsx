@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { FaSortUp } from "react-icons/fa";
+import { CaretUpIcon, IconProps } from "@phosphor-icons/react";
 
-export const SortUpIcon = (props: IconBaseProps) => <FaSortUp {...props} />;
+export const SortUpIcon = (props: IconProps) => <CaretUpIcon {...props} />;

@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsPen } from "react-icons/bs";
+import { IconProps, PencilSimpleIcon } from "@phosphor-icons/react";
 
-export const EditIcon = (props: IconBaseProps) => <BsPen {...props} />;
+export const EditIcon = (props: IconProps) => <PencilSimpleIcon {...props} />;

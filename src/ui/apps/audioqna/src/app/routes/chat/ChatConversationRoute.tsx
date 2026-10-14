@@ -3,32 +3,22 @@
 
 import {
   ChatConversationLayout,
-  ChatSideMenu,
-  selectIsChatSideMenuOpen,
+  selectIsChatSidebarOpen,
   useChat,
-  useChatHistoryHandlers,
 } from "@intel-enterprise-rag-ui/chat";
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import { usePostSharePointFileUrlMutation } from "@intel-enterprise-rag-ui/data-ingestion";
-import { PageLayout } from "@intel-enterprise-rag-ui/layouts";
-import { downloadBlob } from "@intel-enterprise-rag-ui/utils";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 
 import {
   useGetFilePresignedUrlMutation,
   useLazyDownloadFileQuery,
 } from "@/api";
-import {
-  AppHeaderLeftSideContent,
-  AppHeaderRightSideContent,
-} from "@/components/AppHeaderContent/AppHeaderContent";
+import type { AppShellOutletContext } from "@/app/layouts/AppShellLayout";
 import { paths } from "@/config/paths";
 import { usePostPromptMutation } from "@/features/chat/api/audioQnA.api";
 import {
-  useChangeChatNameMutation,
-  useDeleteChatMutation,
   useGetAllChatsQuery,
-  useLazyGetAllChatsQuery,
   useLazyGetChatByIdQuery,
   useSaveChatMutation,
 } from "@/features/chat/api/chatHistory.api";
@@ -39,23 +29,18 @@ import { setLastSelectedChatId } from "@/store/viewNavigation.slice";
 import { getAudioQnAAppEnv } from "@/utils";
 
 const ChatConversationRoute = () => {
-  // React store, RTK Query, and react-router hooks
   const navigate = useNavigate();
   const { chatId: chatIdFromParams } = useParams<{ chatId?: string }>();
   const dispatch = useAppDispatch();
-  const location = useLocation();
-  const isChatSideMenuOpen = useAppSelector(selectIsChatSideMenuOpen);
-  const { data: chatHistoryData, isLoading: isLoadingChatHistory } =
-    useGetAllChatsQuery();
+  const isChatSidebarOpen = useAppSelector(selectIsChatSidebarOpen);
+  const { setOnNewChat } = useOutletContext<AppShellOutletContext>();
   const [downloadFile] = useLazyDownloadFileQuery();
   const [getFilePresignedUrl] = useGetFilePresignedUrlMutation();
   const [postSharePointFileUrl] = usePostSharePointFileUrlMutation();
 
-  // Custom hook for ASR handlers
   const { handleSpeechToText, handleSpeechToTextError } =
     useSpeechToTextHandlers();
 
-  // Custom hooks from chat package
   const {
     userInput,
     chatTurns,
@@ -75,48 +60,17 @@ const ChatConversationRoute = () => {
     },
     useAppSelector,
     currentChatId: chatIdFromParams,
-    isChatSideMenuOpen,
+    isChatSidebarOpen,
     onNavigate: (path) => navigate(path),
     onNavigateToChat: (chatId) => navigate(`${paths.chat}/${chatId}`),
     onChatIdChange: (chatId) => dispatch(setLastSelectedChatId(chatId)),
   });
 
-  const {
-    handleItemPress,
-    isItemActive,
-    handleDelete,
-    handleExport,
-    handleRename,
-  } = useChatHistoryHandlers({
-    chatHistoryData,
-    useDeleteChatMutation,
-    useLazyGetAllChatsQuery,
-    useLazyGetChatByIdQuery,
-    useChangeChatNameMutation,
-    dispatch,
-    location,
-    navigate,
-    chatBasePath: paths.chat,
-    onDeleteError: (error) => {
-      dispatch(
-        addNotification({
-          severity: "error",
-          text: `Failed to delete chat history: ${error.message}`,
-        }),
-      );
-    },
-    onRenameError: (error) => {
-      dispatch(
-        addNotification({
-          severity: "error",
-          text: `Failed to rename chat: ${error.message}`,
-        }),
-      );
-    },
-    onExportSuccess: (blob, fileName) => {
-      downloadBlob(blob, fileName);
-    },
-  });
+  useEffect(() => {
+    setOnNewChat(() => onNewChat);
+    return () => setOnNewChat(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setOnNewChat]);
 
   const { playingTurnId, playingState, onPlayMessage } = useTextToSpeech();
 
@@ -152,44 +106,22 @@ const ChatConversationRoute = () => {
   };
 
   return (
-    <PageLayout
-      appHeaderProps={{
-        leftSideContent: <AppHeaderLeftSideContent />,
-        rightSideContent: <AppHeaderRightSideContent onNewChat={onNewChat} />,
-      }}
-      leftSideMenu={{
-        component: (
-          <ChatSideMenu
-            isOpen={isChatSideMenuOpen}
-            chatHistoryData={chatHistoryData}
-            isLoadingChatHistory={isLoadingChatHistory}
-            onItemPress={handleItemPress}
-            isItemActive={isItemActive}
-            onDelete={handleDelete}
-            onExport={handleExport}
-            onRename={handleRename}
-          />
-        ),
-        isOpen: isChatSideMenuOpen,
-      }}
-    >
-      <ChatConversationLayout
-        userInput={userInput}
-        conversationTurns={chatTurns}
-        isChatResponsePending={isChatResponsePending}
-        disclaimer={chatDisclaimer}
-        playingTurnId={playingTurnId}
-        playingState={playingState}
-        onPromptChange={onPromptChange}
-        onPromptSubmit={onPromptSubmit}
-        onRequestAbort={onRequestAbort}
-        onFileDownload={handleFileDownload}
-        onPlayMessage={onPlayMessage}
-        onSpeechToText={handleSpeechToText}
-        onSpeechToTextError={handleSpeechToTextError}
-        enableMicrophone
-      />
-    </PageLayout>
+    <ChatConversationLayout
+      userInput={userInput}
+      conversationTurns={chatTurns}
+      isChatResponsePending={isChatResponsePending}
+      disclaimer={chatDisclaimer}
+      playingTurnId={playingTurnId}
+      playingState={playingState}
+      onPromptChange={onPromptChange}
+      onPromptSubmit={onPromptSubmit}
+      onRequestAbort={onRequestAbort}
+      onFileDownload={handleFileDownload}
+      onPlayMessage={onPlayMessage}
+      onSpeechToText={handleSpeechToText}
+      onSpeechToTextError={handleSpeechToTextError}
+      enableMicrophone
+    />
   );
 };
 

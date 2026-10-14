@@ -1,8 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { toast } from "sonner";
 
 import type { GetServicesDataResponse } from "@/types/api/responses";
 
@@ -47,7 +47,7 @@ export function createControlPlaneQueryLifecycle(
         (error as { error: FetchBaseQueryError }).error,
         fallbackErrorMessage,
       );
-      dispatch(addNotification({ severity: "error", text: errorMessage }));
+      toast.error(errorMessage);
       dispatch(actions.setRenderable(false));
     } finally {
       if (isInitialLoad) {

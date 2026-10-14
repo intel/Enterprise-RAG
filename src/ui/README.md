@@ -55,7 +55,7 @@ pnpm --version
 - [@intel-enterprise-rag-ui/input-validation](packages/input-validation)
 - [@intel-enterprise-rag-ui/layouts](packages/layouts)
 - [@intel-enterprise-rag-ui/markdown](packages/markdown)
-- [@intel-enterprise-rag-ui/tailwind-theme](packages/tailwind-theme)
+- [@intel-enterprise-rag-ui/shadcn-preset](packages/shadcn-preset) — live Tailwind v4 theme (`index.css`) + shadcn preview harness
 - [@intel-enterprise-rag-ui/utils](packages/utils)
 
 ## Getting Started

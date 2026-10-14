@@ -18,6 +18,9 @@ dist-ssr
 *.local
 *.tsbuildinfo
 
+# Local a11y scan output (pnpm run a11y:axe / a11y:lighthouse)
+a11y-reports/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

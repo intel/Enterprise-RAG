@@ -1,11 +1,9 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ServiceNode.scss";
-
 import { ConfigurableServiceIcon } from "@intel-enterprise-rag-ui/icons";
+import { cn } from "@intel-enterprise-rag-ui/utils";
 import { Handle } from "@xyflow/react";
-import classNames from "classnames";
 import { memo } from "react";
 
 import { ServiceStatusIndicator } from "@/components/ServiceStatusIndicator/ServiceStatusIndicator";
@@ -29,42 +27,39 @@ const ServiceNodeComponent = ({
     configurable,
   },
 }: ServiceNodeProps) => {
-  const serviceNodeClassNames = classNames({
-    "service-node": true,
-    "service-node--selected": selected,
-  });
+  const serviceNodeClassNames = cn(
+    "relative m-2 grid grid-rows-[3rem_1fr] justify-items-center gap-2",
+    selected && "text-foreground font-medium",
+  );
 
   return (
     <>
       {targetPosition && (
-        <Handle
-          type="target"
-          position={targetPosition}
-          className="service-node__handle"
-        />
+        <Handle type="target" position={targetPosition} className="invisible" />
       )}
       <div className={serviceNodeClassNames}>
         {configurable && (
-          <ConfigurableServiceIcon className="service-node__icon" />
+          <ConfigurableServiceIcon className="absolute -top-2 -right-3 z-10 text-xs" />
         )}
-        <ServiceStatusIndicator status={status} forNode noTooltip />
-        <div className="service-node__label">
-          <p>{displayName}</p>
+        <ServiceStatusIndicator
+          status={status}
+          className={cn(selected && "outline-[0.375rem]")}
+          forNode
+          noTooltip
+        />
+        <div className="absolute -bottom-12 flex h-12 min-h-6 w-36 flex-col justify-start">
+          <p className="bg-background/70 text-center">{displayName}</p>
         </div>
       </div>
       {sourcePosition && (
-        <Handle
-          type="source"
-          position={sourcePosition}
-          className="service-node__handle"
-        />
+        <Handle type="source" position={sourcePosition} className="invisible" />
       )}
       {additionalTargetPosition && additionalTargetId && (
         <Handle
           id={additionalTargetId}
           type="target"
           position={additionalTargetPosition}
-          className="service-node__handle"
+          className="invisible"
         />
       )}
       {additionalSourcePosition && additionalSourceId && (
@@ -72,7 +67,7 @@ const ServiceNodeComponent = ({
           id={additionalSourceId}
           type="source"
           position={additionalSourcePosition}
-          className="service-node__handle"
+          className="invisible"
         />
       )}
     </>

@@ -1,8 +1,6 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./dataTableCells.scss";
-
 import { ColumnDef } from "@tanstack/react-table";
 
 import FilesSyncActionCell from "@/components/FilesSyncActionCell/FilesSyncActionCell";
@@ -27,7 +25,7 @@ export const sharePointSitesColumns: ColumnDef<SharePointSiteItem>[] = [
           href={row.original.web_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="data-table-cell__link"
+          className="underline"
         >
           {row.original.web_url}
         </a>
@@ -58,6 +56,8 @@ export const sharePointSyncColumns: ColumnDef<SharePointSyncDataItem>[] = [
       row: {
         original: { object_name },
       },
-    }) => <div className="data-table-cell__wrap">{object_name}</div>,
+    }) => (
+      <div className="text-wrap [overflow-wrap:anywhere]">{object_name}</div>
+    ),
   },
 ];

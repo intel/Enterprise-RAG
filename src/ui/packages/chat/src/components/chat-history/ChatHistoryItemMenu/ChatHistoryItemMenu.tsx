@@ -1,13 +1,11 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ChatHistoryItemMenu.scss";
-
 import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   IconButton,
-  Menu,
-  MenuItem,
-  MenuTrigger,
   Tooltip,
 } from "@intel-enterprise-rag-ui/components";
 import {
@@ -18,7 +16,6 @@ import {
   PinIcon,
 } from "@intel-enterprise-rag-ui/icons";
 import { useState } from "react";
-import { Key as AriaKey } from "react-aria-components";
 
 import type { OnDeleteChatHandler } from "@/components/chat-history/DeleteChatDialog/DeleteChatDialog";
 import { DeleteChatDialog } from "@/components/chat-history/DeleteChatDialog/DeleteChatDialog";
@@ -28,7 +25,7 @@ import type { OnRenameChatHandler } from "@/components/chat-history/RenameChatDi
 import { RenameChatDialog } from "@/components/chat-history/RenameChatDialog/RenameChatDialog";
 import { ChatHistoryItemData } from "@/types";
 
-export type ChatItemAction = "rename" | "export" | "pin" | "delete" | AriaKey;
+export type ChatItemAction = "rename" | "export" | "pin" | "delete";
 export type OnPinChangeHandler = () => void;
 
 interface ChatHistoryItemMenuProps {
@@ -56,17 +53,17 @@ export const ChatHistoryItemMenu = ({
     null,
   );
 
-  const handleMenuAction = (key: ChatItemAction) => {
+  const handleMenuAction = (key: string) => {
     if (key === "pin") {
       onPinChange();
     } else {
-      setSelectedOption(key);
+      setSelectedOption(key as ChatItemAction);
     }
   };
 
   return (
     <>
-      <MenuTrigger
+      <DropdownMenuTrigger
         trigger={
           <Tooltip
             title="More"
@@ -76,7 +73,7 @@ export const ChatHistoryItemMenu = ({
                 icon="more-options"
                 size="sm"
                 aria-label="Manage Chat"
-                className="chat-history-item-menu__trigger"
+                className="hover:bg-background rounded-full"
               />
             }
           />
@@ -85,25 +82,28 @@ export const ChatHistoryItemMenu = ({
         ariaLabel="Chat History Item Menu"
         onOpenChange={onOpenChange}
       >
-        <Menu data-testid="chat-history-item-menu" onAction={handleMenuAction}>
-          <MenuItem data-testid="rename-chat-menu-item" id="rename">
+        <DropdownMenu
+          data-testid="chat-history-item-menu"
+          onAction={handleMenuAction}
+        >
+          <DropdownMenuItem data-testid="rename-chat-menu-item" id="rename">
             <EditIcon />
             <span>Rename</span>
-          </MenuItem>
-          <MenuItem data-testid="export-chat-menu-item" id="export">
+          </DropdownMenuItem>
+          <DropdownMenuItem data-testid="export-chat-menu-item" id="export">
             <ExportIcon />
             <span>Export</span>
-          </MenuItem>
-          <MenuItem data-testid="pin-chat-menu-item" id="pin">
+          </DropdownMenuItem>
+          <DropdownMenuItem data-testid="pin-chat-menu-item" id="pin">
             {pinned ? <PinFilledIcon /> : <PinIcon />}
             <span>{pinned ? "Unpin" : "Pin"}</span>
-          </MenuItem>
-          <MenuItem data-testid="delete-chat-menu-item" id="delete">
+          </DropdownMenuItem>
+          <DropdownMenuItem data-testid="delete-chat-menu-item" id="delete">
             <DeleteIcon />
             <span>Delete</span>
-          </MenuItem>
-        </Menu>
-      </MenuTrigger>
+          </DropdownMenuItem>
+        </DropdownMenu>
+      </DropdownMenuTrigger>
       <RenameChatDialog
         chatId={itemData.id}
         currentName={itemData.name}

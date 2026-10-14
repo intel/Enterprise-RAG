@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { MdDelete } from "react-icons/md";
+import { IconProps, TrashIcon } from "@phosphor-icons/react";
 
-export const DeleteIcon = (props: IconBaseProps) => <MdDelete {...props} />;
+export const DeleteIcon = (props: IconProps) => <TrashIcon {...props} />;

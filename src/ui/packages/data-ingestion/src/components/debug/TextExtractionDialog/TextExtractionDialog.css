@@ -1,0 +1,12 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+/* Kept in CSS: targets the <Input> primitive's own internal wrapper div via :has(), which no
+   className prop on this component reaches. */
+.text-extraction-dialog__content-form-column
+  form
+  div:has(input[type="number"]) {
+  @apply mb-3 flex w-full flex-col text-sm;
+}

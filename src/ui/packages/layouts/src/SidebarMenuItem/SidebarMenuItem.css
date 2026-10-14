@@ -1,0 +1,25 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+/* Shared with SidebarNav's own NavLink/anchor rows (same classnames), so every sidebar row — nav
+   link, external link, expand/collapse toggle, or a standalone action like New Chat — looks and
+   behaves identically regardless of which component renders it. Not scoped under `.sidebar-nav`
+   since a SidebarMenuItem can render outside a SidebarNav entirely (e.g. in a sidebar's
+   view-switch slot). */
+.sidebar-nav__link {
+  @apply flex h-7 items-center gap-2 rounded border border-transparent pr-1 pl-3 text-xs;
+  @apply text-muted-foreground hover:bg-background/80;
+  /* Anchor.css sets a global `a { text-decoration-line: underline !important; color: ... !important }`
+     reset, which outranks no-underline here since it's !important — override locally so real <a>-based
+     items (external links, Control Plane) render identically to the button-based rows. */
+  color: inherit !important;
+  text-decoration-line: none !important;
+}
+.sidebar-nav__link--active {
+  @apply bg-background/80 text-foreground;
+}
+.sidebar-nav__link--toggle {
+  @apply w-full cursor-pointer text-left;
+}

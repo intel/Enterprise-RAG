@@ -20,7 +20,7 @@ describe("withScope", () => {
     const url = withScope(CHANGE_ARGUMENTS_ENDPOINT);
 
     expect(url).toBe(
-      `${CHANGE_ARGUMENTS_ENDPOINT}?pipeline=chatqa&tenant=_global`,
+      `${CHANGE_ARGUMENTS_ENDPOINT}?pipeline=chatqna&tenant=_global`,
     );
   });
 
@@ -55,7 +55,7 @@ describe("withScope", () => {
 
     expect(url.match(/\?/g)).toHaveLength(1);
     expect(url).toBe(
-      `${CONFIG_ENDPOINT}?params_key=prompt+template&pipeline=chatqa&tenant=_global`,
+      `${CONFIG_ENDPOINT}?params_key=prompt+template&pipeline=chatqna&tenant=_global`,
     );
   });
 });

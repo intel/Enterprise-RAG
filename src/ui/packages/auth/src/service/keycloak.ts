@@ -17,6 +17,7 @@ export class KeycloakService {
   private config?: KeycloakServiceConfig;
   private minTokenValidity: number = 30;
   private onRefreshTokenFailed?: () => void;
+  private skipAuth: boolean = false;
 
   constructor() {}
 
@@ -32,6 +33,14 @@ export class KeycloakService {
     this.userResourceRole = config.userResourceRole ?? "";
     this.minTokenValidity = config.minTokenValidity ?? 30;
     this.onRefreshTokenFailed = config.onRefreshTokenFailed;
+    this.skipAuth = config.skipAuth ?? false;
+
+    if (this.skipAuth) {
+      console.warn(
+        "[KeycloakService] skipAuth is enabled - Keycloak login is bypassed and every resource role is granted. Dev-only; never valid in a production build.",
+      );
+      return;
+    }
 
     try {
       this.keycloak = new Keycloak(config.keycloakConfig);
@@ -48,6 +57,10 @@ export class KeycloakService {
   init = async (onAuthenticated: () => void) => {
     if (!this.config) {
       throw new Error("KeycloakService not configured. Call setup() first.");
+    }
+    if (this.skipAuth) {
+      onAuthenticated();
+      return;
     }
     try {
       const isAuthenticated = await this.keycloak?.init({
@@ -69,13 +82,19 @@ export class KeycloakService {
    * Redirects the user to the Keycloak login page.
    * @returns {Promise<void>|void}
    */
-  redirectToLogin = () => this.keycloak?.login(this.loginOptions);
+  redirectToLogin = () => {
+    if (this.skipAuth) return;
+    this.keycloak?.login(this.loginOptions);
+  };
 
   /**
    * Redirects the user to the Keycloak logout page.
    * @returns {Promise<void>|void}
    */
-  redirectToLogout = () => this.keycloak?.logout();
+  redirectToLogout = () => {
+    if (this.skipAuth) return;
+    this.keycloak?.logout();
+  };
 
   /**
    * Attempts to refresh the Keycloak token. If not authenticated, redirects to login.
@@ -83,6 +102,7 @@ export class KeycloakService {
    * @returns {Promise<void>|void}
    */
   refreshToken = async () => {
+    if (this.skipAuth) return;
     if (this.keycloak?.authenticated) {
       try {
         await this.keycloak.updateToken(this.minTokenValidity);
@@ -102,13 +122,22 @@ export class KeycloakService {
    * Returns the current Keycloak token string.
    * @returns {string} The token, or an empty string if not available.
    */
-  getToken = () => this.keycloak?.token ?? "";
+  getToken = () =>
+    this.skipAuth ? "dev-skip-auth-token" : (this.keycloak?.token ?? "");
 
   /**
    * Returns the username from the parsed Keycloak token.
    * @returns {string|undefined} The username, if available.
    */
-  getUsername = () => this.keycloak?.tokenParsed?.name;
+  getUsername = () =>
+    this.skipAuth ? "Dev User" : this.keycloak?.tokenParsed?.name;
+
+  /**
+   * Returns the email from the parsed Keycloak token.
+   * @returns {string|undefined} The email, if available.
+   */
+  getEmail = () =>
+    this.skipAuth ? "dev@localhost" : this.keycloak?.tokenParsed?.email;
 
   /**
    * Checks if the user has a specific resource role.
@@ -116,13 +145,14 @@ export class KeycloakService {
    * @returns {boolean} True if user has the role, otherwise false.
    */
   hasResourceRole = (role: string) =>
-    this.keycloak?.hasResourceRole(role) ?? false;
+    this.skipAuth ? true : (this.keycloak?.hasResourceRole(role) ?? false);
 
   /**
    * Checks if the current user has the admin resource role.
    * @returns {boolean} True if user is admin, otherwise false.
    */
   isAdminUser = () =>
+    this.skipAuth ||
     Boolean(
       this.adminResourceRole &&
       this.keycloak?.hasResourceRole(this.adminResourceRole),
@@ -133,12 +163,14 @@ export class KeycloakService {
    * @returns {boolean} True if user is maintainer, otherwise false.
    */
   isMaintainerUser = () =>
+    this.skipAuth ||
     Boolean(
       this.maintainerResourceRole &&
       this.keycloak?.hasResourceRole(this.maintainerResourceRole),
     );
 
   isUser = () =>
+    this.skipAuth ||
     Boolean(
       this.userResourceRole &&
       this.keycloak?.hasResourceRole(this.userResourceRole),

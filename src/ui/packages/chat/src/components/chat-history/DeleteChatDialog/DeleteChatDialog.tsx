@@ -1,9 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./DeleteChatDialog.scss";
-
-import { ActionDialog } from "@intel-enterprise-rag-ui/components";
+import { AlertDialog } from "@intel-enterprise-rag-ui/components";
 
 export type OnDeleteChatHandler = (chatId: string) => void;
 
@@ -25,18 +23,18 @@ export const DeleteChatDialog = ({
   };
 
   return (
-    <ActionDialog
+    <AlertDialog
       title="Delete Chat"
       confirmLabel="Delete"
-      confirmColor="error"
+      confirmVariant="destructive"
       isOpen={isOpen}
       onConfirm={handleDeleteConfirm}
       onOpenChange={onOpenChange}
     >
-      <p className="delete-chat-dialog__description">
+      <p className="text-xs">
         Are you sure you want to delete this chat?
         <br /> This action cannot be undone.
       </p>
-    </ActionDialog>
+    </AlertDialog>
   );
 };

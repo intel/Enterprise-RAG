@@ -1,10 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./SourceDialog.scss";
-
 import {
-  ActionDialog,
+  AlertDialog,
   Button,
   Tooltip,
 } from "@intel-enterprise-rag-ui/components";
@@ -35,10 +33,14 @@ export const SourceDialog = ({
       trigger={
         <Button
           data-testid="source-dialog-trigger"
-          className={`source-dialog__trigger ${className ?? ""}`}
+          className={`bg-secondary hover:bg-primary/20 grid h-10 w-full grid-cols-[2.25rem_1fr] items-center gap-0 rounded p-0 ${className ?? ""}`}
         >
-          <div className="source-dialog__trigger__icon">{triggerIcon}</div>
-          <div className="source-dialog__trigger__name">{name}</div>
+          <div className="bg-primary flex h-10 w-9 items-center justify-center rounded-l px-3">
+            {triggerIcon}
+          </div>
+          <div className="text-foreground overflow-hidden pr-3 pl-3 text-xs text-ellipsis whitespace-nowrap">
+            {name}
+          </div>
         </Button>
       }
     />
@@ -50,7 +52,7 @@ export const SourceDialog = ({
       : name;
 
   return (
-    <ActionDialog
+    <AlertDialog
       data-testid="source-dialog"
       title={title}
       trigger={trigger}
@@ -59,19 +61,24 @@ export const SourceDialog = ({
       cancelLabel="Close"
       onConfirm={onAction}
     >
-      <div className="source-dialog__content">
-        <h3 className="source-dialog__citations-header">Citations</h3>
-        <div className="source-dialog__citations-list">
+      <div className="mx-2 mt-4 text-sm">
+        <h3 className="mb-2! text-base font-semibold!">Citations</h3>
+        <div className="mb-4 grid max-h-[50vh] grid-cols-[1.5rem_1fr] items-start gap-3 overflow-y-auto pr-4 [overflow-wrap:anywhere]">
           {citations?.map((text, index) => (
             <Fragment key={`${title}-${index}-citation`}>
-              <span className="source-dialog__citation-index">{index + 1}</span>
-              <p key={index} className="source-dialog__citation-text">
+              <span className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold">
+                {index + 1}
+              </span>
+              <p
+                key={index}
+                className="mt-[1px] mb-2 before:content-[open-quote] after:content-[close-quote]"
+              >
                 {text}
               </p>
             </Fragment>
           ))}
         </div>
       </div>
-    </ActionDialog>
+    </AlertDialog>
   );
 };

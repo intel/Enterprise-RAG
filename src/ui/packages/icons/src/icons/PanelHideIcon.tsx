@@ -1,9 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { MdKeyboardDoubleArrowRight } from "react-icons/md";
+import { IconProps, MinusIcon } from "@phosphor-icons/react";
 
-export const PanelHideIcon = (props: IconBaseProps) => (
-  <MdKeyboardDoubleArrowRight {...props} />
-);
+export const PanelHideIcon = (props: IconProps) => <MinusIcon {...props} />;

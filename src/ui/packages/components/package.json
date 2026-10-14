@@ -21,15 +21,21 @@
   ],
   "scripts": {
     "build": "vite build",
+    "dev": "vite",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@base-ui/react": "^1.8.0",
     "@intel-enterprise-rag-ui/icons": "workspace:^",
-    "@intel-enterprise-rag-ui/tailwind-theme": "workspace:^",
-    "@intel-enterprise-rag-ui/utils": "workspace:^"
+    "@intel-enterprise-rag-ui/shadcn-preset": "workspace:^",
+    "@intel-enterprise-rag-ui/utils": "workspace:^",
+    "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
+    "sonner": "^2.0.8"
   },
   "devDependencies": {
-    "@react-types/menu": "^3.10.2"
+    "@react-types/menu": "^3.10.2",
+    "axe-core": "^4.13.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

@@ -4,7 +4,7 @@
 import { ComponentProps, PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
-import { Notifications } from "@/Notifications/Notifications";
+import { Toaster } from "@/Sonner/Sonner";
 
 type AppProviderProps = PropsWithChildren<{
   store: ComponentProps<typeof Provider>["store"];
@@ -13,6 +13,6 @@ type AppProviderProps = PropsWithChildren<{
 export const AppProvider = ({ children, store }: AppProviderProps) => (
   <Provider store={store}>
     {children}
-    <Notifications />
+    <Toaster />
   </Provider>
 );

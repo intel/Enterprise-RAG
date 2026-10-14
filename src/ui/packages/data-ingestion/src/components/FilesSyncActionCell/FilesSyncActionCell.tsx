@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./FilesSyncActionCell.scss";
-
 import {
   DeleteIcon,
   PlusIcon,
@@ -26,10 +24,10 @@ interface FilesSyncActionCellProps {
 }
 
 const FilesSyncActionCell = ({ action }: FilesSyncActionCellProps) => {
-  const className = classNames("files-sync-action-cell", {
-    "files-sync-action-cell--add": action === "add",
-    "files-sync-action-cell--delete": action === "delete",
-    "files-sync-action-cell--update": action === "update",
+  const className = classNames("mr-2 flex items-center gap-1", {
+    "text-success": action === "add",
+    "text-destructive": action === "delete",
+    "text-primary": action === "update",
   });
 
   const icon = actionIconMap[action];

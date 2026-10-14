@@ -37,7 +37,7 @@ export interface UseChatConfig {
   streamingConfig: UseChatStreamingConfig;
   useAppSelector: typeof useSelector;
   currentChatId: string | undefined;
-  isChatSideMenuOpen: boolean;
+  isChatSidebarOpen: boolean;
   onNavigate?: (path: string) => void;
   onNavigateToChat?: (chatId: string) => void;
   onChatIdChange?: (chatId: string | null) => void;
@@ -51,7 +51,7 @@ export const useChat = (config: UseChatConfig) => {
     streamingConfig,
     useAppSelector,
     currentChatId,
-    isChatSideMenuOpen,
+    isChatSidebarOpen,
     onNavigate,
     onNavigateToChat,
     onChatIdChange,
@@ -270,7 +270,7 @@ export const useChat = (config: UseChatConfig) => {
     userInput,
     chatTurns: currentChatTurns,
     isChatResponsePending,
-    isChatSideMenuOpen,
+    isChatSidebarOpen,
     onNewChat,
     onPromptChange,
     onPromptSubmit,

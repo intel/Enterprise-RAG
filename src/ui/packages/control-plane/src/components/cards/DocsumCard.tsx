@@ -4,7 +4,7 @@
 import { SelectedServiceCard } from "@/components/SelectedServiceCard/SelectedServiceCard";
 import { ServiceArgumentCheckbox } from "@/components/ServiceArgumentCheckbox/ServiceArgumentCheckbox";
 import { ServiceArgumentNumberInput } from "@/components/ServiceArgumentNumberInput/ServiceArgumentNumberInput";
-import { ServiceArgumentSelectInput } from "@/components/ServiceArgumentSelectInput/ServiceArgumentSelectInput";
+import { ServiceArgumentSelect } from "@/components/ServiceArgumentSelect/ServiceArgumentSelect";
 import { ServiceArgumentsTitle } from "@/components/ServiceArgumentsTitle/ServiceArgumentsTitle";
 import { DocsumArgs, docsumFormConfig } from "@/configs/services/docsum";
 import { useServiceCard } from "@/hooks/useServiceCard";
@@ -33,7 +33,7 @@ export const DocsumCard = ({
       isReadOnly={isReadOnly}
     >
       <ServiceArgumentsTitle>Service Arguments</ServiceArgumentsTitle>
-      <ServiceArgumentSelectInput
+      <ServiceArgumentSelect
         {...config.summary_type}
         value={argumentsForm.summary_type}
         onArgumentValueChange={onArgumentValueChange}

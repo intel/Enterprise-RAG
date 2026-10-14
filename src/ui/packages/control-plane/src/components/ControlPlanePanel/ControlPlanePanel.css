@@ -1,0 +1,36 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+/* Only the rules Tailwind utilities can't express cleanly stay here (keyframes,
+   reduced-motion media query, radial-gradient, descendant override of xyflow's CSS). */
+
+.control-plane-panel__dots-bg {
+  @apply absolute inset-0 z-0 opacity-20;
+  background-image: radial-gradient(
+    circle,
+    var(--muted-foreground) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+  animation: control-plane-dots-drift 50s linear infinite;
+}
+@keyframes control-plane-dots-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 22px 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .control-plane-panel__dots-bg {
+    animation: none;
+  }
+}
+
+.graph-wrapper .react-flow {
+  /* transparent so the animated dots-grid on the panel shows through */
+  background: transparent;
+}

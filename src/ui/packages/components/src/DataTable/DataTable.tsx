@@ -1,9 +1,10 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./DataTable.scss";
+import "./DataTable.css";
 
 import {
+  FilterIcon,
   LoadingIcon,
   SortDownIcon,
   SortUpDownIcon,
@@ -11,19 +12,46 @@ import {
 } from "@intel-enterprise-rag-ui/icons";
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  Header,
+  RowData,
   RowSelectionState,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import { CheckboxInput } from "@/CheckboxInput/CheckboxInput";
+import { Checkbox } from "@/Checkbox/Checkbox";
+import { Combobox } from "@/Combobox/Combobox";
+import { Input } from "@/Input/Input";
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Options for a header-level exact-match filter dropdown, keyed to the column's filtered value */
+    filterOptions?: string[];
+    /** Header-level filter control type. Defaults to "select" when filterOptions is set. */
+    filterVariant?: "select" | "text" | "range";
+    /** Bounds for a "range" filterVariant's native range input */
+    filterRange?: { min: number; max: number; step?: number };
+    /** Pin the column to the given edge; it stays fixed while other columns scroll horizontally */
+    pin?: "left" | "right";
+  }
+}
 
 interface DataTableProps<T extends object> {
   /** Default data for the table */
@@ -48,6 +76,13 @@ interface DataTableProps<T extends object> {
   onRowSelectionChange?: (rowSelection: RowSelectionState) => void;
   /** Function to get the row id */
   getRowId?: (row: T) => string;
+  /** Grow to fill the height of the parent flex container instead of capping at a fixed height */
+  fillHeight?: boolean;
+  /**
+   * Controls the header filter row's visibility. When omitted, it shows automatically whenever
+   * any column defines `meta.filterOptions`/`meta.filterVariant` (previous default behavior).
+   */
+  showFilterRow?: boolean;
 }
 
 export const DataTable = <T extends object>({
@@ -62,9 +97,12 @@ export const DataTable = <T extends object>({
   rowSelection: controlledRowSelection,
   onRowSelectionChange,
   getRowId,
+  fillHeight = false,
+  showFilterRow,
 }: DataTableProps<T>) => {
   const [data, setData] = useState(() => defaultData);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [internalGlobalFilter, setInternalGlobalFilter] = useState("");
   const [internalRowSelection, setInternalRowSelection] =
     useState<RowSelectionState>({});
@@ -98,7 +136,7 @@ export const DataTable = <T extends object>({
     const selectionColumn: ColumnDef<T> = {
       id: "select",
       header: ({ table }) => (
-        <CheckboxInput
+        <Checkbox
           isSelected={table.getIsAllRowsSelected()}
           isIndeterminate={table.getIsSomeRowsSelected()}
           onChange={() => table.toggleAllRowsSelected()}
@@ -107,7 +145,7 @@ export const DataTable = <T extends object>({
         />
       ),
       cell: ({ row }) => (
-        <CheckboxInput
+        <Checkbox
           isSelected={row.getIsSelected()}
           onChange={() => row.toggleSelected()}
           aria-label="Select row"
@@ -116,6 +154,7 @@ export const DataTable = <T extends object>({
       ),
       enableSorting: false,
       enableGlobalFilter: false,
+      meta: { pin: "left" },
     };
 
     return [selectionColumn, ...columns];
@@ -126,6 +165,7 @@ export const DataTable = <T extends object>({
     columns: columnsWithSelection,
     state: {
       sorting,
+      columnFilters,
       globalFilter: effectiveGlobalFilter,
       ...(enableRowSelection && { rowSelection }),
     },
@@ -139,6 +179,7 @@ export const DataTable = <T extends object>({
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: onGlobalFilterChange ?? setInternalGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
   });
@@ -206,7 +247,7 @@ export const DataTable = <T extends object>({
           return (
             <tr key={row.id} data-index={virtualRow.index}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>
+                <td key={cell.id} data-pin={cell.column.columnDef.meta?.pin}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -232,49 +273,153 @@ export const DataTable = <T extends object>({
     rows,
   ]);
 
+  const hasFilterableColumns = useMemo(
+    () =>
+      columnsWithSelection.some(
+        (column) => column.meta?.filterOptions || column.meta?.filterVariant,
+      ),
+    [columnsWithSelection],
+  );
+  const isFilterRowVisible = showFilterRow ?? hasFilterableColumns;
+
+  const renderFilterCell = useCallback((header: Header<T, unknown>) => {
+    const meta = header.column.columnDef.meta;
+
+    if (header.column.id === "select") {
+      return <FilterIcon aria-hidden="true" className="text-sm" />;
+    }
+
+    if (meta?.filterOptions) {
+      return (
+        <Combobox
+          size="sm"
+          className="mb-0"
+          items={["All", ...meta.filterOptions]}
+          value={(header.column.getFilterValue() as string) ?? "All"}
+          onChange={(value) =>
+            header.column.setFilterValue(value === "All" ? undefined : value)
+          }
+          aria-label={`Filter by ${
+            typeof header.column.columnDef.header === "string"
+              ? header.column.columnDef.header
+              : header.column.id
+          }`}
+          data-testid={`${header.column.id}-filter-combobox`}
+        />
+      );
+    }
+
+    if (meta?.filterVariant === "text") {
+      return (
+        <Input
+          name={`${header.column.id}-filter`}
+          size="sm"
+          className="mb-0"
+          value={(header.column.getFilterValue() as string) ?? ""}
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            header.column.setFilterValue(
+              event.target.value === "" ? undefined : event.target.value,
+            )
+          }
+          aria-label={`Filter by ${
+            typeof header.column.columnDef.header === "string"
+              ? header.column.columnDef.header
+              : header.column.id
+          }`}
+          data-testid={`${header.column.id}-filter-input`}
+        />
+      );
+    }
+
+    if (meta?.filterVariant === "range" && meta.filterRange) {
+      const { min, max, step } = meta.filterRange;
+      const filterValue = header.column.getFilterValue() as number | undefined;
+      return (
+        <input
+          type="range"
+          className="data-table-filter-row__range"
+          min={min}
+          max={max}
+          step={step ?? 1}
+          value={filterValue ?? max}
+          onChange={(event) =>
+            header.column.setFilterValue(Number(event.target.value))
+          }
+          aria-label={`Filter by ${
+            typeof header.column.columnDef.header === "string"
+              ? header.column.columnDef.header
+              : header.column.id
+          }`}
+          data-testid={`${header.column.id}-filter-range`}
+        />
+      );
+    }
+
+    return null;
+  }, []);
+
   const renderTableHeader = useCallback(() => {
     return table.getHeaderGroups().map((headerGroup) => (
-      <tr key={headerGroup.id}>
-        {headerGroup.headers.map((header) => (
-          <th
-            key={header.id}
-            className={header.column.getCanSort() ? "sortable" : ""}
-            aria-sort={
-              header.column.getIsSorted()
-                ? header.column.getIsSorted() === "asc"
-                  ? "ascending"
-                  : "descending"
-                : undefined
-            }
-            onClick={header.column.getToggleSortingHandler()}
-          >
-            {!header.isPlaceholder && (
-              <div className="flex items-center gap-1">
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext(),
-                )}
-                {header.column.getCanSort() && (
-                  <span className="sort-indicator">
-                    {header.column.getIsSorted() === "asc" ? (
-                      <SortUpIcon />
-                    ) : header.column.getIsSorted() === "desc" ? (
-                      <SortDownIcon />
-                    ) : (
-                      <SortUpDownIcon />
-                    )}
-                  </span>
-                )}
-              </div>
-            )}
-          </th>
-        ))}
-      </tr>
+      <Fragment key={headerGroup.id}>
+        <tr>
+          {headerGroup.headers.map((header) => (
+            <th
+              key={header.id}
+              className={header.column.getCanSort() ? "sortable" : ""}
+              aria-sort={
+                header.column.getIsSorted()
+                  ? header.column.getIsSorted() === "asc"
+                    ? "ascending"
+                    : "descending"
+                  : undefined
+              }
+              onClick={header.column.getToggleSortingHandler()}
+              data-pin={header.column.columnDef.meta?.pin}
+            >
+              {!header.isPlaceholder && (
+                <div className="flex items-center gap-1">
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+                  {header.column.getCanSort() && (
+                    <span className="sort-indicator">
+                      {header.column.getIsSorted() === "asc" ? (
+                        <SortUpIcon />
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <SortDownIcon />
+                      ) : (
+                        <SortUpDownIcon />
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
+            </th>
+          ))}
+        </tr>
+        {isFilterRowVisible && (
+          <tr className="data-table-filter-row">
+            {headerGroup.headers.map((header) => (
+              <th
+                key={`${header.id}-filter`}
+                data-pin={header.column.columnDef.meta?.pin}
+              >
+                {renderFilterCell(header)}
+              </th>
+            ))}
+          </tr>
+        )}
+      </Fragment>
     ));
-  }, [table]);
+  }, [table, isFilterRowVisible, renderFilterCell]);
 
   return (
-    <div className="data-table-wrapper">
+    <div
+      className={classNames("data-table-wrapper", {
+        "data-table-wrapper--fill": fillHeight,
+      })}
+    >
       <table className={tableClassNames}>
         <thead>{renderTableHeader()}</thead>
         <tbody ref={scrollParentRef} className="data-table-body">

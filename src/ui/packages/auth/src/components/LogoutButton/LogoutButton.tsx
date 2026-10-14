@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IconButton, Tooltip } from "@intel-enterprise-rag-ui/components";
-import { PressEvent } from "react-aria-components";
+import { MouseEvent } from "react";
 
 interface LogoutButtonProps {
-  onPress: (e: PressEvent) => void;
+  onPress: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const LogoutButton = ({ onPress }: LogoutButtonProps) => (
   <Tooltip
-    title="Logout"
+    title="Sign Out"
     trigger={
       <IconButton
         data-testid="logout-button"
         icon="logout"
-        aria-label="Logout"
+        aria-label="Sign Out"
         onPress={onPress}
       />
     }

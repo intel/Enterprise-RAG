@@ -52,6 +52,8 @@ const RefreshButton = () => {
           data-testid="refresh-button"
           isDisabled={isFetchingData}
           icon={icon}
+          size="sm"
+          variant="outline"
           iconClassName={iconClassName}
           onPress={handlePress}
         />

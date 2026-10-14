@@ -1,79 +1,42 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./GraphControls.scss";
-
-import {
-  Button,
-  CheckboxInput,
-  CheckboxInputChangeHandler,
-} from "@intel-enterprise-rag-ui/components";
 import { ConfigurableServiceIcon } from "@intel-enterprise-rag-ui/icons";
 
 import { ServiceStatusIndicator } from "@/components/ServiceStatusIndicator/ServiceStatusIndicator";
 import { ServiceStatus } from "@/types/index";
 
-interface GraphControlsProps {
-  isAutorefreshEnabled: boolean;
-  onAutorefreshChange: CheckboxInputChangeHandler;
-  onRefresh: () => void;
-  isFetching: boolean;
-}
-
-export const GraphControls = ({
-  isAutorefreshEnabled,
-  onAutorefreshChange,
-  onRefresh,
-  isFetching,
-}: GraphControlsProps) => {
-  const buttonText = isFetching ? "Refreshing..." : "Refresh";
-
+export const GraphControls = () => {
   return (
-    <div className="graph-controls" data-testid="graph-controls">
-      <div className="graph-controls__legend">
-        <div className="graph-controls__legend-item">
+    <div
+      className="bg-background/70 absolute z-10 mt-4 ml-[15px] flex flex-col gap-2 rounded p-4"
+      data-testid="graph-controls"
+    >
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-[1rem_1fr] items-center gap-2">
           <ServiceStatusIndicator status={ServiceStatus.Ready} noTooltip />
-          <p className="graph-controls__legend-label">Ready</p>
+          <p className="text-foreground m-0 text-xs whitespace-nowrap">Ready</p>
         </div>
-        <div className="graph-controls__legend-item">
+        <div className="grid grid-cols-[1rem_1fr] items-center gap-2">
           <ServiceStatusIndicator status={ServiceStatus.NotReady} noTooltip />
-          <p className="graph-controls__legend-label">Not Ready</p>
+          <p className="text-foreground m-0 text-xs whitespace-nowrap">
+            Not Ready
+          </p>
         </div>
-        <div className="graph-controls__legend-item">
+        <div className="grid grid-cols-[1rem_1fr] items-center gap-2">
           <ServiceStatusIndicator
             status={ServiceStatus.NotAvailable}
             noTooltip
           />
-          <p className="graph-controls__legend-label">Status Not Available</p>
+          <p className="text-foreground m-0 text-xs whitespace-nowrap">
+            Status Not Available
+          </p>
         </div>
-        <div className="graph-controls__legend-item">
+        <div className="grid grid-cols-[1rem_1fr] items-center gap-2">
           <ConfigurableServiceIcon fontSize={12} />
-          <p className="graph-controls__legend-label">Configurable Service</p>
-        </div>
-      </div>
-      <div className="graph-controls__actions">
-        <div className="graph-controls__actions-item">
-          <CheckboxInput
-            name="control-plane-autorefresh"
-            label="Autorefresh Status"
-            size="sm"
-            isSelected={isAutorefreshEnabled}
-            onChange={onAutorefreshChange}
-            data-testid="control-plane-autorefresh-checkbox"
-            dense
-          />
-        </div>
-        <div className="graph-controls__actions-item">
-          <Button
-            icon="refresh"
-            size="sm"
-            variant="outlined"
-            onPress={onRefresh}
-            isDisabled={isFetching}
-            data-testid="control-plane-refresh-button"
-          >
-            {buttonText}
-          </Button>
+          <p className="text-foreground m-0 text-xs whitespace-nowrap">
+            Configurable Service
+          </p>
         </div>
       </div>
     </div>

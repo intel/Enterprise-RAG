@@ -3,6 +3,7 @@
 
 import { keycloakService } from "@intel-enterprise-rag-ui/auth";
 import {
+  CONFIGURABLE_SERVICE_IDS,
   ControlPlaneTab,
   ServiceCard,
   ServiceData,
@@ -24,7 +25,6 @@ import {
   docSumGraphNodesSelector,
   docSumGraphSelectedServiceNodeSelector,
   onDocSumGraphNodesChange,
-  setDocSumGraphIsAutorefreshEnabled,
   setDocSumGraphSelectedServiceNode,
 } from "@/features/admin-panel/control-plane/store/docSumGraph.slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -40,15 +40,16 @@ const DocSumControlPlaneTab = () => {
   );
   const nodes = useAppSelector(docSumGraphNodesSelector);
   const edges = useAppSelector(docSumGraphEdgesSelector);
+  const selectedServiceNode = useAppSelector(
+    docSumGraphSelectedServiceNodeSelector,
+  );
+  const isConfigPanelDisabled =
+    selectedServiceNode === null ||
+    !CONFIGURABLE_SERVICE_IDS.includes(
+      selectedServiceNode.id as (typeof CONFIGURABLE_SERVICE_IDS)[number],
+    );
 
   const [getServicesData, { isFetching }] = useLazyGetServicesDataQuery();
-
-  const handleAutorefreshChange = useCallback(
-    (enabled: boolean) => {
-      dispatch(setDocSumGraphIsAutorefreshEnabled(enabled));
-    },
-    [dispatch],
-  );
 
   const handleRefresh = useCallback(() => {
     getServicesData();
@@ -93,14 +94,13 @@ const DocSumControlPlaneTab = () => {
       edges={edges}
       isLoading={isLoading}
       isRenderable={isRenderable}
-      isAutorefreshEnabled={isAutorefreshEnabled}
-      onAutorefreshChange={handleAutorefreshChange}
       onRefresh={handleRefresh}
       isFetching={isFetching}
       onNodesChange={handleNodesChange}
       onSelectionChange={handleSelectionChange}
       fitViewOptions={fitViewOptions}
       ConfigPanel={<DocSumServiceCard />}
+      isConfigPanelDisabled={isConfigPanelDisabled}
     />
   );
 };

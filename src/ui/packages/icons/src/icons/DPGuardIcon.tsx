@@ -1,9 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { HiMagnifyingGlass } from "react-icons/hi2";
+import { IconProps, ShieldChevronIcon } from "@phosphor-icons/react";
 
-export const DPGuardIcon = (props: IconBaseProps) => (
-  <HiMagnifyingGlass {...props} />
+export const DPGuardIcon = (props: IconProps) => (
+  <ShieldChevronIcon {...props} />
 );

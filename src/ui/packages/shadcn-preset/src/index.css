@@ -1,0 +1,287 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* ERAG's live theme — every app and package imports or @references this file
+   (`@intel-enterprise-rag-ui/shadcn-preset/index.css`). The preview harness adds its
+   own extras on top in harness.css.
+
+   RE-THEMING: edit only the `:root` (light) and `.dark` blocks below. Components use
+   shadcn's semantic utilities only (bg-background, text-foreground, bg-primary, ...),
+   so changing a value here re-themes every app with no component edits. Variables:
+     --background / --foreground           page surface + body text
+     --card, --popover (+ -foreground)     raised surfaces: cards, menus, dialogs
+     --primary (+ -foreground)             solid brand fill: buttons, table headers
+     --secondary (+ -foreground)           tinted panels, list tiles
+     --muted (+ -foreground)               disabled fills, secondary/placeholder text
+     --accent (+ -foreground)              hover/selected tint for menu items + buttons
+     --info-foreground                     brand-coloured text on the page (links)
+     --destructive, --success (+ -fg)      status colours (used as text or 10% tints)
+     --border, --input, --ring             hairlines, form-control edges, focus ring
+     --sidebar-*, --chart-*                aliases of the above via var(), rarely edited
+     --scrollbar-thumb / --scrollbar-track mode-independent, :root only
+     --radius                              corner radius scale */
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4 wraps hover: in @media (hover: hover) by default, which some VDI/remote-desktop
+   environments report as unsupported even with a physical mouse attached — hover: utilities would
+   silently never apply there. Redefine it as a plain :hover selector (Tailwind v3 behavior). */
+@custom-variant hover (&:hover);
+
+@theme inline {
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+  --color-scrollbar-track: var(--scrollbar-track);
+  --font-heading: var(--font-sans);
+  /* ERAG's Task-04-hardened system-font stack — no webfont;
+     cross-platform guarantee for Windows 10+/macOS/Ubuntu 22.04+. */
+  --font-sans:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Ubuntu",
+    "Helvetica Neue", Arial, sans-serif;
+  --color-info-foreground: var(--info-foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Palette below is the Intel brand web palette (intel.com `:root` tokens —
+   --background-, --text-, --border-), converted to OKLCH and mapped onto shadcn's semantic
+   slots. Intel's set is light-only; its "inverse" navy (#000F28 surface, white text) seeds
+   dark mode. Every value is an exact Intel hex (or an Intel translucent token composited
+   over the navy) except where marked "AA exception": --destructive and --success, which
+   Intel's values can't make pass. Brand cyan #00C7FD is intentionally unused.
+   --chart-* and --sidebar-* are aliased to the closest already-mapped token via var()
+   (see the `:root, .dark` alias block for why they're declared on both selectors).
+   --radius is untouched — this pass is colors only. */
+:root {
+  /* Intel --background-subtle, #EEF4FE — tinted page; white panels sit on it, and panel
+     rows hover back to this tint (SidebarMenuItem/ChatHistoryItem use bg-background/80). */
+  --background: oklch(0.9655 0.0149 260.73);
+  /* Intel --text-primary, #000F28 */
+  --foreground: oklch(0.1718 0.0576 255.5);
+  /* Intel --background-default, #FFFFFF */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.1718 0.0576 255.5);
+  /* Intel --background-default, #FFFFFF */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.1718 0.0576 255.5);
+  /* Intel --background-accent / --text-accent, #0046C8 — 7.75:1 with white, 7.01:1 as
+     bare text on --background, so it serves both fill and link roles in light mode. */
+  --primary: oklch(0.4535 0.2103 262.03);
+  /* Intel --text-primary-on-accent, #FFFFFF */
+  --primary-foreground: oklch(1 0 0);
+  /* Bare text-on-background role for the Alert/Toast "info" variant; light --primary
+     already passes it. */
+  --info-foreground: var(--primary);
+  /* Intel --background-subtle-dark, #DFE9FE — banners, list headers, secondary buttons.
+     Carries --foreground text only: --muted-foreground is 4.11:1 here (fails AA). */
+  --secondary: oklch(0.9328 0.0305 265.33);
+  /* Intel --text-primary-on-subtle, #000F28 */
+  --secondary-foreground: oklch(0.1718 0.0576 255.5);
+  /* Intel --background-subtle, #EEF4FE — disabled/skeleton surfaces on white panels */
+  --muted: oklch(0.9655 0.0149 260.73);
+  /* Intel --text-secondary, #637085 — 5.02:1 on white, 4.54:1 on #EEF4FE */
+  --muted-foreground: oklch(0.5421 0.0365 259.97);
+  /* Intel --background-subtle, #EEF4FE — menu/list hover inside white panels. Deliberately
+     not #DFE9FE: muted text on a hovered row must keep 4.5:1. */
+  --accent: oklch(0.9655 0.0149 260.73);
+  --accent-foreground: oklch(0.1718 0.0576 255.5);
+  /* AA exception (not an Intel value): Intel --text-error #E51010 is 3.65-4.02:1 on its
+     own 10% tint, below WCAG AA's 4.5:1. Lightness reduced to #C70E0E (4.57:1 on its tint
+     over --background, 6.0:1 with white). */
+  --destructive: oklch(0.5251 0.2096 28.63);
+  --destructive-foreground: oklch(1 0 0);
+  /* AA exception (not an Intel value): Intel's set has no success color. ERAG
+     status-success, AA-adjusted #066E2B — 5.02:1 on its own 10% tint over --background. */
+  --success: oklch(0.4704 0.133 148.18);
+  --success-foreground: oklch(1 0 0);
+  /* Intel --border-subtle, #CDD8EA — decorative hairlines */
+  --border: oklch(0.8794 0.0276 260.31);
+  /* Intel --border-secondary, #637085 — form-field outline, 4.54-5.02:1 (non-text needs 3:1) */
+  --input: oklch(0.5421 0.0365 259.97);
+  /* Intel --border-accent, #0046C8 */
+  --ring: oklch(0.4535 0.2103 262.03);
+  --radius: 0.625rem;
+  /* Mode-independent translucent grey, carried over from tailwind-theme. */
+  --scrollbar-thumb: #a1a1a1cc;
+  --scrollbar-track: #a1a1a180;
+}
+
+/* Aliases are declared on both selectors because a custom property's var() resolves on the
+   element that declares it: declared on :root alone, they'd freeze at light values whenever
+   .dark sits below <html> (the apps put it on <body>). */
+:root,
+.dark {
+  --chart-1: var(--primary);
+  --chart-2: var(--success);
+  --chart-3: var(--destructive);
+  --chart-4: var(--muted-foreground);
+  --chart-5: var(--ring);
+  --sidebar: var(--popover);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+.dark {
+  /* Intel --background-inverse, #000F28 */
+  --background: oklch(0.1718 0.0576 255.5);
+  /* Intel --text-primary-on-inverse, #FFFFFF */
+  --foreground: oklch(1 0 0);
+  /* Intel --effects-focus-shadow (#0046C8 @ 12%) composited over #000F28 = #00163B.
+     Intel's set has one navy, so panels are a whisper lighter and lean on --border. */
+  --card: oklch(0.21 0.0781 258.09);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.21 0.0781 258.09);
+  --popover-foreground: oklch(1 0 0);
+  /* Intel --background-accent-light, #276EF2 — white text on the fill is 4.57:1 (passes);
+     bare text on --background is 4.18:1. That text role (Button's "link" variant) misses
+     4.5:1 for small text — known, accepted shadcn-convention gap; "info" gets its own
+     token below. #0046C8 would be worse there (2.47:1). */
+  --primary: oklch(0.5738 0.2108 261.44);
+  --primary-foreground: oklch(1 0 0);
+  /* Intel --background-subtle-dark, #DFE9FE — 15.67:1 on --background. Brand cyan
+     #00C7FD also passes but reads as neon-on-dark, which this palette avoids. */
+  --info-foreground: oklch(0.9328 0.0305 265.33);
+  /* Intel --scrim-contrast-subtle (white @ 20%) composited over #000F28 = #333F53 */
+  --secondary: oklch(0.3657 0.0382 260.49);
+  --secondary-foreground: oklch(1 0 0);
+  /* Same #333F53 */
+  --muted: oklch(0.3657 0.0382 260.49);
+  /* Intel --border-subtle, #CDD8EA — 7.39:1 on #333F53 (hover/secondary). Intel's
+     --text-tertiary #8791A2 is only 3.34:1 there. */
+  --muted-foreground: oklch(0.8794 0.0276 260.31);
+  /* Same #333F53 — menu/list hover */
+  --accent: oklch(0.3657 0.0382 260.49);
+  --accent-foreground: oklch(1 0 0);
+  /* AA exception (not an Intel value): #E51010 is 4.02:1 on navy. Lightened to #FF6B6B —
+     5.16:1 on its own 10% tint over --card. */
+  --destructive: oklch(0.7116 0.1812 22.84);
+  --destructive-foreground: oklch(1 0 0);
+  /* AA exception (not an Intel value): ERAG status-success, AA-adjusted #4FA761 — 4.68:1
+     on its own 10% tint over --card. */
+  --success: oklch(0.6562 0.1336 148.38);
+  --success-foreground: oklch(1 0 0);
+  /* Intel --scrim-contrast-subtle composited, #333F53 — quiet hairlines */
+  --border: oklch(0.3657 0.0382 260.49);
+  /* Intel --border-secondary, #637085 — field outline, 3.81:1 on --background (non-text
+     needs 3:1) */
+  --input: oklch(0.5421 0.0365 259.97);
+  /* Intel --background-accent-light, #276EF2 — 4.18:1 on --background (non-text needs 3:1) */
+  --ring: oklch(0.5738 0.2108 261.44);
+}
+
+* {
+  box-sizing: border-box;
+  transition: color 0.3s ease;
+  transition: border 0.3s ease;
+  transition: background-color 0.3s ease;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* App base rules below are unlayered, exactly as they were in the retired tailwind-theme
+   package, so their cascade position vs. utilities and component CSS is unchanged. */
+html {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body {
+  font-weight: normal;
+  font-size: 16px;
+}
+
+#root {
+  @apply bg-background text-foreground caret-foreground;
+}
+
+label {
+  @apply mb-2 inline-block;
+}
+
+h2 {
+  @apply mb-2 font-medium;
+}
+
+h3 {
+  @apply mb-1 font-medium;
+}
+
+/* A bare nested selector compiles to a descendant combinator, as the pre-v4 Sass did. */
+* *::-webkit-scrollbar {
+  @apply w-1.5;
+}
+
+* *::-webkit-scrollbar-track {
+  @apply bg-scrollbar-track my-2 rounded-xl;
+}
+
+* *::-webkit-scrollbar-thumb {
+  @apply bg-scrollbar-thumb rounded-xl;
+}
+
+*::selection {
+  @apply bg-primary text-primary-foreground;
+}
+
+*:focus-visible {
+  @apply outline-ring outline-2 outline-solid;
+}
+
+p.error {
+  @apply text-destructive;
+}

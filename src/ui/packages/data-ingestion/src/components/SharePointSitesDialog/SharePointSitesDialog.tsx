@@ -1,12 +1,11 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./SharePointSitesDialog.scss";
+import "./SharePointSitesDialog.css";
 
 import {
-  addNotification,
   Button,
-  CheckboxInput,
+  Checkbox,
   DataTable,
   Dialog,
   DialogRef,
@@ -16,7 +15,7 @@ import {
 import { IconName } from "@intel-enterprise-rag-ui/icons";
 import { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 
 import {
   useDeleteSharePointSiteMutation,
@@ -57,7 +56,6 @@ const SharePointSitesDialog = () => {
     null,
   );
 
-  const dispatch = useDispatch();
   const dialogRef = useRef<DialogRef>(null);
 
   const handleDisconnectSite = useCallback(
@@ -66,16 +64,11 @@ const SharePointSitesDialog = () => {
       const { error } = await deleteSharePointSite(siteId);
       setDisconnectingSiteId(null);
       if (!error) {
-        dispatch(
-          addNotification({
-            text: "SharePoint site disconnected successfully.",
-            severity: "success",
-          }),
-        );
+        toast.success("SharePoint site disconnected successfully.");
         getSharePointSites();
       }
     },
-    [deleteSharePointSite, dispatch, getSharePointSites],
+    [deleteSharePointSite, getSharePointSites],
   );
 
   const sitesColumns = useMemo<ColumnDef<SharePointSiteItem>[]>(
@@ -89,7 +82,7 @@ const SharePointSitesDialog = () => {
           return (
             <Button
               data-testid={`disconnect-sp-site-${row.original.id}`}
-              variant="text"
+              variant="ghost"
               size="sm"
               isDisabled={isDisconnecting}
               onPress={() => handleDisconnectSite(row.original.id)}
@@ -105,12 +98,7 @@ const SharePointSitesDialog = () => {
   );
 
   const onSiteAdded = () => {
-    dispatch(
-      addNotification({
-        text: "SharePoint site added successfully!",
-        severity: "success",
-      }),
-    );
+    toast.success("SharePoint site added successfully!");
     getSharePointSites();
     getSharePointSync();
   };
@@ -138,23 +126,15 @@ const SharePointSitesDialog = () => {
     if (error) {
       const status = (error as { status?: number }).status;
       if (status === 409) {
-        dispatch(
-          addNotification({
-            text: "SharePoint synchronization is already in progress. Please wait and try again.",
-            severity: "error",
-          }),
+        toast.error(
+          "SharePoint synchronization is already in progress. Please wait and try again.",
         );
       }
       return;
     }
 
     dialogRef.current?.close();
-    dispatch(
-      addNotification({
-        text: "SharePoint files synchronized successfully!",
-        severity: "success",
-      }),
-    );
+    toast.success("SharePoint files synchronized successfully!");
   };
 
   const dialogTrigger = useMemo(() => {
@@ -169,7 +149,7 @@ const SharePointSitesDialog = () => {
         trigger={
           <IconButton
             data-testid="trigger-sharepoint-sites-button"
-            variant="outlined"
+            variant="outline"
             icon="link"
             onPress={handleDialogTriggerPress}
           />
@@ -212,7 +192,7 @@ const SharePointSitesDialog = () => {
       title="SharePoint Sites"
       footer={
         syncData && (
-          <footer className="sharepoint-sites-dialog__footer">
+          <footer className="flex items-center justify-end gap-4 text-sm">
             {!hasActionableFiles && (
               <p>Manual synchronization is not required</p>
             )}
@@ -231,8 +211,8 @@ const SharePointSitesDialog = () => {
         )
       }
     >
-      <div className="sharepoint-sites-dialog__content">
-        <p className="sharepoint-sites-dialog__description">
+      <div className="h-full w-full text-sm">
+        <p className="mb-4">
           Below you can see the SharePoint sites that are registered for
           synchronization.
           <br />
@@ -241,17 +221,15 @@ const SharePointSitesDialog = () => {
         <AddSharePointSiteForm onSiteAdded={onSiteAdded} />
         {sitesContent}
 
-        <div className="sharepoint-sites-dialog__sync-section">
-          <h4 className="sharepoint-sites-dialog__sync-title">
-            File Synchronization
-          </h4>
-          <p className="sharepoint-sites-dialog__sync-description">
+        <div className="sharepoint-sites-dialog__sync-section border-border mt-6 border-t pt-4">
+          <h4 className="mb-2 text-base font-semibold">File Synchronization</h4>
+          <p className="mb-3">
             Check for file changes across all tracked SharePoint sites. Each
             site is stored in its own bucket for clear separation.
           </p>
           <Button
             data-testid="check-sharepoint-sync-button"
-            variant="outlined"
+            variant="outline"
             icon={syncBtnIcon}
             isDisabled={isFetchingSync}
             onPress={() => getSharePointSync()}
@@ -259,8 +237,8 @@ const SharePointSitesDialog = () => {
             {syncBtnContent}
           </Button>
           {syncData && (
-            <div className="sharepoint-sites-dialog__sync-results">
-              <CheckboxInput
+            <div className="mt-3">
+              <Checkbox
                 label="Show all files"
                 size="sm"
                 name="show-all-sp-files"

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { TextInput } from "@intel-enterprise-rag-ui/components";
+import { Input } from "@intel-enterprise-rag-ui/components";
 import {
   getValidationErrorMessage,
   NumberInputRange,
@@ -128,7 +128,7 @@ export const ServiceArgumentNumberInput = ({
   const placeholder = `Enter number between ${range.min} and ${range.max}`;
 
   return (
-    <TextInput
+    <Input
       data-testid={`service-argument-number-input-${name}`}
       name={name}
       label={name}

@@ -3,33 +3,20 @@
 
 import {
   ChatConversationLayout,
-  ChatSideMenu,
   InitialChatLayout,
-  selectIsChatSideMenuOpen,
-  useChatHistoryHandlers,
+  selectIsChatSidebarOpen,
   useInitialChat,
 } from "@intel-enterprise-rag-ui/chat";
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import { usePostSharePointFileUrlMutation } from "@intel-enterprise-rag-ui/data-ingestion";
-import { PageLayout } from "@intel-enterprise-rag-ui/layouts";
-import { downloadBlob } from "@intel-enterprise-rag-ui/utils";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useGetFilePresignedUrlMutation,
   useLazyDownloadFileQuery,
 } from "@/api";
-import {
-  AppHeaderLeftSideContent,
-  AppHeaderRightSideContent,
-} from "@/components/AppHeaderContent/AppHeaderContent";
 import MaintenanceModeNotice from "@/components/MaintenanceModeNotice/MaintenanceModeNotice";
 import { paths } from "@/config/paths";
 import {
-  useChangeChatNameMutation,
-  useDeleteChatMutation,
-  useGetAllChatsQuery,
-  useLazyGetAllChatsQuery,
   useLazyGetChatByIdQuery,
   useSaveChatMutation,
 } from "@/features/chat/api/chatHistory.api";
@@ -37,21 +24,16 @@ import { usePostPromptMutation } from "@/features/chat/api/chatQnA.api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { getChatQnAAppEnv } from "@/utils";
 
-const MAINTENANCE_MODE = getChatQnAAppEnv("MAINTENANCE_MODE");
+const MAINTENANCE_MODE = getChatQnAAppEnv("MAINTENANCE_MODE") === "true";
 
 const InitialChatRoute = () => {
-  // React store, RTK Query, and react-router hooks
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const location = useLocation();
-  const isChatSideMenuOpen = useAppSelector(selectIsChatSideMenuOpen);
-  const { data: chatHistoryData, isLoading: isLoadingChatHistory } =
-    useGetAllChatsQuery();
+  const isChatSidebarOpen = useAppSelector(selectIsChatSidebarOpen);
   const [downloadFile] = useLazyDownloadFileQuery();
   const [getFilePresignedUrl] = useGetFilePresignedUrlMutation();
   const [postSharePointFileUrl] = usePostSharePointFileUrlMutation();
 
-  // Custom hooks from chat package
   const {
     userInput,
     chatTurns,
@@ -66,45 +48,8 @@ const InitialChatRoute = () => {
       useSaveChatMutation,
       useLazyGetChatByIdQuery,
     },
-    isChatSideMenuOpen,
+    isChatSidebarOpen,
     onNavigateToChat: (chatId) => navigate(`${paths.chat}/${chatId}`),
-  });
-
-  const {
-    handleItemPress,
-    isItemActive,
-    handleDelete,
-    handleExport,
-    handleRename,
-  } = useChatHistoryHandlers({
-    chatHistoryData,
-    useDeleteChatMutation,
-    useLazyGetAllChatsQuery,
-    useLazyGetChatByIdQuery,
-    useChangeChatNameMutation,
-    dispatch,
-    location,
-    navigate,
-    chatBasePath: paths.chat,
-    onDeleteError: (error) => {
-      dispatch(
-        addNotification({
-          severity: "error",
-          text: `Failed to delete chat history: ${error.message}`,
-        }),
-      );
-    },
-    onRenameError: (error) => {
-      dispatch(
-        addNotification({
-          severity: "error",
-          text: `Failed to rename chat: ${error.message}`,
-        }),
-      );
-    },
-    onExportSuccess: (blob, fileName) => {
-      downloadBlob(blob, fileName);
-    },
   });
 
   const chatDisclaimer = getChatQnAAppEnv("CHAT_DISCLAIMER_TEXT") ?? "";
@@ -138,69 +83,32 @@ const InitialChatRoute = () => {
     }
   };
 
-  if (MAINTENANCE_MODE === "true") {
-    return (
-      <PageLayout
-        appHeaderProps={{
-          leftSideContent: <AppHeaderLeftSideContent />,
-          rightSideContent: <AppHeaderRightSideContent />,
-        }}
-      >
-        <MaintenanceModeNotice />
-      </PageLayout>
-    );
+  if (MAINTENANCE_MODE) {
+    return <MaintenanceModeNotice />;
   }
 
-  const getChatLayout = () => {
-    if (chatTurns.length === 0) {
-      return (
-        <InitialChatLayout
-          userInput={userInput}
-          disclaimer={chatDisclaimer}
-          onPromptChange={onPromptChange}
-          onPromptSubmit={onPromptSubmit}
-        />
-      );
-    }
-
+  if (chatTurns.length === 0) {
     return (
-      <ChatConversationLayout
+      <InitialChatLayout
         userInput={userInput}
-        conversationTurns={chatTurns}
-        isChatResponsePending={isChatResponsePending}
         disclaimer={chatDisclaimer}
         onPromptChange={onPromptChange}
         onPromptSubmit={onPromptSubmit}
-        onRequestAbort={onRequestAbort}
-        onFileDownload={handleFileDownload}
       />
     );
-  };
+  }
 
   return (
-    <PageLayout
-      appHeaderProps={{
-        leftSideContent: <AppHeaderLeftSideContent />,
-        rightSideContent: <AppHeaderRightSideContent />,
-      }}
-      leftSideMenu={{
-        component: (
-          <ChatSideMenu
-            isOpen={isChatSideMenuOpen}
-            chatHistoryData={chatHistoryData}
-            isLoadingChatHistory={isLoadingChatHistory}
-            onItemPress={handleItemPress}
-            isItemActive={isItemActive}
-            onDelete={handleDelete}
-            onExport={handleExport}
-            onRename={handleRename}
-          />
-        ),
-        isOpen: isChatSideMenuOpen,
-      }}
-    >
-      {getChatLayout()}
-    </PageLayout>
+    <ChatConversationLayout
+      userInput={userInput}
+      conversationTurns={chatTurns}
+      isChatResponsePending={isChatResponsePending}
+      disclaimer={chatDisclaimer}
+      onPromptChange={onPromptChange}
+      onPromptSubmit={onPromptSubmit}
+      onRequestAbort={onRequestAbort}
+      onFileDownload={handleFileDownload}
+    />
   );
 };
 

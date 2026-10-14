@@ -1,16 +1,14 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./UploadFileTab.scss";
-
 import {
-  addNotification,
   FileInput,
   FileInputHandle,
 } from "@intel-enterprise-rag-ui/components";
 import { getValidationErrorMessage } from "@intel-enterprise-rag-ui/input-validation";
 import { sanitizeFile } from "@intel-enterprise-rag-ui/utils";
 import { ChangeEvent, DragEvent, useCallback, useRef } from "react";
+import { toast } from "sonner";
 
 import { useSummarizeFileMutation } from "@/features/docsum/api";
 import { SummaryType } from "@/features/docsum/api/types";
@@ -116,12 +114,7 @@ const UploadFileTab = () => {
 
       if (error) {
         console.error("File summary error:", error);
-        dispatch(
-          addNotification({
-            severity: "error",
-            text: `An error occurred while summarizing the file: ${error}`,
-          }),
-        );
+        toast.error(`An error occurred while summarizing the file: ${error}`);
       } else {
         const summaryToSave = summaryRef.current || data?.text || "";
         if (summaryToSave) {
@@ -135,11 +128,8 @@ const UploadFileTab = () => {
               source: fileData.name,
             }),
           );
-          dispatch(
-            addNotification({
-              severity: "success",
-              text: `The summary for ${fileData.name} has been saved successfully.`,
-            }),
+          toast.success(
+            `The summary for ${fileData.name} has been saved successfully.`,
           );
         }
       }
@@ -162,9 +152,9 @@ const UploadFileTab = () => {
   };
 
   return (
-    <div className="upload-file-tab">
-      <div className="upload-file-tab__upload-col">
-        <p>File to Summarize</p>
+    <div className="grid h-[calc(100vh-8rem)] grid-cols-2 gap-8 px-16 pt-6 pb-16">
+      <div className="flex flex-col">
+        <p className="mb-2 font-medium">File to Summarize</p>
         {fileData && (
           <FileSelectedToSummarize
             fileName={fileData.name}
@@ -191,7 +181,7 @@ const UploadFileTab = () => {
           className="mt-4"
         />
       </div>
-      <div className="upload-file-tab__summary-col">
+      <div className="h-full min-h-0 flex-1 overflow-y-auto">
         <GeneratedSummary
           summary={summary}
           isLoading={isLoading}

@@ -1,12 +1,9 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ChatHistoryItem.scss";
-
-import { Anchor, Button, Tooltip } from "@intel-enterprise-rag-ui/components";
+import { Button, Tooltip } from "@intel-enterprise-rag-ui/components";
 import { PinFilledIcon } from "@intel-enterprise-rag-ui/icons";
-import classNames from "classnames";
-import { useState } from "react";
+import { HistoryItem } from "@intel-enterprise-rag-ui/layouts";
 
 import type { OnPinChangeHandler } from "@/components/chat-history/ChatHistoryItemMenu/ChatHistoryItemMenu";
 import { ChatHistoryItemMenu } from "@/components/chat-history/ChatHistoryItemMenu/ChatHistoryItemMenu";
@@ -17,6 +14,7 @@ import { ChatHistoryItemData } from "@/types";
 
 const TITLE_OVERFLOW_LIMIT = 12;
 const PINNED_TITLE_OVERFLOW_LIMIT = 10;
+const CHAT_NAME_CHAR_LIMIT = 250;
 
 export type OnChatHistoryItemPressHandler = (id: string) => void;
 
@@ -41,68 +39,47 @@ export const ChatHistoryItem = ({
   onExport,
   onRename,
 }: ChatHistoryItemProps) => {
-  const { name } = itemData;
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const handleItemPress = () => {
-    if (isActive) return;
-    onPress(itemData.id);
-  };
-
-  const className = classNames("chat-history-item", {
-    "chat-history-item--active": isActive,
-    "chat-history-item--has-menu-open": isMenuOpen,
-    "chat-history-item--pinned": pinned,
-    "chat-history-item--unpinned": !pinned,
-  });
-
-  let titleElement = <p className="chat-history-item__title">{name}</p>;
-  const titleOverflowLimit = pinned
-    ? PINNED_TITLE_OVERFLOW_LIMIT
-    : TITLE_OVERFLOW_LIMIT;
-
-  if (name.length > titleOverflowLimit) {
-    titleElement = (
-      <Tooltip
-        title={name}
-        trigger={<p className="chat-history-item__title">{name}</p>}
-        placement="right"
-      />
-    );
-  }
+  const pinButton = pinned && (
+    <Tooltip
+      title="Unpin"
+      trigger={
+        <Button
+          data-testid="unpin-chat-button"
+          aria-label="Unpin chat"
+          className="text-foreground hover:text-foreground flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center border-none bg-transparent p-0 transition-colors hover:bg-transparent"
+          onPress={onPinChange}
+        >
+          <PinFilledIcon />
+        </Button>
+      }
+    />
+  );
 
   return (
-    <Anchor
+    <HistoryItem
       data-testid="chat-history-item"
-      className={className}
-      onPress={handleItemPress}
-    >
-      {pinned && (
-        <Tooltip
-          title="Unpin"
-          trigger={
-            <Button
-              data-testid="unpin-chat-button"
-              aria-label="Unpin chat"
-              className="chat-history-item__pin-icon"
-              onPress={onPinChange}
-            >
-              <PinFilledIcon />
-            </Button>
-          }
+      title={itemData.name}
+      isActive={isActive}
+      onPress={() => onPress(itemData.id)}
+      leading={pinButton}
+      titleOverflowLimit={
+        pinned ? PINNED_TITLE_OVERFLOW_LIMIT : TITLE_OVERFLOW_LIMIT
+      }
+      onRename={(newName) => onRename(itemData.id, newName)}
+      renameMaxLength={CHAT_NAME_CHAR_LIMIT}
+      renameAriaLabel="Rename chat"
+      renderMenu={({ isOpen, onOpenChange }) => (
+        <ChatHistoryItemMenu
+          itemData={itemData}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+          pinned={pinned}
+          onPinChange={onPinChange}
+          onDelete={onDelete}
+          onExport={onExport}
+          onRename={onRename}
         />
       )}
-      {titleElement}
-      <ChatHistoryItemMenu
-        itemData={itemData}
-        isOpen={isMenuOpen}
-        onOpenChange={setIsMenuOpen}
-        pinned={pinned}
-        onPinChange={onPinChange}
-        onDelete={onDelete}
-        onExport={onExport}
-        onRename={onRename}
-      />
-    </Anchor>
+    />
   );
 };

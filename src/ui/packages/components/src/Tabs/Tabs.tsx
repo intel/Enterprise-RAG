@@ -1,34 +1,28 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./Tabs.scss";
+import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
+import { cn } from "@intel-enterprise-rag-ui/utils";
+import { ReactNode } from "react";
 
-import classNames from "classnames";
-import {
-  Key as AriaKey,
-  Tab as AriaTab,
-  TabList as AriaTabList,
-  TabPanel as AriaTabPanel,
-  Tabs as AriaTabs,
-  TabsProps as AriaTabsProps,
-} from "react-aria-components";
-
-export type TabId = AriaKey;
+export type TabId = string;
 
 export interface Tab {
   name: string;
   id: TabId;
-  panel: React.ReactNode;
+  panel: ReactNode;
   [key: string]: unknown;
 }
 
-interface TabsProps extends AriaTabsProps {
-  /* Array that defines tab elements */
+interface TabsProps {
+  /** Array that defines tab elements */
   tabs: Tab[];
-  /* Currently selected tab */
+  /** Currently selected tab */
   selectedTab: TabId;
-  /* Handler for tab selection changes */
+  /** Handler for tab selection changes */
   onSelectionChange: (key: TabId) => void;
+  /** Test identifier for automated testing */
+  "data-testid"?: string;
 }
 
 export const Tabs = ({
@@ -37,31 +31,35 @@ export const Tabs = ({
   onSelectionChange,
   ...rest
 }: TabsProps) => (
-  <AriaTabs
-    selectedKey={selectedTab}
-    onSelectionChange={onSelectionChange}
+  <TabsPrimitive.Root
     {...rest}
+    value={selectedTab}
+    onValueChange={(value) => onSelectionChange(value as TabId)}
   >
-    <AriaTabList className="tabs">
+    <TabsPrimitive.List className="bg-muted inline-flex h-8 w-fit items-center justify-center rounded-lg p-[3px]">
       {tabs.map((tab) => (
-        <AriaTab
+        <TabsPrimitive.Tab
           key={`${tab.id}-tab`}
-          id={tab.id}
-          className={({ isSelected }) =>
-            classNames("tab-button", {
-              "active-tab": isSelected,
-            })
-          }
+          value={tab.id}
           aria-label={`${tab.name} Tab`}
+          className={cn(
+            "text-muted-foreground cursor-pointer rounded-md px-1.5 py-0.5 text-xs/relaxed font-medium whitespace-nowrap transition-all",
+            "focus-visible:border-ring focus-visible:ring-ring/30 outline-none focus-visible:ring-2",
+            "data-[selected]:bg-background data-[selected]:text-foreground",
+          )}
         >
           {tab.name}
-        </AriaTab>
+        </TabsPrimitive.Tab>
       ))}
-    </AriaTabList>
+    </TabsPrimitive.List>
     {tabs.map((tab) => (
-      <AriaTabPanel key={`${tab.id}-panel`} id={tab.id} className="tab-panel">
+      <TabsPrimitive.Panel
+        key={`${tab.id}-panel`}
+        value={tab.id}
+        className="relative mt-2 max-h-[calc(100vh_-_8rem)] overflow-y-auto"
+      >
         {tab.panel}
-      </AriaTabPanel>
+      </TabsPrimitive.Panel>
     ))}
-  </AriaTabs>
+  </TabsPrimitive.Root>
 );

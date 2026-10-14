@@ -1,19 +1,17 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./dataTableCells.scss";
-
-import { Button, Tooltip } from "@intel-enterprise-rag-ui/components";
+import { IconButton, Tooltip } from "@intel-enterprise-rag-ui/components";
 import { ColumnDef } from "@tanstack/react-table";
 
-import ChunksProgressBar from "@/components/ChunksProgressBar/ChunksProgressBar";
+import ChunksProgress from "@/components/ChunksProgress/ChunksProgress";
 import DataItemStatus from "@/components/DataItemStatus/DataItemStatus";
 import LinkTextExtractionDialog from "@/components/debug/LinkTextExtractionDialog/LinkTextExtractionDialog";
 import EmbeddingModelIndicator from "@/components/EmbeddingModelIndicator/EmbeddingModelIndicator";
 import ProcessingTimePopover from "@/components/ProcessingTimePopover/ProcessingTimePopover";
 import { LinkDataItem } from "@/types";
 
-import { formatStatusForFilter } from "./utils";
+import { formatStatusForFilter, STATUS_FILTER_OPTIONS } from "./utils";
 
 interface LinkActionsHandlers {
   retryHandler: (id: string) => void;
@@ -33,34 +31,23 @@ export const createLinksColumnDefs = (
 
   return [
     {
-      accessorKey: "status",
-      header: "Status",
-      accessorFn: (row) => formatStatusForFilter(row.status),
-      cell: ({
-        row: {
-          original: { status, job_message: statusMessage },
-        },
-      }) => <DataItemStatus status={status} statusMessage={statusMessage} />,
-    },
-    {
       accessorKey: "uri",
       header: "Link",
+      meta: { pin: "left", filterVariant: "text" },
       cell: ({
         row: {
           original: { uri, embedding_model },
         },
       }) => {
         const tooltipContent = (
-          <div className="data-table-cell__tooltip">
-            <p className="data-table-cell__tooltip-title">Embedding Model</p>
-            <p className="data-table-cell__tooltip-value">
-              {embedding_model || "unknown"}
-            </p>
+          <div className="text-xs">
+            <p className="mb-1 font-semibold">Embedding Model</p>
+            <p className="font-mono">{embedding_model || "unknown"}</p>
           </div>
         );
 
         return (
-          <div className="data-table-cell__name">
+          <div className="flex items-center text-wrap [overflow-wrap:anywhere]">
             <EmbeddingModelIndicator
               itemEmbeddingModel={embedding_model}
               getAppEnv={getAppEnv}
@@ -68,13 +55,23 @@ export const createLinksColumnDefs = (
             <Tooltip
               title={tooltipContent}
               placement="top"
-              trigger={
-                <span className="data-table-cell__name-trigger">{uri}</span>
-              }
+              trigger={<span className="cursor-help">{uri}</span>}
             />
           </div>
         );
       },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      accessorFn: (row) => formatStatusForFilter(row.status),
+      filterFn: "equalsString",
+      meta: { filterOptions: STATUS_FILTER_OPTIONS },
+      cell: ({
+        row: {
+          original: { status, job_message: statusMessage },
+        },
+      }) => <DataItemStatus status={status} statusMessage={statusMessage} />,
     },
     {
       id: "chunks",
@@ -88,7 +85,7 @@ export const createLinksColumnDefs = (
           },
         },
       }) => (
-        <ChunksProgressBar
+        <ChunksProgress
           processedChunks={processedChunks}
           totalChunks={totalChunks}
         />
@@ -129,7 +126,8 @@ export const createLinksColumnDefs = (
     },
     {
       id: "actions",
-      header: () => <p className="data-table-cell__actions-header">Actions</p>,
+      header: () => <p className="w-full text-center">Actions</p>,
+      meta: { pin: "right" },
       cell: ({
         row: {
           original: { id, uri, status, embedding_model },
@@ -141,36 +139,51 @@ export const createLinksColumnDefs = (
           status === "ingested";
 
         return (
-          <div className="data-table-cell__actions">
+          <div className="flex items-center justify-end gap-2">
             <LinkTextExtractionDialog uuid={id} linkUri={uri} />
             {status === "error" && (
-              <Button
-                data-testid="retry-link-button"
-                size="sm"
-                variant="outlined"
-                onPress={() => retryHandler(id)}
-              >
-                Retry
-              </Button>
+              <Tooltip
+                title="Retry"
+                trigger={
+                  <IconButton
+                    data-testid="retry-link-button"
+                    icon="refresh"
+                    size="sm"
+                    variant="outline"
+                    aria-label="Retry"
+                    onPress={() => retryHandler(id)}
+                  />
+                }
+              />
             )}
             {needsReingest && (
-              <Button
-                data-testid="reingest-link-button"
-                size="sm"
-                variant="outlined"
-                onPress={() => retryHandler(id)}
-              >
-                Reingest
-              </Button>
+              <Tooltip
+                title="Reingest"
+                trigger={
+                  <IconButton
+                    data-testid="reingest-link-button"
+                    icon="refresh"
+                    size="sm"
+                    variant="outline"
+                    aria-label="Reingest"
+                    onPress={() => retryHandler(id)}
+                  />
+                }
+              />
             )}
-            <Button
-              data-testid="delete-link-button"
-              size="sm"
-              color="error"
-              onPress={() => deleteHandler(id)}
-            >
-              Delete
-            </Button>
+            <Tooltip
+              title="Delete"
+              trigger={
+                <IconButton
+                  data-testid="delete-link-button"
+                  icon="delete"
+                  size="sm"
+                  variant="destructive"
+                  aria-label="Delete"
+                  onPress={() => deleteHandler(id)}
+                />
+              }
+            />
           </div>
         );
       },

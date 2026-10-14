@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { ImBlocked } from "react-icons/im";
+import { IconProps, ProhibitIcon } from "@phosphor-icons/react";
 
-export const BlockedIcon = (props: IconBaseProps) => <ImBlocked {...props} />;
+export const BlockedIcon = (props: IconProps) => <ProhibitIcon {...props} />;

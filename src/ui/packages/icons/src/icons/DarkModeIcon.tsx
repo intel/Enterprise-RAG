@@ -1,9 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { PiMoonStarsFill } from "react-icons/pi";
+import { IconProps, MoonIcon } from "@phosphor-icons/react";
 
-export const DarkModeIcon = (props: IconBaseProps) => (
-  <PiMoonStarsFill {...props} />
+export const DarkModeIcon = (props: IconProps) => (
+  <MoonIcon {...props} weight="fill" />
 );

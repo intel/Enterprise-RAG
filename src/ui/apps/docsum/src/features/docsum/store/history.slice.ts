@@ -5,7 +5,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuid } from "uuid";
 
 import { HistoryItemData } from "@/features/docsum/types/history";
-import { RootState } from "@/store";
+import type { RootState } from "@/store";
 
 interface HistoryState {
   items: HistoryItemData[];

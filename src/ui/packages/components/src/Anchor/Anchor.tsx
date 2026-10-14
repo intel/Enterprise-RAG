@@ -1,23 +1,18 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./Anchor.scss";
+import "./Anchor.css";
 
 import { ExternalLinkIcon } from "@intel-enterprise-rag-ui/icons";
-import { isSafeHref, sanitizeHref } from "@intel-enterprise-rag-ui/utils";
-import classNames from "classnames";
-import { ReactNode } from "react";
-import {
-  Link as AriaLink,
-  LinkProps as AriaLinkProps,
-  PressEvent as AriaPressEvent,
-} from "react-aria-components";
+import { cn, isSafeHref, sanitizeHref } from "@intel-enterprise-rag-ui/utils";
+import { AnchorHTMLAttributes, MouseEvent, PropsWithChildren } from "react";
 
-export interface AnchorProps extends AriaLinkProps {
-  /** Content to display inside the anchor */
-  children: ReactNode;
+export interface AnchorProps
+  extends AnchorHTMLAttributes<HTMLAnchorElement>, PropsWithChildren {
   /** If true, additional icon for indicating external links is displayed */
   isExternal?: boolean;
+  /** Callback fired when the anchor is pressed */
+  onPress?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 /**
@@ -35,27 +30,26 @@ export const Anchor = ({
   const isSafe = isSafeHref(href);
   const safeHref = isSafe ? sanitizeHref(href) : undefined;
   const rel = target === "_blank" ? "noopener noreferrer" : undefined;
-  const anchorClassNames = classNames([{ invalid: !isSafe }, className]);
 
-  const handlePress = (event: AriaPressEvent) => {
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (onPress && isSafe) {
       onPress(event);
     }
   };
 
   return (
-    <AriaLink
+    <a
       {...rest}
       href={safeHref}
       target={target}
       rel={rel}
-      className={anchorClassNames}
+      className={cn(!isSafe && "invalid", className)}
       aria-disabled={!isSafe}
-      onPress={handlePress}
+      onClick={handleClick}
     >
       {!isSafe && "Caution: Malicious link - "}
       {children}
       {isExternal && <ExternalLinkIcon size={12} />}
-    </AriaLink>
+    </a>
   );
 };

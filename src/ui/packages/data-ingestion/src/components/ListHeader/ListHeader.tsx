@@ -1,10 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ListHeader.scss";
-
 import { Button } from "@intel-enterprise-rag-ui/components";
-import classNames from "classnames";
+import { cn } from "@intel-enterprise-rag-ui/utils";
 
 interface ListHeaderProps {
   title?: string;
@@ -13,15 +11,15 @@ interface ListHeaderProps {
 
 const ListHeader = ({ title, onClearListBtnPress }: ListHeaderProps) => (
   <header
-    className={classNames({
-      "list-header": true,
-      "justify-between": title,
-    })}
+    className={cn(
+      "my-4 flex w-full items-center justify-end",
+      title && "justify-between",
+    )}
   >
     {title && <h3>{title}</h3>}
     <Button
       data-testid="delete-all-button"
-      color="error"
+      variant="destructive"
       size="sm"
       onPress={onClearListBtnPress}
     >

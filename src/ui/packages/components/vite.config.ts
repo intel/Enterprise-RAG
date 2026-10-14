@@ -3,6 +3,7 @@
 
 import { fileURLToPath } from "node:url";
 
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { dirname, resolve } from "path";
 import { defineConfig } from "vite";
@@ -31,17 +32,15 @@ export default defineConfig({
       },
     },
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: "modern",
-      },
-    },
-  },
-  plugins: [react(), viteTsconfigPaths(), dts()],
+  plugins: [tailwindcss(), react(), viteTsconfigPaths(), dts()],
   resolve: {
     alias: {
       "@/": resolve(__dirname, "./src/"),
     },
+  },
+  // Dev-only harness server (see index.html / dev/) — port fixed so preview tooling can target it
+  // reliably; unrelated to `vite build`.
+  server: {
+    port: 5180,
   },
 });

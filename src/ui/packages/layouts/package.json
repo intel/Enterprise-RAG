@@ -27,7 +27,8 @@
     "@intel-enterprise-rag-ui/auth": "workspace:^",
     "@intel-enterprise-rag-ui/components": "workspace:^",
     "@intel-enterprise-rag-ui/icons": "workspace:^",
-    "@intel-enterprise-rag-ui/tailwind-theme": "workspace:^"
+    "@intel-enterprise-rag-ui/shadcn-preset": "workspace:^",
+    "@intel-enterprise-rag-ui/utils": "workspace:^"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

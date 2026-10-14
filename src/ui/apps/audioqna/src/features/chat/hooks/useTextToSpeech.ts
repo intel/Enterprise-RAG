@@ -5,10 +5,9 @@ import {
   PlaySpeechButtonState,
   selectChatById,
 } from "@intel-enterprise-rag-ui/chat";
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { useTextToSpeechMutation } from "@/features/chat/api/tts.api";
 import { isAbortError } from "@/features/chat/utils/api";
@@ -29,7 +28,6 @@ export const useTextToSpeech = (): UseTextToSpeechResult => {
 
   const { chatId } = useParams<{ chatId?: string }>();
   const chat = useAppSelector((state) => selectChatById(state, chatId));
-  const dispatch = useDispatch();
 
   const currentAbortControllerRef = useRef<AbortController | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -80,9 +78,9 @@ export const useTextToSpeech = (): UseTextToSpeechResult => {
       }
 
       cleanup();
-      dispatch(addNotification({ severity: "error", text: errorMessage }));
+      toast.error(errorMessage);
     },
-    [cleanup, dispatch],
+    [cleanup],
   );
 
   const onPlayMessage = useCallback(

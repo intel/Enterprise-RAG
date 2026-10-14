@@ -3,6 +3,7 @@
 
 import { keycloakService } from "@intel-enterprise-rag-ui/auth";
 import {
+  CONFIGURABLE_SERVICE_IDS,
   ControlPlaneTab,
   PostRetrieverQueryRequest,
   ServiceCard,
@@ -28,7 +29,6 @@ import {
   onChatQnAGraphConnect,
   onChatQnAGraphEdgesChange,
   onChatQnAGraphNodesChange,
-  setChatQnAGraphIsAutorefreshEnabled,
   setChatQnAGraphSelectedServiceNode,
 } from "@/features/admin-panel/control-plane/store/chatQnAGraph.slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -46,15 +46,16 @@ const ChatQnAControlPlaneTab = () => {
   );
   const nodes = useAppSelector(chatQnAGraphNodesSelector);
   const edges = useAppSelector(chatQnAGraphEdgesSelector);
+  const selectedServiceNode = useAppSelector(
+    chatQnAGraphSelectedServiceNodeSelector,
+  );
+  const isConfigPanelDisabled =
+    selectedServiceNode === null ||
+    !CONFIGURABLE_SERVICE_IDS.includes(
+      selectedServiceNode.id as (typeof CONFIGURABLE_SERVICE_IDS)[number],
+    );
 
   const [getServicesData, { isFetching }] = useLazyGetServicesDataQuery();
-
-  const handleAutorefreshChange = useCallback(
-    (enabled: boolean) => {
-      dispatch(setChatQnAGraphIsAutorefreshEnabled(enabled));
-    },
-    [dispatch],
-  );
 
   const handleRefresh = useCallback(() => {
     getServicesData();
@@ -98,8 +99,6 @@ const ChatQnAControlPlaneTab = () => {
       edges={edges}
       isLoading={isLoading}
       isRenderable={isRenderable}
-      isAutorefreshEnabled={isAutorefreshEnabled}
-      onAutorefreshChange={handleAutorefreshChange}
       onRefresh={handleRefresh}
       isFetching={isFetching}
       onNodesChange={handleNodesChange}
@@ -108,6 +107,7 @@ const ChatQnAControlPlaneTab = () => {
       onSelectionChange={handleSelectionChange}
       fitViewOptions={fitViewOptions}
       ConfigPanel={<ChatQnAServiceCard />}
+      isConfigPanelDisabled={isConfigPanelDisabled}
     />
   );
 };

@@ -1,13 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./LinkInput.scss";
-
-import {
-  Button,
-  IconButton,
-  TextInput,
-} from "@intel-enterprise-rag-ui/components";
+import { Button, IconButton, Input } from "@intel-enterprise-rag-ui/components";
 import { getValidationErrorMessage } from "@intel-enterprise-rag-ui/input-validation";
 import { sanitizeString } from "@intel-enterprise-rag-ui/utils";
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
@@ -113,9 +107,9 @@ const LinkInput = ({ addLinkToList }: LinkInputProps) => {
   };
 
   return (
-    <div className="link-input">
-      <div className="link-input__row">
-        <TextInput
+    <div className="flex flex-col gap-2">
+      <div className="flex items-start gap-2">
+        <Input
           ref={inputRef}
           data-testid="link-input"
           type="text"
@@ -124,21 +118,21 @@ const LinkInput = ({ addLinkToList }: LinkInputProps) => {
           isInvalid={isInvalid}
           errorMessage={errorMessage}
           placeholder="Enter valid URL (starting with http:// or https://)"
-          className="link-input__field"
+          className="w-full"
           onChange={handleLinkInputChange}
           onKeyDown={handleLinkInputKeyDown}
         />
         <IconButton
           data-testid="add-link-button"
           icon="plus"
-          variant="contained"
+          variant="default"
           aria-label="Add list to the list"
           isDisabled={addLinkBtnDisabled}
           onPress={handleAddLinkBtnPress}
         />
       </div>
-      <div className="link-input__upload-section">
-        <p className="link-input__hint">
+      <div className="flex flex-col gap-1">
+        <p className="text-xs">
           You can also upload a <code>.txt</code> file with links separated by
           commas, spaces, or new lines. Each link must start with{" "}
           <code>http://</code> or <code>https://</code>

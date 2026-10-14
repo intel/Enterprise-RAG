@@ -1,0 +1,11 @@
+/* Copyright (C) 2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+/* Kept in CSS: targets the last th/td cells DataTable renders internally. Everything else in
+   this dialog (and AddSharePointSiteForm) is inline utilities. */
+.sharepoint-sites-dialog__sites-table th:last-child,
+.sharepoint-sites-dialog__sites-table td:last-child {
+  @apply w-28 text-right;
+}

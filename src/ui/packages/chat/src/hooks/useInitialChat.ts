@@ -17,7 +17,7 @@ import { parseSources } from "@/utils";
 export interface UseInitialChatConfig {
   usePostPromptMutation: UsePostPromptMutation;
   streamingConfig: UseChatStreamingConfig;
-  isChatSideMenuOpen: boolean;
+  isChatSidebarOpen: boolean;
   onNavigateToChat?: (chatId: string) => void;
 }
 
@@ -25,7 +25,7 @@ export const useInitialChat = (config: UseInitialChatConfig) => {
   const {
     usePostPromptMutation,
     streamingConfig,
-    isChatSideMenuOpen,
+    isChatSidebarOpen,
     onNavigateToChat,
   } = config;
 
@@ -164,7 +164,7 @@ export const useInitialChat = (config: UseInitialChatConfig) => {
     userInput,
     chatTurns,
     isChatResponsePending,
-    isChatSideMenuOpen,
+    isChatSidebarOpen,
     onPromptChange,
     onPromptSubmit,
     onRequestAbort,

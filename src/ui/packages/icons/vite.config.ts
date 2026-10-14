@@ -30,13 +30,6 @@ export default defineConfig({
       },
     },
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: "modern",
-      },
-    },
-  },
   plugins: [react(), viteTsconfigPaths(), dts()],
   resolve: {
     alias: {

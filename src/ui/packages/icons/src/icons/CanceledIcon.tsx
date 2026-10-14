@@ -1,7 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { TiCancel } from "react-icons/ti";
+import { IconProps, MinusCircleIcon } from "@phosphor-icons/react";
 
-export const CanceledIcon = (props: IconBaseProps) => <TiCancel {...props} />;
+export const CanceledIcon = (props: IconProps) => (
+  <MinusCircleIcon {...props} />
+);

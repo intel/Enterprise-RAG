@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsPin } from "react-icons/bs";
+import { IconProps, PushPinSimpleIcon } from "@phosphor-icons/react";
 
-export const PinIcon = (props: IconBaseProps) => <BsPin {...props} />;
+export const PinIcon = (props: IconProps) => <PushPinSimpleIcon {...props} />;

@@ -63,7 +63,7 @@ async def test_new_chat_button(chat_ui_helper):
     Test that clicking New Chat starts a fresh conversation.
 
     Steps:
-    1. Send a message first (new-chat-button only appears after first message)
+    1. Send a message first (so there's an active conversation to reset)
     2. Verify new-chat-button is visible
     3. Click new-chat-button
     4. Verify conversation feed is empty / URL includes /chat
@@ -71,17 +71,20 @@ async def test_new_chat_button(chat_ui_helper):
     Success criteria:
     - New chat button is visible and clickable via data-testid
     - After click, conversation feed is reset
+
+    Note: new-chat-button is now always visible in the chat sidebar (it no longer disappears when
+    there's no active conversation) — seeding a chat here is only to have something to reset.
     """
     logger.info("Test: New Chat button via data-testid")
 
     page = chat_ui_helper.page
 
-    # Seed a chat so that new-chat-button appears (it only exists after first message)
+    # Seed a chat so there's an active conversation for New Chat to reset
     await _ensure_at_least_one_chat(chat_ui_helper)
 
-    # Assert 1: New chat button is visible (only after first message sent)
+    # Assert 1: New chat button is visible
     is_visible = await chat_ui_helper.is_visible_by_testid("new-chat-button", timeout=5000)
-    assert is_visible, "new-chat-button should be visible after sending a message"
+    assert is_visible, "new-chat-button should always be visible in the chat sidebar"
     logger.info("Assert 1: new-chat-button is visible")
 
     # Act: click new chat

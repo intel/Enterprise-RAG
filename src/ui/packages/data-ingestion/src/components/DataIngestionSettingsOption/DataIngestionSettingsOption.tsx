@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./DataIngestionSettingsOption.scss";
-
 import { ReactNode } from "react";
 
 interface DataIngestionSettingsOptionProps {
@@ -11,15 +9,15 @@ interface DataIngestionSettingsOptionProps {
   description: string;
 }
 
-const DataIngestionSettingsOption = ({
+export const DataIngestionSettingsOption = ({
   name,
   input,
   description,
 }: DataIngestionSettingsOptionProps) => (
   <>
-    <p className="data-ingestion-settings-option__name">{name}</p>
+    <p className="text-xs font-medium">{name}</p>
     {input}
-    <p className="data-ingestion-settings-option__description">{description}</p>
+    <p className="text-xs">{description}</p>
   </>
 );
 

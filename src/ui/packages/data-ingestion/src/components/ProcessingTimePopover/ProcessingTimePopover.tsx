@@ -1,13 +1,12 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ProcessingTimePopover.scss";
-
 import {
   Button,
   Popover,
   usePopover,
 } from "@intel-enterprise-rag-ui/components";
+import { cn } from "@intel-enterprise-rag-ui/utils";
 import { memo, useEffect, useRef, useState } from "react";
 
 import { END_DATA_STATUSES } from "@/config/api";
@@ -30,37 +29,37 @@ const durationLegendItems: {
 }[] = [
   {
     key: "text_extractor_duration",
-    className: "processing-time-popover--text-extractor",
+    className: "bg-red-600 dark:bg-red-400",
     label: "Text Extractor",
   },
   {
     key: "text_compression_duration",
-    className: "processing-time-popover--text-compression",
+    className: "bg-amber-600 dark:bg-amber-400",
     label: "Text Compression",
   },
   {
     key: "text_splitter_duration",
-    className: "processing-time-popover--text-splitter",
+    className: "bg-green-600 dark:bg-green-400",
     label: "Text Splitter",
   },
   {
     key: "dpguard_duration",
-    className: "processing-time-popover--dpguard",
+    className: "bg-fuchsia-600 dark:bg-fuchsia-400",
     label: "Data Prep Guardrails",
   },
   {
     key: "late_chunking_duration",
-    className: "processing-time-popover--embedding",
+    className: "bg-sky-600 dark:bg-sky-400",
     label: "Late Chunking",
   },
   {
     key: "embedding_duration",
-    className: "processing-time-popover--embedding",
+    className: "bg-sky-600 dark:bg-sky-400",
     label: "Embedding",
   },
   {
     key: "ingestion_duration",
-    className: "processing-time-popover--ingestion",
+    className: "bg-purple-600 dark:bg-purple-400",
     label: "Ingestion",
   },
 ];
@@ -153,8 +152,8 @@ const ProcessingTimePopover = memo(
         <Button
           ref={triggerRef}
           data-testid="processing-time-popover-trigger"
-          variant="text"
-          className="processing-time-popover__trigger"
+          variant="ghost"
+          className="text-foreground h-auto cursor-pointer bg-transparent p-0 text-xs underline hover:bg-transparent dark:bg-transparent"
           onPress={togglePopover}
         >
           {timer}
@@ -166,14 +165,12 @@ const ProcessingTimePopover = memo(
           ariaLabel="Processing Time Details"
           onOpenChange={togglePopover}
         >
-          <div className="processing-time-popover">
-            <header className="processing-time-popover__header">
+          <div className="w-80">
+            <header className="grid grid-cols-2 font-medium">
               <p>Total Processing Time</p>
-              <p className="processing-time-popover__time">
-                {formattedTotalProcessingTime}
-              </p>
+              <p className="text-right">{formattedTotalProcessingTime}</p>
             </header>
-            <div className="processing-time-popover__bar">
+            <div className="bg-card my-3 flex h-4 w-full overflow-hidden rounded">
               {durationLegendItems.map(({ key, className, label }) => {
                 const percent =
                   processingDuration > 0
@@ -199,12 +196,18 @@ const ProcessingTimePopover = memo(
               if (duration === 0) return null;
 
               return (
-                <div key={key} className="processing-time-popover__legend-item">
-                  <span className={className}></span>
+                <div
+                  key={key}
+                  className="mx-1 grid grid-cols-[0.75rem_1fr_5rem] items-center gap-x-1.5 text-xs not-last-of-type:mb-1"
+                >
+                  <span
+                    className={cn(
+                      "h-3 w-3 rounded-full bg-gray-600 dark:bg-gray-400",
+                      className,
+                    )}
+                  ></span>
                   <p>{label}</p>
-                  <p className="processing-time-popover__time">
-                    {formatProcessingTime(duration)}
-                  </p>
+                  <p className="text-right">{formatProcessingTime(duration)}</p>
                 </div>
               );
             })}

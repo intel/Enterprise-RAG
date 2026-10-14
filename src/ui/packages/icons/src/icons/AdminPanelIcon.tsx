@@ -1,9 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsDatabaseFillGear } from "react-icons/bs";
+import { IconProps, UserGearIcon } from "@phosphor-icons/react";
 
-export const AdminPanelIcon = (props: IconBaseProps) => (
-  <BsDatabaseFillGear {...props} />
-);
+export const AdminPanelIcon = (props: IconProps) => <UserGearIcon {...props} />;

@@ -1,0 +1,48 @@
+// Copyright (C) 2024-2026 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+import { Textarea } from "@intel-enterprise-rag-ui/components";
+import { formatSnakeCaseToTitleCase } from "@intel-enterprise-rag-ui/utils";
+import { ChangeEventHandler } from "react";
+
+interface ServiceArgumentTextareaProps {
+  value: string;
+  placeholder: string;
+  isInvalid: boolean;
+  rows?: number;
+  titleCaseLabel?: boolean;
+  inputConfig: {
+    name: string;
+    tooltipText?: string;
+  };
+  onChange: ChangeEventHandler<HTMLTextAreaElement>;
+  isDisabled?: boolean;
+}
+
+export const ServiceArgumentTextarea = ({
+  value,
+  placeholder,
+  isInvalid,
+  rows = 3,
+  titleCaseLabel = true,
+  inputConfig: { name, tooltipText },
+  onChange,
+  isDisabled = false,
+}: ServiceArgumentTextareaProps) => {
+  const label = titleCaseLabel ? formatSnakeCaseToTitleCase(name) : name;
+
+  return (
+    <Textarea
+      name={name}
+      value={value}
+      label={label}
+      size="sm"
+      placeholder={placeholder}
+      rows={rows}
+      isInvalid={isInvalid}
+      disabled={isDisabled}
+      tooltipText={tooltipText}
+      onChange={onChange}
+    />
+  );
+};

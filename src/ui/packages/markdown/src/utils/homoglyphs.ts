@@ -32,7 +32,7 @@ const isPotentialHomoglyph = (char: string): boolean => {
  * - Title attribute with warning message for accessibility
  */
 const createHomoglyphMarkElement = (text: string): string => {
-  return `<mark class="cursor-not-allowed select-none bg-inherit text-inherit border-light-status-error dark:border-dark-status-error border border-solid" title="Potential homoglyphs. Be cautious.">${text}</mark>`;
+  return `<mark class="cursor-not-allowed select-none bg-inherit text-inherit border-destructive border border-solid" title="Potential homoglyphs. Be cautious.">${text}</mark>`;
 };
 
 /**

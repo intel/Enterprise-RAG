@@ -3,7 +3,7 @@
 
 import {
   resetChatHistorySlice,
-  resetChatSideMenuSlice,
+  resetChatSidebarSlice,
 } from "@intel-enterprise-rag-ui/chat";
 import { edpApi } from "@intel-enterprise-rag-ui/data-ingestion";
 
@@ -18,7 +18,7 @@ import { resetViewNavigationSlice } from "@/store/viewNavigation.slice";
 export const resetStore = () => {
   // reset all Redux store slices
   store.dispatch(resetChatQnAGraphSlice());
-  store.dispatch(resetChatSideMenuSlice());
+  store.dispatch(resetChatSidebarSlice());
   store.dispatch(resetChatHistorySlice());
   store.dispatch(resetViewNavigationSlice());
 

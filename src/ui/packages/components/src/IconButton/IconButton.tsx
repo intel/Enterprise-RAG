@@ -1,75 +1,105 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./IconButton.scss";
-
+import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { IconName, icons } from "@intel-enterprise-rag-ui/icons";
-import classNames from "classnames";
-import { forwardRef } from "react";
-import {
-  Button as AriaButton,
-  ButtonProps as AriaButtonProps,
-} from "react-aria-components";
+import { cn } from "@intel-enterprise-rag-ui/utils";
+import { cva, type VariantProps } from "class-variance-authority";
+import { forwardRef, type MouseEvent } from "react";
 
-type IconButtonVariants = "outlined" | "contained";
-type IconButtonSizes = "sm" | "md";
-export type IconButtonColor = "primary" | "error" | "success";
+export type IconButtonVariant =
+  | "default"
+  | "destructive"
+  | "success"
+  | "outline"
+  | "ghost";
+type IconButtonSize = "sm" | "md" | "lg";
 
-export interface IconButtonProps extends AriaButtonProps {
+const iconButtonVariants = cva(
+  "flex size-7 cursor-pointer items-center justify-center rounded-md p-1.5 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        destructive:
+          "text-destructive hover:bg-black/30 disabled:text-muted-foreground",
+        success:
+          "text-success hover:bg-black/30 disabled:text-muted-foreground",
+        outline:
+          "border-input text-foreground border bg-transparent hover:bg-accent hover:text-accent-foreground disabled:cursor-default disabled:border-transparent disabled:bg-muted disabled:text-muted-foreground dark:disabled:bg-transparent",
+        ghost:
+          "text-foreground hover:bg-accent hover:text-accent-foreground disabled:text-muted-foreground",
+      },
+      size: {
+        md: "",
+        sm: "size-6 p-1 text-sm",
+        lg: "size-8 p-2 text-base",
+      },
+    },
+    defaultVariants: {
+      variant: "ghost",
+      size: "md",
+    },
+  },
+);
+
+export interface IconButtonProps
+  extends
+    Omit<ButtonPrimitive.Props, "onClick" | "disabled" | "color">,
+    Omit<VariantProps<typeof iconButtonVariants>, "size"> {
   /** Name of the icon to display */
   icon: IconName;
-  /** Color of the button (primary, error, success) */
-  color?: IconButtonColor;
   /** Size of the button (small, medium) */
-  size?: IconButtonSizes;
-  /** Variant of the button (outlined, contained) */
-  variant?: IconButtonVariants;
+  size?: IconButtonSize;
   /** Additional classes to apply to the icon */
   iconClassName?: string;
+  /** If true, button is disabled */
+  isDisabled?: boolean;
+  /** Callback fired when the button is pressed */
+  onPress?: (event: MouseEvent<HTMLButtonElement>) => void;
   /** Test identifier for automated testing */
   "data-testid"?: string;
 }
 
 /**
- * Icon button component for actions represented by icons, supporting color, size, and variant options.
+ * Icon button component for actions represented by icons, supporting variant and size options.
  */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   (
     {
       icon,
-      color = "primary",
       size = "md",
       variant,
       iconClassName,
       className,
+      isDisabled,
+      onPress,
       ...rest
     },
     ref,
   ) => {
-    const iconButtonClassNames = classNames(
-      "icon-button",
-      {
-        "icon-button--error": !variant && color === "error",
-        "icon-button--success": !variant && color === "success",
-        "icon-button--sm": size === "sm",
-        "icon-button--outlined": variant === "outlined",
-        "icon-button--contained": variant === "contained",
-        "icon-button--outlined-primary":
-          variant === "outlined" && color === "primary",
-        "icon-button--outlined-error":
-          variant === "outlined" && color === "error",
-        "icon-button--outlined-success":
-          variant === "outlined" && color === "success",
-      },
-      className,
-    );
-
+    // Base UI's Trigger `render` prop clones this element and injects its own
+    // `onClick` (e.g. to open a Dialog/Menu) — must be composed with `onPress`,
+    // not overwritten, or every Dialog/Menu/Tooltip trigger silently stops working.
+    const { onClick, ...restProps } = rest as typeof rest & {
+      onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+    };
     const IconComponent = icons[icon];
 
     return (
-      <AriaButton {...rest} ref={ref} className={iconButtonClassNames}>
+      <ButtonPrimitive
+        {...restProps}
+        ref={ref}
+        data-slot="icon-button"
+        disabled={isDisabled}
+        onClick={(event) => {
+          onClick?.(event);
+          onPress?.(event);
+        }}
+        className={cn(iconButtonVariants({ variant, size }), className)}
+      >
         <IconComponent className={iconClassName} />
-      </AriaButton>
+      </ButtonPrimitive>
     );
   },
 );

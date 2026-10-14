@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./LoadingFallback.scss";
-
 import { LoadingIcon } from "@intel-enterprise-rag-ui/icons";
 
 interface LoadingFallbackProps {
@@ -14,12 +12,10 @@ interface LoadingFallbackProps {
  * Loading fallback component for displaying a loading indicator and message.
  */
 export const LoadingFallback = ({ loadingMessage }: LoadingFallbackProps) => (
-  <div className="loading-fallback">
-    <div className="loading-fallback__content">
-      <LoadingIcon className="loading-fallback__icon" />
-      <p className="loading-fallback__message">
-        {loadingMessage ?? "Loading..."}
-      </p>
+  <div className="flex h-full w-full items-center justify-center">
+    <div className="flex items-center">
+      <LoadingIcon className="animate-spin" />
+      <p className="mb-0 pl-3">{loadingMessage ?? "Loading..."}</p>
     </div>
   </div>
 );

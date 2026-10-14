@@ -1,0 +1,32 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* Focal "spark" — a soft breathing glow ring drawing attention to the input on the initial (empty)
+   chat view, until the first prompt is sent. Stops for good because the parent unmounts this
+   component once that happens, not via a class toggle here. Kept in CSS: keyframes, a
+   reduced-motion media query and color-mix() box-shadows. */
+.prompt-input__form--spark {
+  animation: prompt-input-spark 2.4s ease-in-out infinite;
+}
+.prompt-input__form--spark:focus-within {
+  animation-play-state: paused;
+}
+@keyframes prompt-input-spark {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--ring);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 40%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .prompt-input__form--spark {
+    animation: none;
+  }
+  /* :not(:focus-within) so the form's focus-within:ring-2 utility still shows on focus — it used to
+     win on specificity when both rules were unlayered BEM CSS. */
+  .prompt-input__form--spark:not(:focus-within) {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 40%, transparent);
+  }
+}

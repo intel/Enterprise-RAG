@@ -1,15 +1,18 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./BatchActionsDropdown.scss";
-
 import {
   Button,
-  Menu,
-  MenuItem,
-  MenuTrigger,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@intel-enterprise-rag-ui/components";
 import { DeleteIcon, RefreshIcon } from "@intel-enterprise-rag-ui/icons";
+import { cn } from "@intel-enterprise-rag-ui/utils";
+
+const menuItemClassName =
+  "text-foreground hover:bg-accent flex cursor-pointer items-center gap-2 px-3 py-2";
+const disabledMenuItemClassName = "cursor-not-allowed opacity-50";
 
 interface BatchActionsDropdownProps {
   /** Total number of selected items */
@@ -42,7 +45,7 @@ const BatchActionsDropdown = ({
   const isReingestDisabled = reingestableCount === 0;
 
   return (
-    <MenuTrigger
+    <DropdownMenuTrigger
       trigger={
         <Button
           data-testid="batch-actions-button"
@@ -54,41 +57,47 @@ const BatchActionsDropdown = ({
       ariaLabel="Batch Actions Menu"
       placement="bottom end"
     >
-      <Menu
-        className="batch-actions-menu"
+      <DropdownMenu
+        className="min-w-40"
         onAction={(key) => {
           if (key === "retry") onRetry();
           if (key === "reingest" && onReingest) onReingest();
           if (key === "delete") onDelete();
         }}
       >
-        <MenuItem
+        <DropdownMenuItem
           id="retry"
-          className={`batch-actions-menu__item ${isRetryDisabled ? "batch-actions-menu__item--disabled" : ""}`}
+          className={cn(
+            menuItemClassName,
+            isRetryDisabled && disabledMenuItemClassName,
+          )}
           isDisabled={isRetryDisabled}
         >
-          <RefreshIcon className="batch-actions-menu__icon" />
+          <RefreshIcon className="text-base" />
           <span>Retry{retryableCount > 0 ? ` (${retryableCount})` : ""}</span>
-        </MenuItem>
+        </DropdownMenuItem>
         {reingestableCount > 0 && onReingest && (
-          <MenuItem
+          <DropdownMenuItem
             id="reingest"
-            className={`batch-actions-menu__item ${isReingestDisabled ? "batch-actions-menu__item--disabled" : ""}`}
+            className={cn(
+              menuItemClassName,
+              isReingestDisabled && disabledMenuItemClassName,
+            )}
             isDisabled={isReingestDisabled}
           >
-            <RefreshIcon className="batch-actions-menu__icon" />
+            <RefreshIcon className="text-base" />
             <span>Reingest ({reingestableCount})</span>
-          </MenuItem>
+          </DropdownMenuItem>
         )}
-        <MenuItem
+        <DropdownMenuItem
           id="delete"
-          className="batch-actions-menu__item batch-actions-menu__item--delete"
+          className={cn(menuItemClassName, "text-destructive")}
         >
-          <DeleteIcon className="batch-actions-menu__icon" />
+          <DeleteIcon className="text-base" />
           <span>Delete ({selectedCount})</span>
-        </MenuItem>
-      </Menu>
-    </MenuTrigger>
+        </DropdownMenuItem>
+      </DropdownMenu>
+    </DropdownMenuTrigger>
   );
 };
 

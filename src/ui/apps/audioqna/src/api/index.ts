@@ -6,7 +6,7 @@ import { downloadBlob } from "@intel-enterprise-rag-ui/utils";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { API_ENDPOINTS, ERROR_MESSAGES } from "@/config/api";
-import { RootState } from "@/store";
+import type { RootState } from "@/store";
 import { DownloadFileRequest, GetFilePresignedUrlRequest } from "@/types/api";
 import { getAudioQnAAppEnv } from "@/utils";
 import { handleOnQueryStarted, transformErrorMessage } from "@/utils/api";

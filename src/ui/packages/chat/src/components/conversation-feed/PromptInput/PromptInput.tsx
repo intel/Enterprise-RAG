@@ -1,8 +1,9 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./PromptInput.scss";
+import "./PromptInput.css";
 
+import { IconButton } from "@intel-enterprise-rag-ui/components";
 import { sanitizeString } from "@intel-enterprise-rag-ui/utils";
 import classNames from "classnames";
 import {
@@ -16,22 +17,19 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  TextArea as AriaTextArea,
-  TextField as AriaTextField,
-} from "react-aria-components";
-
-import { PromptInputButton } from "@/components/conversation-feed/PromptInputButton/PromptInputButton";
 
 const MAX_REQUEST_BODY_SIZE = 1 * 1024 * 1024; // 1MB in bytes - restriction from nginx config
 const REQUEST_BODY_FORMAT_OVERHEAD = '{ "text": "" }'.length;
 const PROMPT_MAX_LENGTH = MAX_REQUEST_BODY_SIZE - REQUEST_BODY_FORMAT_OVERHEAD;
-const PROMPT_MAX_HEIGHT = 15 * 16; // must be the same as max-height set for prompt-input css class
 
 interface PromptInputProps {
   prompt: string;
   isChatResponsePending?: boolean;
   enableMicrophone?: boolean;
+  /** Focal glow pulse drawing attention to the input — only meaningful on the initial (empty) chat
+   * view, before a conversation exists; the parent unmounts this component once the first prompt is
+   * sent, which is what actually stops the animation for good. */
+  showSparkAnimation?: boolean;
   onRequestAbort?: () => void;
   onChange: ChangeEventHandler<HTMLTextAreaElement>;
   onSubmit: (prompt: string) => void;
@@ -43,6 +41,7 @@ export const PromptInput = ({
   prompt,
   isChatResponsePending = false,
   enableMicrophone = false,
+  showSparkAnimation = false,
   onRequestAbort,
   onChange,
   onSubmit,
@@ -65,10 +64,6 @@ export const PromptInput = ({
   }, []);
 
   useEffect(() => {
-    recalcuatePromptInputHeight();
-  }, [prompt]);
-
-  useEffect(() => {
     return () => {
       stopMediaStream();
     };
@@ -87,24 +82,7 @@ export const PromptInput = ({
     promptInputRef.current!.focus();
   };
 
-  const recalcuatePromptInputHeight = () => {
-    const promptInput = promptInputRef.current;
-    if (promptInput !== null) {
-      const currentHeight = promptInput.style.height;
-      promptInput.style.height = "auto";
-      const targetHeight = `${promptInput.scrollHeight}px`;
-      promptInput.style.height = currentHeight;
-
-      const maxHeight = PROMPT_MAX_HEIGHT;
-      const targetHeightNumber = parseInt(targetHeight, 10);
-      promptInput.style.overflowY =
-        targetHeightNumber > maxHeight ? "scroll" : "hidden";
-
-      requestAnimationFrame(() => {
-        promptInput.style.height = targetHeight;
-      });
-    }
-  };
+  const hasText = prompt.trim().length > 0;
 
   const isSubmitDisabled = useCallback(() => {
     const sanitizedPrompt = sanitizeString(prompt).trim();
@@ -139,14 +117,6 @@ export const PromptInput = ({
   const handleStopBtnPress = () => {
     onRequestAbort?.();
     focusPromptInput();
-  };
-
-  const handleStopBtnKeyDown: KeyboardEventHandler = (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      onRequestAbort?.();
-      focusPromptInput();
-    }
   };
 
   const appendTranscriptToInput = (transcript: string) => {
@@ -246,21 +216,21 @@ export const PromptInput = ({
     }
   };
 
-  const showStopButton = onRequestAbort && isChatResponsePending;
-  const showSendButton = !showStopButton;
+  // Mirrors packages/shadcn-preset's PromptInput: at most one trailing action
+  // button is shown at a time (stop > microphone > send), not stacked side by
+  // side — an empty textarea shows the microphone instead of a disabled send
+  // button, and send takes over as soon as there's text to submit.
+  const showStopButton = Boolean(onRequestAbort && isChatResponsePending);
   const showMicrophoneButton =
-    enableMicrophone && isMediaRecorderSupported && onSpeechToText;
+    !showStopButton &&
+    !hasText &&
+    enableMicrophone &&
+    isMediaRecorderSupported &&
+    Boolean(onSpeechToText);
+  const showSendButton = !showStopButton && !showMicrophoneButton;
 
   const isMicrophoneButtonDisabled =
     (isChatResponsePending && !isRecording) || isTranscribing;
-
-  const formClassName = useMemo(
-    () =>
-      showMicrophoneButton
-        ? "prompt-input__form prompt-input__form--with-microphone"
-        : "prompt-input__form",
-    [showMicrophoneButton],
-  );
 
   const microphoneButtonIcon = useMemo(
     () => (isRecording ? "microphone-recording" : "microphone"),
@@ -272,63 +242,61 @@ export const PromptInput = ({
     [isRecording],
   );
 
-  const microphoneButtonClassName = useMemo(
-    () =>
-      classNames({
-        "prompt-input__button--recording": isRecording,
-      }),
-    [isRecording],
-  );
-
   return (
     <form
-      className={formClassName}
+      className={classNames(
+        "border-input bg-card focus-within:border-ring focus-within:ring-ring/30 z-10 mx-4 flex w-[calc(100%_-_2rem)] max-w-full items-end gap-2 rounded-md border p-2 focus-within:ring-2 md:mx-auto md:w-[46rem]",
+        {
+          "prompt-input__form--spark": showSparkAnimation,
+        },
+      )}
       onSubmit={handleSubmit}
       data-testid="prompt-input-form"
     >
-      <AriaTextField
-        className="prompt-input__text-field"
+      <textarea
+        ref={promptInputRef}
         aria-label="Your message"
-      >
-        <AriaTextArea
-          ref={promptInputRef}
-          value={prompt}
-          name="prompt-input"
-          placeholder="Enter your prompt..."
-          maxLength={PROMPT_MAX_LENGTH}
-          rows={1}
-          className="prompt-input"
-          data-testid="prompt-input-textarea"
-          onChange={onChange}
-          onKeyDown={handleKeyDown}
-        />
-      </AriaTextField>
+        value={prompt}
+        name="prompt-input"
+        placeholder="Enter your prompt..."
+        maxLength={PROMPT_MAX_LENGTH}
+        rows={1}
+        className="placeholder:text-muted-foreground field-sizing-content max-h-60 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-1 text-sm/relaxed outline-none! placeholder:not-italic"
+        data-testid="prompt-input-textarea"
+        onChange={onChange}
+        onKeyDown={handleKeyDown}
+      />
       {showStopButton && (
-        <PromptInputButton
+        <IconButton
           data-testid="prompt-stop-button"
           icon="prompt-stop"
           type="button"
+          variant="outline"
+          size="lg"
           aria-label="Stop response"
           onPress={handleStopBtnPress}
-          onKeyDown={handleStopBtnKeyDown}
         />
       )}
       {showMicrophoneButton && (
-        <PromptInputButton
+        <IconButton
           data-testid="prompt-microphone-button"
           icon={microphoneButtonIcon}
           type="button"
+          variant={isRecording ? "destructive" : "default"}
+          size="lg"
           aria-label={microphoneButtonAriaLabel}
-          className={microphoneButtonClassName}
+          aria-pressed={isRecording}
           isDisabled={isMicrophoneButtonDisabled}
           onPress={handleMicrophoneBtnPress}
         />
       )}
       {showSendButton && (
-        <PromptInputButton
+        <IconButton
           data-testid="prompt-send-button"
           icon="prompt-send"
           type="submit"
+          variant="default"
+          size="lg"
           aria-label="Send prompt"
           isDisabled={isSubmitDisabled()}
         />

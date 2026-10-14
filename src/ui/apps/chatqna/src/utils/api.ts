@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { keycloakService } from "@intel-enterprise-rag-ui/auth";
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { toast } from "sonner";
 
 import { AppDispatch } from "@/store";
 import { resetStore } from "@/store/utils";
@@ -47,7 +47,10 @@ const getErrorMessage = (error: unknown, fallbackMessage: string): string => {
 
 const handleOnQueryStarted = async <T>(
   queryFulfilled: Promise<T>,
-  dispatch: AppDispatch,
+  // No longer used for dispatching a notification (that's a direct toast() call
+  // now, not a Redux action) — kept so every RTK Query onQueryStarted call site
+  // doesn't need updating just to drop this argument.
+  _dispatch: AppDispatch,
   fallbackMessage: string,
 ) => {
   try {
@@ -57,7 +60,7 @@ const handleOnQueryStarted = async <T>(
       (error as { error: FetchBaseQueryError }).error,
       fallbackMessage,
     );
-    dispatch(addNotification({ severity: "error", text: errorMessage }));
+    toast.error(errorMessage);
   }
 };
 

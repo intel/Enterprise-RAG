@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./HistoryItemDetails.scss";
-
 import { useMemo } from "react";
 
 import GeneratedSummary from "@/features/docsum/components/shared/GeneratedSummary/GeneratedSummary";
@@ -17,13 +15,15 @@ const HistoryItemDetails = ({ itemData }: HistoryItemDetailsProps) => {
   const icon = useMemo(() => getItemIcon(itemData), [itemData]);
 
   return (
-    <div className="history-item-details">
-      <header>
+    <div className="h-full">
+      <header className="mt-2 mb-4 flex h-6 items-center gap-3 [&_svg]:h-full [&_svg]:w-6 [&_svg]:text-2xl">
         {icon}
-        <h2>{itemData.title}</h2>
-        <p>{new Date(itemData.timestamp).toLocaleString()}</p>
+        <h2 className="m-0 text-lg font-medium">{itemData.title}</h2>
+        <p className="m-0 ml-auto self-start text-xs">
+          {new Date(itemData.timestamp).toLocaleString()}
+        </p>
       </header>
-      <div className="history-item-details__summary">
+      <div className="h-[calc(100%-3rem)] min-h-0 overflow-y-auto">
         <GeneratedSummary
           summary={itemData.summary}
           fileName={

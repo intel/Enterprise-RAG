@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsPlus } from "react-icons/bs";
+import { IconProps, PlusIcon as PhosphorPlusIcon } from "@phosphor-icons/react";
 
-export const PlusIcon = (props: IconBaseProps) => <BsPlus {...props} />;
+export const PlusIcon = (props: IconProps) => <PhosphorPlusIcon {...props} />;

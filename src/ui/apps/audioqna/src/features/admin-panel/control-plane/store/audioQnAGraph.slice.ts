@@ -9,7 +9,7 @@ import {
   llmModelServerNodePositionNoGuards,
   llmNodePositionNoGuards,
 } from "@/features/admin-panel/control-plane/config/graph";
-import { RootState } from "@/store/index";
+import type { RootState } from "@/store/index";
 
 const {
   slice: audioQnAGraphSlice,

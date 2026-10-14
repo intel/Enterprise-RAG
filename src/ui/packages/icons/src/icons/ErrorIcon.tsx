@@ -1,9 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsExclamationCircle } from "react-icons/bs";
+import { IconProps, WarningCircleIcon } from "@phosphor-icons/react";
 
-export const ErrorIcon = (props: IconBaseProps) => (
-  <BsExclamationCircle {...props} />
-);
+export const ErrorIcon = (props: IconProps) => <WarningCircleIcon {...props} />;

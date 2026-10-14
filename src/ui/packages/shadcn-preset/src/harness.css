@@ -1,0 +1,8 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* Preview-harness-only entry: the live theme plus the shadcn registry's animation and
+   variant helpers that only the scaffolded components under src/components/ui use. */
+@import "./index.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";

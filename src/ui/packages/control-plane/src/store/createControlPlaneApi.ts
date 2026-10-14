@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { KeycloakService } from "@intel-enterprise-rag-ui/auth";
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import type { ThunkAction, UnknownAction } from "@reduxjs/toolkit";
 import {
   createApi,
   fetchBaseQuery,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
+import { toast } from "sonner";
 
 import { API_ENDPOINTS, ERROR_MESSAGES } from "@/configs/api";
 import { NamespaceStatus } from "@/types/api/namespaceStatus";
@@ -203,9 +203,7 @@ export function createControlPlaneApi<T extends string>(
               (error as { error: FetchBaseQueryError }).error,
               ERROR_MESSAGES.CHANGE_ARGUMENTS,
             );
-            dispatch(
-              addNotification({ severity: "error", text: errorMessage }),
-            );
+            toast.error(errorMessage);
           } finally {
             dispatch(graphActions.setLoading(false));
           }

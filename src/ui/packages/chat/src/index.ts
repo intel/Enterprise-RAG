@@ -1,13 +1,15 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import "./index.css";
+
 // Components
-export { ChatSideMenu } from "@/components/chat-history/ChatSideMenu/ChatSideMenu";
+export { ChatSidebar } from "@/components/chat-history/ChatSidebar/ChatSidebar";
+export { NewChatButton } from "@/components/chat-history/NewChatButton/NewChatButton";
 export { ConversationFeed } from "@/components/conversation-feed/ConversationFeed/ConversationFeed";
 export { type PlaySpeechButtonState } from "@/components/conversation-feed/PlaySpeechButton/PlaySpeechButton";
 export { PromptInput } from "@/components/conversation-feed/PromptInput/PromptInput";
-export { NewChatButton } from "@intel-enterprise-rag-ui/components";
-export { SideMenuIconButton as ChatSideMenuIconButton } from "@intel-enterprise-rag-ui/layouts";
+export { SidebarToggleButton as ChatSidebarToggleButton } from "@intel-enterprise-rag-ui/layouts";
 
 // Layouts
 export { ChatConversationLayout } from "@/layouts/ChatConversationLayout/ChatConversationLayout";
@@ -28,11 +30,11 @@ export {
   setChatTurns,
 } from "@/store/chatHistory.slice";
 export {
-  chatSideMenuReducer,
-  resetChatSideMenuSlice,
-  selectIsChatSideMenuOpen,
-  toggleChatSideMenu,
-} from "@/store/chatSideMenu.slice";
+  chatSidebarReducer,
+  resetChatSidebarSlice,
+  selectIsChatSidebarOpen,
+  toggleChatSidebar,
+} from "@/store/chatSidebar.slice";
 
 // Hooks
 export { useChat } from "@/hooks/useChat";

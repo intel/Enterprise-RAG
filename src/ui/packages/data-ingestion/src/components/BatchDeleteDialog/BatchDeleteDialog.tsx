@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./BatchDeleteDialog.scss";
-
 import { Button, Dialog, DialogRef } from "@intel-enterprise-rag-ui/components";
 import { useRef } from "react";
 
@@ -41,11 +39,11 @@ const BatchDeleteDialog = ({
       maxWidth={500}
       onClose={onClose}
       footer={
-        <div className="batch-delete-dialog__actions">
+        <div className="flex gap-2">
           <Button
             data-testid="batch-delete-confirm-button"
             size="sm"
-            color="error"
+            variant="destructive"
             onPress={handleConfirm}
           >
             Confirm
@@ -53,7 +51,7 @@ const BatchDeleteDialog = ({
           <Button
             data-testid="batch-delete-cancel-button"
             size="sm"
-            variant="outlined"
+            variant="outline"
             onPress={onClose}
           >
             Cancel
@@ -62,16 +60,18 @@ const BatchDeleteDialog = ({
       }
       isOpen={isOpen}
       isCentered
-      hasPlainHeader
     >
-      <div className="batch-delete-dialog">
-        <p className="batch-delete-dialog__question">
+      <div className="flex flex-col gap-4">
+        <p className="text-foreground text-sm">
           Are you sure you want to delete the following {itemType}?
         </p>
         {itemNames.length > 0 && (
-          <ul className="batch-delete-dialog__list">
+          <ul className="mb-4 max-h-52 overflow-y-auto pl-5">
             {itemNames.map((name, index) => (
-              <li key={index} className="batch-delete-dialog__item">
+              <li
+                key={index}
+                className="text-foreground list-disc py-0.5 text-xs break-all"
+              >
                 {name}
               </li>
             ))}

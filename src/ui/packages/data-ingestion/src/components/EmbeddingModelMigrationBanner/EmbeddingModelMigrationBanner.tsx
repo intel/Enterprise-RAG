@@ -1,8 +1,6 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./EmbeddingModelMigrationBanner.scss";
-
 import { Button } from "@intel-enterprise-rag-ui/components";
 import { RefreshIcon, WarningIcon } from "@intel-enterprise-rag-ui/icons";
 import { useMemo, useState } from "react";
@@ -125,43 +123,38 @@ const EmbeddingModelMigrationBanner = ({
   }
 
   return (
-    <div className="embedding-model-migration-banner">
-      <div className="embedding-model-migration-banner__body">
-        <WarningIcon className="embedding-model-migration-banner__icon" />
-        <div className="embedding-model-migration-banner__content">
-          <div className="embedding-model-migration-banner__header">
+    <div className="bg-secondary border-border mb-4 rounded-md border px-4 py-3 text-sm">
+      <div className="flex items-start gap-3">
+        <WarningIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+        <div className="flex-1">
+          <div className="mb-2 flex items-center justify-between">
             <h3 className="font-semibold">
               Action Required: Embedding Model Changed
             </h3>
             <button
               onClick={() => refetch()}
               disabled={isFetching}
-              className="embedding-model-migration-banner__refresh-btn"
+              className="hover:bg-accent ml-2 rounded p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               title="Refresh migration status"
               aria-label="Refresh migration status"
             >
               <RefreshIcon
-                className={`embedding-model-migration-banner__refresh-icon ${isFetching ? "animate-spin" : ""}`}
+                className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
               />
             </button>
           </div>
-          <p className="embedding-model-migration-banner__description">
+          <p className="mb-2">
             The embedding model has been changed from{" "}
-            <span className="embedding-model-migration-banner__model-name">
-              {oldModel}
-            </span>{" "}
-            to{" "}
-            <span className="embedding-model-migration-banner__model-name">
-              {newModel}
-            </span>
-            . As a result, previously indexed documents are no longer compatible
-            with the new embedding space and must be re-ingested to restore full
-            search quality and availability.
+            <span className="font-semibold">{oldModel}</span> to{" "}
+            <span className="font-semibold">{newModel}</span>. As a result,
+            previously indexed documents are no longer compatible with the new
+            embedding space and must be re-ingested to restore full search
+            quality and availability.
           </p>
 
           {fileStats.total > 0 && fileStats.oldFiles > 0 && (
             <>
-              <p className="embedding-model-migration-banner__stats">
+              <p className="mb-3 font-medium">
                 Documents needed to be re-ingested:{" "}
                 <strong>{fileStats.oldFiles}</strong>
               </p>
@@ -172,7 +165,7 @@ const EmbeddingModelMigrationBanner = ({
               >
                 {isReingesting ? "Reingesting..." : "Reingest All"}
               </Button>
-              <p className="embedding-model-migration-banner__hint">
+              <p className="mt-3 text-left text-xs opacity-80">
                 This banner will automatically disappear once all documents have
                 been re-ingested.
               </p>

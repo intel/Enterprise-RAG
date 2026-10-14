@@ -1,7 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsDownload } from "react-icons/bs";
+import { DownloadSimpleIcon, IconProps } from "@phosphor-icons/react";
 
-export const DownloadIcon = (props: IconBaseProps) => <BsDownload {...props} />;
+export const DownloadIcon = (props: IconProps) => (
+  <DownloadSimpleIcon {...props} />
+);

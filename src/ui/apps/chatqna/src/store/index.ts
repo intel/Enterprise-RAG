@@ -3,12 +3,9 @@
 
 import {
   chatHistoryReducer,
-  chatSideMenuReducer,
+  chatSidebarReducer,
 } from "@intel-enterprise-rag-ui/chat";
-import {
-  colorSchemeReducer,
-  notificationsReducer,
-} from "@intel-enterprise-rag-ui/components";
+import { colorSchemeReducer } from "@intel-enterprise-rag-ui/components";
 import {
   createDataIngestionApiMiddleware,
   dataIngestionSettingsReducer,
@@ -29,11 +26,10 @@ const dataIngestionApiMiddleware = createDataIngestionApiMiddleware(
 );
 
 const rootReducer = combineReducers({
-  chatSideMenu: chatSideMenuReducer,
+  chatSidebar: chatSidebarReducer,
   chatHistory: chatHistoryReducer,
   chatQnAGraph: chatQnAGraphReducer,
   colorScheme: colorSchemeReducer,
-  notifications: notificationsReducer,
   dataIngestionSettings: dataIngestionSettingsReducer,
   viewNavigation: viewNavigationReducer,
   [appApi.reducerPath]: appApi.reducer,

@@ -4,7 +4,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { SummaryType } from "@/features/docsum/api/types";
-import { RootState } from "@/store";
+import type { RootState } from "@/store";
 
 interface UploadFileTabState {
   fileData: File | null;

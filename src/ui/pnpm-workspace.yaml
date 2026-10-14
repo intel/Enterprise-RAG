@@ -2,16 +2,26 @@ packages:
   - apps/*
   - packages/*
 
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - chromedriver
+  - esbuild
+
+# Security patches for transitive deps only — bump direct deps in package.json instead.
+# Keep targets caret-bounded so an override can never pull in a new major.
 overrides:
-  "@humanfs/node@<0.16.8": ">=0.16.8"
-  brace-expansion@<1.1.21: "^1.1.21"
-  brace-expansion@>=2.0.0 <2.1.7: "^2.1.7"
-  brace-expansion@>=4.0.0 <5.0.12: "^5.0.12"
-  browserslist@<=4.28.6: ">=4.28.7"
-  esbuild@<=0.24.2: ">=0.25.0"
-  lodash@<=4.17.23: ">=4.18.0"
-  minimatch@>=10.0.0 <10.2.3: ">=10.2.3"
-  postcss-selector-parser@>=6.1.0 <6.1.3: ">=6.1.3"
-  uuid@<11.1.1: ">=11.1.1"
-  vite@<=6.4.2: ">=6.4.3"
-  vitest@<3.2.6: ">=3.2.6"
+  chromedriver: 153.0.3
+  "@humanfs/node@<0.16.8": ^0.16.8
+  basic-ftp@<6.2.1: ^6.2.1
+  brace-expansion@<1.1.21: ^1.1.21
+  brace-expansion@>=2.0.0 <2.1.7: ^2.1.7
+  brace-expansion@>=4.0.0 <5.0.12: ^5.0.12
+  browserslist@<=4.28.6: ^4.28.7
+  esbuild@<=0.24.2: ^0.25.0
+  fast-uri@>=3.0.0 <3.1.8: ^3.1.8
+  lodash@<4.18.0: ^4.18.0
+  minimatch@>=10.0.0 <10.2.3: ^10.2.3
+  postcss-selector-parser@>=6.1.0 <6.1.3: ^6.1.3
+  uuid@<11.1.1: ^11.1.1
+  vite@<=6.4.2: ^6.4.3
+  vitest@<3.2.6: ^3.2.6

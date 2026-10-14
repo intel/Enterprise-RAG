@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./UploadDataDialogFooter.scss";
-
 import { Button } from "@intel-enterprise-rag-ui/components";
 import { IconName } from "@intel-enterprise-rag-ui/icons";
 
@@ -35,7 +33,7 @@ const UploadDataDialogFooter = ({
     : undefined;
 
   return (
-    <div className="upload-dialog__footer">
+    <div className="flex items-center gap-4">
       {hasUploadErrors ? (
         <UploadErrorsPopover
           uploadErrors={uploadErrors}

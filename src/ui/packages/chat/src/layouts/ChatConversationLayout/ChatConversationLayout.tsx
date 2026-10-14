@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ChatConversationLayout.scss";
-
 import { ChangeEventHandler } from "react";
 
 import { ChatDisclaimer } from "@/components/conversation-feed/ChatDisclaimer/ChatDisclaimer";
@@ -48,7 +46,7 @@ export const ChatConversationLayout = ({
   onSpeechToText,
   onSpeechToTextError,
 }: ChatConversationLayoutProps) => (
-  <div className="chat-conversation-layout">
+  <div className="grid h-full grid-rows-[1fr_auto]">
     <ConversationFeed
       conversationTurns={conversationTurns}
       playingState={playingState}

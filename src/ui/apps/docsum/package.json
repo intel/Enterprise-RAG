@@ -21,8 +21,9 @@
     "@intel-enterprise-rag-ui/input-validation": "workspace:^",
     "@intel-enterprise-rag-ui/layouts": "workspace:^",
     "@intel-enterprise-rag-ui/markdown": "workspace:^",
-    "@intel-enterprise-rag-ui/tailwind-theme": "workspace:^",
+    "@intel-enterprise-rag-ui/shadcn-preset": "workspace:^",
     "@intel-enterprise-rag-ui/utils": "workspace:^",
-    "docx": "^9.5.1"
+    "docx": "^9.5.1",
+    "sonner": "^2.0.8"
   }
 }

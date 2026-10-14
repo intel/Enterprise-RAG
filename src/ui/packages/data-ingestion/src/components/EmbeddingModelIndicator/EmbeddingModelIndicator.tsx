@@ -1,8 +1,6 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./EmbeddingModelIndicator.scss";
-
 import { Tooltip } from "@intel-enterprise-rag-ui/components";
 import { WarningIcon } from "@intel-enterprise-rag-ui/icons";
 
@@ -35,34 +33,28 @@ const EmbeddingModelIndicator = ({
 
   const indicator = (
     <span
-      className="embedding-model-indicator__trigger"
+      className="mr-2 inline-flex cursor-help items-center justify-center text-amber-600 dark:text-amber-400"
       aria-label="Re-ingestion Required"
     >
-      <WarningIcon className="embedding-model-indicator__trigger-icon" />
+      <WarningIcon className="h-4 w-4" />
     </span>
   );
 
   const tooltipContent = (
-    <div className="embedding-model-indicator__tooltip">
-      <p className="embedding-model-indicator__tooltip-title">
-        Re-ingestion Required
-      </p>
-      <p className="embedding-model-indicator__tooltip-text">
+    <div className="text-sm">
+      <p className="mb-1 font-semibold">Re-ingestion Required</p>
+      <p className="mb-1">
         This item uses an outdated embedding model and needs to be re-ingested.
       </p>
-      <p className="embedding-model-indicator__tooltip-meta">
+      <p className="text-xs">
         Current model:{" "}
-        <span className="embedding-model-indicator__model-name">
-          {itemEmbeddingModel || "unknown"}
-        </span>
+        <span className="font-mono">{itemEmbeddingModel || "unknown"}</span>
       </p>
-      <p className="embedding-model-indicator__tooltip-meta">
+      <p className="text-xs">
         Expected model:{" "}
-        <span className="embedding-model-indicator__model-name">
-          {currentEmbeddingModel}
-        </span>
+        <span className="font-mono">{currentEmbeddingModel}</span>
       </p>
-      <p className="embedding-model-indicator__tooltip-hint">
+      <p className="mt-2 text-xs opacity-80">
         Use the &quot;Reingest&quot; action to update it.
       </p>
     </div>

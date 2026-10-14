@@ -1,9 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ExportChatDialog.scss";
-
-import { ActionDialog } from "@intel-enterprise-rag-ui/components";
+import { AlertDialog } from "@intel-enterprise-rag-ui/components";
 
 export type OnExportChatHandler = (chatId: string) => void;
 
@@ -25,7 +23,7 @@ export const ExportChatDialog = ({
   };
 
   return (
-    <ActionDialog
+    <AlertDialog
       data-testid="export-chat-dialog"
       title="Export Chat"
       confirmLabel="Export"
@@ -33,9 +31,9 @@ export const ExportChatDialog = ({
       onConfirm={handleExportConfirm}
       onOpenChange={onOpenChange}
     >
-      <p className="export-chat-dialog__description">
+      <p className="text-xs">
         Exported file will contain conversation in a JSON format.
       </p>
-    </ActionDialog>
+    </AlertDialog>
   );
 };

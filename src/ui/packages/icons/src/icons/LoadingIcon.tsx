@@ -1,7 +1,13 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { FaSpinner } from "react-icons/fa";
+import { CircleNotchIcon, IconProps } from "@phosphor-icons/react";
 
-export const LoadingIcon = (props: IconBaseProps) => <FaSpinner {...props} />;
+// Always spins on its own (className merged, not overridden) — callers no longer need to
+// add animate-spin themselves.
+export const LoadingIcon = ({ className, ...props }: IconProps) => (
+  <CircleNotchIcon
+    {...props}
+    className={["animate-spin", className].filter(Boolean).join(" ")}
+  />
+);

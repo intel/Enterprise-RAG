@@ -4,7 +4,6 @@
 import {
   Connection,
   ConnectionLineType,
-  Controls,
   DefaultEdgeOptions,
   Edge,
   EdgeChange,
@@ -21,6 +20,7 @@ import {
 import debounce from "lodash.debounce";
 import { useEffect } from "react";
 
+import { GraphNavigationControls } from "@/components/GraphNavigationControls/GraphNavigationControls";
 import { ServiceNode } from "@/components/ServiceNode/ServiceNode";
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
@@ -45,6 +45,8 @@ interface PipelineGraphProps<
   onEdgesChange?: (changes: EdgeChange[]) => void;
   onNodesChange?: (changes: NodeChange<Node<T>>[]) => void;
   onSelectionChange?: OnSelectionChangeFunc;
+  onRefresh: () => void;
+  isFetching: boolean;
 }
 
 const PipelineGraphFlow = ({
@@ -56,6 +58,8 @@ const PipelineGraphFlow = ({
   onEdgesChange,
   onNodesChange,
   onSelectionChange,
+  onRefresh,
+  isFetching,
 }: PipelineGraphProps) => {
   // This hook can only be used inside component that is a child of ReactFlowProvider or ReactFlow component
   const reactFlowInstance = useReactFlow();
@@ -90,7 +94,6 @@ const PipelineGraphFlow = ({
       selectNodesOnDrag={false}
       fitViewOptions={fitViewOptions}
       nodesDraggable={false}
-      panOnDrag={false}
       panOnScroll={false}
       zoomOnScroll={false}
       zoomOnPinch={false}
@@ -100,9 +103,14 @@ const PipelineGraphFlow = ({
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       onSelectionChange={onSelectionChange}
+      panOnDrag
       fitView
     >
-      <Controls showInteractive={false} fitViewOptions={fitViewOptions} />
+      <GraphNavigationControls
+        fitViewOptions={fitViewOptions}
+        onRefresh={onRefresh}
+        isFetching={isFetching}
+      />
     </ReactFlow>
   );
 };
@@ -117,6 +125,8 @@ export const PipelineGraph = ({
   onSelectionChange,
   colorMode,
   fitViewOptions = { padding: 0.5 },
+  onRefresh,
+  isFetching,
 }: PipelineGraphProps) => (
   <ReactFlowProvider>
     <PipelineGraphFlow
@@ -128,6 +138,8 @@ export const PipelineGraph = ({
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       onSelectionChange={onSelectionChange}
+      onRefresh={onRefresh}
+      isFetching={isFetching}
     />
   </ReactFlowProvider>
 );

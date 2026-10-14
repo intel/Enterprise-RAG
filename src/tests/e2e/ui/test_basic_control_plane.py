@@ -215,11 +215,13 @@ async def test_control_plane_zoom_controls(chat_ui_helper):
     5. Click each button to test functionality
 
     Success criteria:
-    - ReactFlow Controls panel is visible
-    - All three zoom control buttons are visible and clickable
+    - Custom graph navigation controls panel is visible
+    - Zoom In, Zoom Out, and Fit View buttons are visible and clickable
     - Clicking buttons doesn't cause errors
 
-    Note: ReactFlow v12 uses .react-flow__controls with button.react-flow__controls-button
+    Note: as of the icon-button navigation redesign, these are our own IconButtons
+    (data-testid="graph-zoom-in-button" / "graph-zoom-out-button" / "graph-fit-view-button")
+    rendered via an @xyflow/react Panel, not the library's default Controls component.
     """
     logger.info("Test 5: Control Plane Zoom Controls")
 
@@ -233,46 +235,42 @@ async def test_control_plane_zoom_controls(chat_ui_helper):
     # Wait for ReactFlow to load and render controls
     await page.wait_for_timeout(2000)
 
-    # Check if ReactFlow controls panel exists
-    controls_panel = page.locator('.react-flow__controls')
+    # Check if the custom graph navigation controls panel exists
+    controls_panel = page.get_by_test_id("graph-navigation-controls")
     try:
         await controls_panel.wait_for(state="visible", timeout=10000)
-        logger.info("ReactFlow controls panel found")
+        logger.info("Graph navigation controls panel found")
     except Exception as e:
-        logger.error(f"ReactFlow controls panel not found: {e}")
-        pytest.fail("ReactFlow controls panel not found")
+        logger.error(f"Graph navigation controls panel not found: {e}")
+        pytest.fail("Graph navigation controls panel not found")
 
-    # Get all control buttons
-    control_buttons = page.locator('.react-flow__controls button.react-flow__controls-button')
-    button_count = await control_buttons.count()
-
-    # Assert: At least 3 buttons exist (zoom-in, zoom-out, fit-view, and possibly others)
-    assert button_count >= 3, f"Expected at least 3 control buttons, found {button_count}"
-    logger.info(f"Found {button_count} control buttons in ReactFlow controls")
-
-    # Test each button - ReactFlow typically has buttons in order: zoom-in, zoom-out, fit-view, interactive
-    button_names = ["Zoom In", "Zoom Out", "Fit View"]
-    for i in range(min(3, button_count)):  # Test first 3 buttons
+    # Test each zoom/fit-view button individually by its own data-testid
+    button_specs = [
+        ("Zoom In", "graph-zoom-in-button"),
+        ("Zoom Out", "graph-zoom-out-button"),
+        ("Fit View", "graph-fit-view-button"),
+    ]
+    for button_name, testid in button_specs:
         try:
-            button = control_buttons.nth(i)
+            button = page.get_by_test_id(testid)
 
             # Assert: Button is visible
             await button.wait_for(state="visible", timeout=5000)
-            logger.info(f"Assert: {button_names[i]} button (index {i}) is visible")
+            logger.info(f"Assert: {button_name} button ({testid}) is visible")
 
             # Assert: Button is enabled
             is_enabled = await button.is_enabled()
-            assert is_enabled, f"{button_names[i]} button is disabled"
-            logger.info(f"Assert: {button_names[i]} button is enabled")
+            assert is_enabled, f"{button_name} button is disabled"
+            logger.info(f"Assert: {button_name} button is enabled")
 
             # Click button to test functionality
             await button.click()
             await page.wait_for_timeout(500)  # Wait for potential animations
-            logger.info(f"Successfully clicked {button_names[i]} button")
+            logger.info(f"Successfully clicked {button_name} button")
 
         except Exception as e:
-            logger.error(f"Failed to verify {button_names[i]} button: {e}")
-            pytest.fail(f"{button_names[i]} button verification failed: {e}")
+            logger.error(f"Failed to verify {button_name} button: {e}")
+            pytest.fail(f"{button_name} button verification failed: {e}")
 
     logger.info("Assert: All zoom controls are functional")
     logger.info("Test completed: Control Plane zoom controls validated")

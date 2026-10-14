@@ -1,9 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { MdInsertChart } from "react-icons/md";
+import { ChartBarIcon, IconProps } from "@phosphor-icons/react";
 
-export const TelemetryIcon = (props: IconBaseProps) => (
-  <MdInsertChart {...props} />
-);
+export const TelemetryIcon = (props: IconProps) => <ChartBarIcon {...props} />;

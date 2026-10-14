@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./UserMessage.scss";
-
 import { CopyButton } from "@intel-enterprise-rag-ui/components";
 import { Markdown } from "@intel-enterprise-rag-ui/markdown";
 import { memo, useState } from "react";
@@ -25,15 +23,18 @@ const UserMessage = ({ id, question }: UserMessageProps) => {
   return (
     <article
       data-testid={`user-message-${id}`}
-      className="user-message"
+      className="mx-auto flex w-full flex-row-reverse md:w-[42rem]"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="user-message__content">
-        <div className="user-message__text" data-testid="user-message__text">
+      <div className="flex w-full flex-col">
+        <div
+          className="bg-primary text-primary-foreground mr-9 min-h-[2.5rem] max-w-[calc(100vw_-_10rem)] self-end rounded-lg px-5 py-3 text-sm/relaxed md:mr-0 md:max-w-[40rem]"
+          data-testid="user-message__text"
+        >
           <Markdown text={question} />
         </div>
-        <div className="user-message__footer">
+        <div className="mr-9 flex h-11 items-center justify-end gap-2 self-end pt-2 md:mr-0">
           <CopyButton textToCopy={question} show={showActionButtons} />
         </div>
       </div>

@@ -30,8 +30,9 @@
     "@intel-enterprise-rag-ui/components": "workspace:^",
     "@intel-enterprise-rag-ui/icons": "workspace:^",
     "@intel-enterprise-rag-ui/input-validation": "workspace:^",
-    "@intel-enterprise-rag-ui/tailwind-theme": "workspace:^",
-    "@intel-enterprise-rag-ui/utils": "workspace:^"
+    "@intel-enterprise-rag-ui/shadcn-preset": "workspace:^",
+    "@intel-enterprise-rag-ui/utils": "workspace:^",
+    "sonner": "^2.0.8"
   },
   "devDependencies": {
     "vitest": "^5.0.0"

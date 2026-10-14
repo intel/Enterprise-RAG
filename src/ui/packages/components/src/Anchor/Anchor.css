@@ -1,0 +1,15 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+a {
+  @apply inline-flex items-center gap-1.5;
+  @apply underline! underline-offset-4!;
+  @apply text-foreground!;
+  @apply focus-visible:ring-ring/30 rounded-sm outline-none focus-visible:ring-2;
+}
+a.invalid {
+  @apply text-destructive!;
+  @apply cursor-not-allowed;
+}

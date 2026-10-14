@@ -1,9 +1,9 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import type { Dispatch, UnknownAction } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { toast } from "sonner";
 
 export const getErrorMessage = (
   error: unknown,
@@ -47,7 +47,10 @@ export const getErrorMessage = (
 
 export const handleOnQueryStarted = async <T>(
   queryFulfilled: Promise<T>,
-  dispatch: Dispatch<UnknownAction>,
+  // No longer used for dispatching a notification (that's a direct toast() call
+  // now, not a Redux action) — kept so every RTK Query onQueryStarted call site
+  // doesn't need updating just to drop this argument.
+  _dispatch: Dispatch<UnknownAction>,
   fallbackMessage: string,
 ) => {
   try {
@@ -57,7 +60,7 @@ export const handleOnQueryStarted = async <T>(
       (error as { error: FetchBaseQueryError }).error,
       fallbackMessage,
     );
-    dispatch(addNotification({ severity: "error", text: errorMessage }));
+    toast.error(errorMessage);
   }
 };
 

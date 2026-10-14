@@ -1,9 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsBodyText } from "react-icons/bs";
+import { FileTextIcon, IconProps } from "@phosphor-icons/react";
 
-export const PlainTextIcon = (props: IconBaseProps) => (
-  <BsBodyText {...props} />
-);
+export const PlainTextIcon = (props: IconProps) => <FileTextIcon {...props} />;

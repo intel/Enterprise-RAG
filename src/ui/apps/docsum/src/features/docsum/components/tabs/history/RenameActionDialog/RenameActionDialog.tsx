@@ -1,12 +1,9 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  ActionDialog,
-  addNotification,
-  TextInput,
-} from "@intel-enterprise-rag-ui/components";
+import { AlertDialog, Input } from "@intel-enterprise-rag-ui/components";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { renameHistoryItem } from "@/features/docsum/store/history.slice";
 import { HistoryItemData } from "@/features/docsum/types/history";
@@ -48,12 +45,7 @@ const RenameActionDialog = ({
   const handleRenameConfirm = () => {
     if (newTitle.trim() && newTitle !== title) {
       dispatch(renameHistoryItem({ id, newName: newTitle.trim() }));
-      dispatch(
-        addNotification({
-          severity: "success",
-          text: "The summary has been renamed successfully.",
-        }),
-      );
+      toast.success("The summary has been renamed successfully.");
     }
 
     setNewTitle(newTitle.trim());
@@ -66,7 +58,7 @@ const RenameActionDialog = ({
   const isRenameActionDisabled = !newTitle.trim() || newTitle === title;
 
   return (
-    <ActionDialog
+    <AlertDialog
       data-testid="rename-summary-dialog"
       title="Rename Summary"
       isConfirmDisabled={isRenameActionDisabled}
@@ -75,7 +67,7 @@ const RenameActionDialog = ({
       onCancel={handleCloseDialog}
       onOpenChange={onOpenChange}
     >
-      <TextInput
+      <Input
         ref={textInputRef}
         data-testid="rename-summary-input"
         value={newTitle}
@@ -87,7 +79,7 @@ const RenameActionDialog = ({
       <p className="text-right text-xs">
         {newTitle.length} / {NAME_CHAR_LIMIT} characters
       </p>
-    </ActionDialog>
+    </AlertDialog>
   );
 };
 

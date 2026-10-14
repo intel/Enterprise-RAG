@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./AboutDialog.scss";
-
 import {
   Dialog,
   DialogRef,
@@ -31,8 +29,13 @@ export const AboutDialog = ({
     <Tooltip
       title="About"
       trigger={
-        <IconButton data-testid="about-dialog-trigger-button" icon="info" />
+        <IconButton
+          data-testid="about-dialog-trigger-button"
+          icon="info-filled"
+          aria-label="About"
+        />
       }
+      placement="bottom"
     />
   );
 
@@ -50,18 +53,22 @@ export const AboutDialog = ({
       title="About"
       maxWidth={600}
       onClose={handleClose}
-      hasPlainHeader
       isCentered
     >
-      <div className="about-dialog">
-        <h2>{appName}</h2>
-        <p className="app-version">
+      <div className="flex flex-col text-sm leading-relaxed">
+        <h2 className="text-foreground text-lg font-semibold">{appName}</h2>
+        <p className="mb-4">
           <span className="font-medium">Version:</span> {appVersion}
         </p>
         {userGuideUrl && (
-          <p>
+          <p className="mb-2">
             The{" "}
-            <a href={userGuideUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              href={userGuideUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground inline-flex items-center underline"
+            >
               User Guide
               <ExternalLinkIcon fontSize={10} />
             </a>{" "}
@@ -70,17 +77,27 @@ export const AboutDialog = ({
             best practices.
           </p>
         )}
-        <p>
+        <p className="mb-2">
           To request a feature, please open a new issue on our{" "}
-          <a href={GITHUB_ISSUES_URL} target="_blank" rel="noopener noreferrer">
+          <a
+            href={GITHUB_ISSUES_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground inline-flex items-center underline"
+          >
             GitHub Issues
             <ExternalLinkIcon fontSize={10} />
           </a>{" "}
           page.
         </p>
-        <p>
+        <p className="mb-2">
           If you need support, please{" "}
-          <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+          <a
+            href={SUPPORT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground mb-2 inline-flex items-center underline"
+          >
             create a request
             <ExternalLinkIcon fontSize={10} />
           </a>

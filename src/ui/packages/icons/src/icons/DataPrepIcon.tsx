@@ -1,7 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { FaCog } from "react-icons/fa";
+import { DatabaseIcon, IconProps } from "@phosphor-icons/react";
 
-export const DataPrepIcon = (props: IconBaseProps) => <FaCog {...props} />;
+export const DataPrepIcon = (props: IconProps) => <DatabaseIcon {...props} />;

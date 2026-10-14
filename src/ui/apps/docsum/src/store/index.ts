@@ -1,10 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  colorSchemeReducer,
-  notificationsReducer,
-} from "@intel-enterprise-rag-ui/components";
+import { colorSchemeReducer } from "@intel-enterprise-rag-ui/components";
 import { configureStore } from "@reduxjs/toolkit";
 
 import { controlPlaneApi } from "@/features/admin-panel/control-plane/api";
@@ -13,15 +10,16 @@ import { summarizationApi } from "@/features/docsum/api";
 import historyReducer from "@/features/docsum/store/history.slice";
 import pasteTextTabReducer from "@/features/docsum/store/pasteTextTab.slice";
 import uploadFileTabReducer from "@/features/docsum/store/uploadFileTab.slice";
+import sidebarReducer from "@/store/sidebar.slice";
 
 export const store = configureStore({
   reducer: {
     colorScheme: colorSchemeReducer,
     history: historyReducer,
-    notifications: notificationsReducer,
     docSumGraph: docSumGraphReducer,
     pasteTextTab: pasteTextTabReducer,
     uploadFileTab: uploadFileTabReducer,
+    sidebar: sidebarReducer,
     [summarizationApi.reducerPath]: summarizationApi.reducer,
     [controlPlaneApi.reducerPath]: controlPlaneApi.reducer,
   },

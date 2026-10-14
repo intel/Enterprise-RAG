@@ -1,22 +1,22 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./FileInput.scss";
-
 import { FileIcon } from "@intel-enterprise-rag-ui/icons";
-import classNames from "classnames";
+import { cn } from "@intel-enterprise-rag-ui/utils";
 import {
   DragEvent,
   forwardRef,
   Fragment,
   InputHTMLAttributes,
   useCallback,
+  useId,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from "react";
 
+import { Alert, AlertDescription } from "@/Alert/Alert";
 import { Button } from "@/Button/Button";
 
 export interface FileInputHandle {
@@ -48,6 +48,7 @@ export const FileInput = forwardRef<FileInputHandle, FileInputProps>(
     forwardedRef,
   ) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const errorMessageId = `${useId()}-file-input-error`;
     useImperativeHandle(forwardedRef, () => ({
       clear: () => {
         if (fileInputRef.current) {
@@ -82,9 +83,10 @@ export const FileInput = forwardRef<FileInputHandle, FileInputProps>(
       fileInputRef.current!.click();
     }, []);
 
-    const fileInputBoxClassNames = classNames("file-input__box", {
-      "file-input__box--drag-over": isDragOver,
-    });
+    const fileInputBoxClassNames = cn(
+      "bg-secondary border-input flex h-48 w-full flex-col items-center justify-center gap-2.5 rounded border border-dashed p-6 text-center select-none",
+      isDragOver && "bg-secondary/50",
+    );
 
     const fileInputAccept = useMemo(
       () =>
@@ -133,7 +135,7 @@ export const FileInput = forwardRef<FileInputHandle, FileInputProps>(
             <>
               <FileIcon fontSize={20} />
               <p>Drag and Drop File{multiple && "s"}</p>
-              <p className="file-input__box__caption">or</p>
+              <p className="text-xs">or</p>
               <Button
                 data-testid="browse-files-button"
                 size="sm"
@@ -142,7 +144,7 @@ export const FileInput = forwardRef<FileInputHandle, FileInputProps>(
                 Browse Files
               </Button>
               {totalSizeLimit && (
-                <p className="file-input__box__caption">{`Single upload size limit: ${totalSizeLimit}MB`}</p>
+                <p className="text-xs">{`Single upload size limit: ${totalSizeLimit}MB`}</p>
               )}
             </>
           )}
@@ -152,27 +154,32 @@ export const FileInput = forwardRef<FileInputHandle, FileInputProps>(
             ref={fileInputRef}
             type="file"
             accept={fileInputAccept}
-            className="file-input__box__input"
+            className="hidden"
             multiple={multiple}
             aria-label={ariaLabel}
+            aria-describedby={hasErrorMessage ? errorMessageId : undefined}
             onChange={onChange}
             data-testid="file-input"
           />
         </div>
         {hasErrorMessage && (
-          <p className="file-input__error-message">
-            {(errorMessage ?? "").split("\n").map((msg, index) => (
-              <Fragment key={`file-input-error-msg-${index}`}>
-                {msg}
-                <br />
-              </Fragment>
-            ))}
-          </p>
+          <Alert
+            variant="error"
+            id={errorMessageId}
+            className="-mt-2 rounded-t-none text-center"
+          >
+            <AlertDescription>
+              {(errorMessage ?? "").split("\n").map((msg, index) => (
+                <Fragment key={`file-input-error-msg-${index}`}>
+                  {msg}
+                  <br />
+                </Fragment>
+              ))}
+            </AlertDescription>
+          </Alert>
         )}
         {supportedFileFormatsMsg && (
-          <p className="file-input__supported-formats-message">
-            {supportedFileFormatsMsg}
-          </p>
+          <p className="pt-2 text-xs">{supportedFileFormatsMsg}</p>
         )}
       </div>
     );

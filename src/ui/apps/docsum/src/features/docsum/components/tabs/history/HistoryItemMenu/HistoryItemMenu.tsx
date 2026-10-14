@@ -1,13 +1,11 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./HistoryItemMenu.scss";
-
 import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   IconButton,
-  Menu,
-  MenuItem,
-  MenuTrigger,
   Tooltip,
 } from "@intel-enterprise-rag-ui/components";
 import {
@@ -16,14 +14,13 @@ import {
   ExportIcon,
 } from "@intel-enterprise-rag-ui/icons";
 import { useState } from "react";
-import { Key as AriaKey } from "react-aria-components";
 
 import ExportActionDialog from "@/features/docsum/components/shared/ExportActionDialog/ExportActionDialog";
 import DeleteActionDialog from "@/features/docsum/components/tabs/history/DeleteActionDialog/DeleteActionDialog";
 import RenameActionDialog from "@/features/docsum/components/tabs/history/RenameActionDialog/RenameActionDialog";
 import { HistoryItemData } from "@/features/docsum/types/history";
 
-export type HistoryItemAction = "rename" | "export" | "delete" | AriaKey;
+export type HistoryItemAction = "rename" | "export" | "delete";
 
 interface HistoryItemMenuProps {
   itemData: HistoryItemData;
@@ -39,9 +36,13 @@ const HistoryItemMenu = ({
   const [selectedOption, setSelectedOption] =
     useState<HistoryItemAction | null>(null);
 
+  const handleMenuAction = (key: string) => {
+    setSelectedOption(key as HistoryItemAction);
+  };
+
   return (
     <>
-      <MenuTrigger
+      <DropdownMenuTrigger
         trigger={
           <Tooltip
             title="More"
@@ -51,7 +52,7 @@ const HistoryItemMenu = ({
                 icon="more-options"
                 size="sm"
                 aria-label="Manage Summary"
-                className="history-item-menu__trigger"
+                className="hover:bg-background rounded-full"
               />
             }
           />
@@ -60,21 +61,24 @@ const HistoryItemMenu = ({
         ariaLabel="Summary History Item Menu"
         onOpenChange={onOpenChange}
       >
-        <Menu data-testid="history-item-menu" onAction={setSelectedOption}>
-          <MenuItem data-testid="rename-summary-menu-item" id="rename">
+        <DropdownMenu
+          data-testid="history-item-menu"
+          onAction={handleMenuAction}
+        >
+          <DropdownMenuItem data-testid="rename-summary-menu-item" id="rename">
             <EditIcon />
             <span>Rename</span>
-          </MenuItem>
-          <MenuItem data-testid="export-summary-menu-item" id="export">
+          </DropdownMenuItem>
+          <DropdownMenuItem data-testid="export-summary-menu-item" id="export">
             <ExportIcon />
             <span>Export</span>
-          </MenuItem>
-          <MenuItem data-testid="delete-summary-menu-item" id="delete">
+          </DropdownMenuItem>
+          <DropdownMenuItem data-testid="delete-summary-menu-item" id="delete">
             <DeleteIcon />
             <span>Delete</span>
-          </MenuItem>
-        </Menu>
-      </MenuTrigger>
+          </DropdownMenuItem>
+        </DropdownMenu>
+      </DropdownMenuTrigger>
       <RenameActionDialog
         itemData={itemData}
         isOpen={selectedOption === "rename"}

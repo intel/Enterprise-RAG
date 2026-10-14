@@ -1,0 +1,24 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/shadcn-preset/index.css";
+
+.animated-ai-icon {
+  animation: animated-ai-icon-pulse 1.8s ease-in-out infinite;
+}
+@keyframes animated-ai-icon-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animated-ai-icon {
+    animation: none;
+  }
+}

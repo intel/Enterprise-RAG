@@ -3,33 +3,20 @@
 
 import {
   ChatConversationLayout,
-  ChatSideMenu,
   InitialChatLayout,
-  selectIsChatSideMenuOpen,
-  useChatHistoryHandlers,
+  selectIsChatSidebarOpen,
   useInitialChat,
 } from "@intel-enterprise-rag-ui/chat";
-import { addNotification } from "@intel-enterprise-rag-ui/components";
 import { usePostSharePointFileUrlMutation } from "@intel-enterprise-rag-ui/data-ingestion";
-import { PageLayout } from "@intel-enterprise-rag-ui/layouts";
-import { downloadBlob } from "@intel-enterprise-rag-ui/utils";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useGetFilePresignedUrlMutation,
   useLazyDownloadFileQuery,
 } from "@/api";
-import {
-  AppHeaderLeftSideContent,
-  AppHeaderRightSideContent,
-} from "@/components/AppHeaderContent/AppHeaderContent";
 import { paths } from "@/config/paths";
 import { usePostPromptMutation } from "@/features/chat/api/audioQnA.api";
 import {
-  useChangeChatNameMutation,
-  useDeleteChatMutation,
-  useGetAllChatsQuery,
-  useLazyGetAllChatsQuery,
   useLazyGetChatByIdQuery,
   useSaveChatMutation,
 } from "@/features/chat/api/chatHistory.api";
@@ -39,22 +26,16 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { getAudioQnAAppEnv } from "@/utils";
 
 const InitialChatRoute = () => {
-  // React store, RTK Query, and react-router hooks
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const location = useLocation();
-  const isChatSideMenuOpen = useAppSelector(selectIsChatSideMenuOpen);
-  const { data: chatHistoryData, isLoading: isLoadingChatHistory } =
-    useGetAllChatsQuery();
+  const isChatSidebarOpen = useAppSelector(selectIsChatSidebarOpen);
   const [downloadFile] = useLazyDownloadFileQuery();
   const [getFilePresignedUrl] = useGetFilePresignedUrlMutation();
   const [postSharePointFileUrl] = usePostSharePointFileUrlMutation();
 
-  // Custom hook for ASR handlers
   const { handleSpeechToText, handleSpeechToTextError } =
     useSpeechToTextHandlers();
 
-  // Custom hooks from chat package
   const {
     userInput,
     chatTurns,
@@ -69,45 +50,8 @@ const InitialChatRoute = () => {
       useSaveChatMutation,
       useLazyGetChatByIdQuery,
     },
-    isChatSideMenuOpen,
+    isChatSidebarOpen,
     onNavigateToChat: (chatId) => navigate(`${paths.chat}/${chatId}`),
-  });
-
-  const {
-    handleItemPress,
-    isItemActive,
-    handleDelete,
-    handleExport,
-    handleRename,
-  } = useChatHistoryHandlers({
-    chatHistoryData,
-    useDeleteChatMutation,
-    useLazyGetAllChatsQuery,
-    useLazyGetChatByIdQuery,
-    useChangeChatNameMutation,
-    dispatch,
-    location,
-    navigate,
-    chatBasePath: paths.chat,
-    onDeleteError: (error) => {
-      dispatch(
-        addNotification({
-          severity: "error",
-          text: `Failed to delete chat history: ${error.message}`,
-        }),
-      );
-    },
-    onRenameError: (error) => {
-      dispatch(
-        addNotification({
-          severity: "error",
-          text: `Failed to rename chat: ${error.message}`,
-        }),
-      );
-    },
-    onExportSuccess: (blob, fileName) => {
-      downloadBlob(blob, fileName);
-    },
   });
 
   const { playingTurnId, playingState, onPlayMessage } = useTextToSpeech();
@@ -143,65 +87,37 @@ const InitialChatRoute = () => {
     }
   };
 
-  const getChatLayout = () => {
-    if (chatTurns.length === 0) {
-      return (
-        <InitialChatLayout
-          userInput={userInput}
-          disclaimer={chatDisclaimer}
-          onPromptChange={onPromptChange}
-          onPromptSubmit={onPromptSubmit}
-          onSpeechToText={handleSpeechToText}
-          onSpeechToTextError={handleSpeechToTextError}
-          enableMicrophone
-        />
-      );
-    }
-
+  if (chatTurns.length === 0) {
     return (
-      <ChatConversationLayout
+      <InitialChatLayout
         userInput={userInput}
-        conversationTurns={chatTurns}
-        isChatResponsePending={isChatResponsePending}
         disclaimer={chatDisclaimer}
-        playingTurnId={playingTurnId}
-        playingState={playingState}
         onPromptChange={onPromptChange}
         onPromptSubmit={onPromptSubmit}
-        onRequestAbort={onRequestAbort}
-        onFileDownload={handleFileDownload}
-        onPlayMessage={onPlayMessage}
         onSpeechToText={handleSpeechToText}
         onSpeechToTextError={handleSpeechToTextError}
         enableMicrophone
       />
     );
-  };
+  }
 
   return (
-    <PageLayout
-      appHeaderProps={{
-        leftSideContent: <AppHeaderLeftSideContent />,
-        rightSideContent: <AppHeaderRightSideContent />,
-      }}
-      leftSideMenu={{
-        component: (
-          <ChatSideMenu
-            isOpen={isChatSideMenuOpen}
-            chatHistoryData={chatHistoryData}
-            isLoadingChatHistory={isLoadingChatHistory}
-            onItemPress={handleItemPress}
-            isItemActive={isItemActive}
-            onDelete={handleDelete}
-            onExport={handleExport}
-            onRename={handleRename}
-          />
-        ),
-        isOpen: isChatSideMenuOpen,
-      }}
-    >
-      {getChatLayout()}
-    </PageLayout>
+    <ChatConversationLayout
+      userInput={userInput}
+      conversationTurns={chatTurns}
+      isChatResponsePending={isChatResponsePending}
+      disclaimer={chatDisclaimer}
+      playingTurnId={playingTurnId}
+      playingState={playingState}
+      onPromptChange={onPromptChange}
+      onPromptSubmit={onPromptSubmit}
+      onRequestAbort={onRequestAbort}
+      onFileDownload={handleFileDownload}
+      onPlayMessage={onPlayMessage}
+      onSpeechToText={handleSpeechToText}
+      onSpeechToTextError={handleSpeechToTextError}
+      enableMicrophone
+    />
   );
 };
 

@@ -1,14 +1,17 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import "./index.css";
+
 // Components
 export * from "@/components/cards/debug/RetrieverDebugDialog/RetrieverDebugDialog";
 export * from "@/components/ControlPlanePanel/ControlPlanePanel";
 export * from "@/components/ControlPlaneTab/ControlPlaneTab";
 export * from "@/components/PipelineGraph/PipelineGraph";
+export * from "@/components/ServiceArgumentInput/ServiceArgumentInput";
 export * from "@/components/ServiceArgumentNumberInput/ServiceArgumentNumberInput";
-export * from "@/components/ServiceArgumentSelectInput/ServiceArgumentSelectInput";
-export * from "@/components/ServiceArgumentTextArea/ServiceArgumentTextArea";
+export * from "@/components/ServiceArgumentSelect/ServiceArgumentSelect";
+export * from "@/components/ServiceArgumentTextarea/ServiceArgumentTextarea";
 export * from "@/components/ServiceCard/ServiceCard";
 
 // Cards

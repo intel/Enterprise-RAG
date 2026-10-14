@@ -1,6 +1,8 @@
-import { IconBaseProps } from "react-icons";
-import { FaCog } from "react-icons/fa";
+// Copyright (C) 2024-2026 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
 
-export const ConfigurableServiceIcon = (props: IconBaseProps) => (
-  <FaCog {...props} />
+import { GearSixIcon, IconProps } from "@phosphor-icons/react";
+
+export const ConfigurableServiceIcon = (props: IconProps) => (
+  <GearSixIcon {...props} weight="fill" />
 );

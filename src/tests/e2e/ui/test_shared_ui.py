@@ -106,48 +106,48 @@ async def test_about_dialog_open_close(chat_ui_helper):
 
 
 # ============================================================================
-# SIDE MENU
+# SIDEBAR
 # ============================================================================
 
 @allure.testcase("IEASG-T388")
 @pytest.mark.ui
 @pytest.mark.asyncio
-async def test_side_menu_toggle(chat_ui_helper):
+async def test_sidebar_toggle(chat_ui_helper):
     """
-    Test the side menu toggle button with aria-label state verification.
+    Test the sidebar toggle button with aria-label state verification.
 
     Steps:
-    1. Verify side-menu-icon-button is visible
+    1. Verify sidebar-toggle-button is visible
     2. Read initial aria-label state
     3. Click to toggle → verify aria-label changes
     4. Click again to toggle back → verify aria-label reverts
 
     Success criteria:
-    - data-testid="side-menu-icon-button" is interactive
-    - aria-label toggles between "Open Side Menu" and "Close Side Menu"
+    - data-testid="sidebar-toggle-button" is interactive
+    - aria-label toggles between "Open Sidebar" and "Close Sidebar"
     """
     if not _has_chatqna:
         pytest.skip("ChatQA pipeline required for this test")
 
-    logger.info("Test: Side menu toggle")
+    logger.info("Test: Sidebar toggle")
 
     page = chat_ui_helper.page
 
     # Assert: button visible
     visible = await chat_ui_helper.is_visible_by_testid(
-        "side-menu-icon-button", timeout=10000
+        "sidebar-toggle-button", timeout=10000
     )
-    assert visible, "side-menu-icon-button should be visible"
-    logger.info("Assert 1: Side menu button visible")
+    assert visible, "sidebar-toggle-button should be visible"
+    logger.info("Assert 1: Sidebar button visible")
 
     # Read initial state (sidebar is closed by default)
-    btn = page.locator('[data-testid="side-menu-icon-button"]')
+    btn = page.locator('[data-testid="sidebar-toggle-button"]')
     initial_aria = await btn.get_attribute("aria-label")
     logger.info(f"Initial aria-label: {initial_aria}")
 
     # Click to toggle (open or close)
-    clicked = await chat_ui_helper.click_by_testid("side-menu-icon-button")
-    assert clicked, "Failed to click side-menu-icon-button (first toggle)"
+    clicked = await chat_ui_helper.click_by_testid("sidebar-toggle-button")
+    assert clicked, "Failed to click sidebar-toggle-button (first toggle)"
     await page.wait_for_timeout(500)
 
     # Verify aria-label changed
@@ -157,8 +157,8 @@ async def test_side_menu_toggle(chat_ui_helper):
     logger.info(f"Toggled aria-label: {toggled_aria}")
 
     # Click again to toggle back
-    clicked = await chat_ui_helper.click_by_testid("side-menu-icon-button")
-    assert clicked, "Failed to click side-menu-icon-button (second toggle)"
+    clicked = await chat_ui_helper.click_by_testid("sidebar-toggle-button")
+    assert clicked, "Failed to click sidebar-toggle-button (second toggle)"
     await page.wait_for_timeout(500)
 
     # Verify aria-label reverted
@@ -169,12 +169,12 @@ async def test_side_menu_toggle(chat_ui_helper):
 
     # Assert: button remains visible
     still_visible = await chat_ui_helper.is_visible_by_testid(
-        "side-menu-icon-button", timeout=3000
+        "sidebar-toggle-button", timeout=3000
     )
-    assert still_visible, "side-menu-icon-button should remain visible after toggling"
+    assert still_visible, "sidebar-toggle-button should remain visible after toggling"
     logger.info("Assert 2: Button still accessible after toggling")
 
-    logger.info("Test completed: Side menu toggle validated")
+    logger.info("Test completed: Sidebar toggle validated")
 
 
 # ============================================================================

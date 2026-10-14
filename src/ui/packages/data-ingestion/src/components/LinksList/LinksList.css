@@ -1,0 +1,19 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* Only the keyframe-driven highlight stays here; the static row styles are inline utilities. */
+.link-list-item__url.highlighted {
+  animation: flash-grey-bg 1s ease-in-out;
+}
+
+@keyframes flash-grey-bg {
+  0% {
+    background-color: #4e4e4e;
+  }
+  50% {
+    background-color: #4e4e4e;
+  }
+  100% {
+    background-color: #1f2133;
+  }
+}

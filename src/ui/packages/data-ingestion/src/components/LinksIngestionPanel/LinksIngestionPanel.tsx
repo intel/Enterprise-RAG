@@ -1,8 +1,6 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./LinksIngestionPanel.scss";
-
 import { Dispatch, SetStateAction, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -44,7 +42,7 @@ const LinksIngestionPanel = ({ links, setLinks }: LinksIngestionPanelProps) => {
   return (
     <section>
       <h2>Links</h2>
-      <p className="links-ingestion-panel__hint">
+      <p className="mb-2 text-xs">
         Supported text-based links extensions: ADOC, PDF, HTML, TXT, DOC, DOCX,
         PPT, PPTX, MD, XML, JSON, JSONL, YAML, XLS, XLSX, CSV, TIFF, JPG, JPEG,
         PNG, SVG

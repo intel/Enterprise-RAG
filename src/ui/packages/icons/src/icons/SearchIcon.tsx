@@ -1,7 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { IconBaseProps } from "react-icons";
-import { BsSearch } from "react-icons/bs";
+import { IconProps, MagnifyingGlassIcon } from "@phosphor-icons/react";
 
-export const SearchIcon = (props: IconBaseProps) => <BsSearch {...props} />;
+export const SearchIcon = (props: IconProps) => (
+  <MagnifyingGlassIcon {...props} />
+);

@@ -1,20 +1,16 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./SelectedServiceCard.scss";
-
 import { Button } from "@intel-enterprise-rag-ui/components";
-import classNames from "classnames";
-import { Fragment, PropsWithChildren, ReactNode } from "react";
-import { PressEvent } from "react-aria-components";
+import { Fragment, MouseEvent, PropsWithChildren, ReactNode } from "react";
 
 import { ServiceStatusIndicator } from "@/components/ServiceStatusIndicator/ServiceStatusIndicator";
 import { ServiceDetails, ServiceStatus } from "@/types/index";
 
 export interface SelectedServiceCardFooterProps {
   isConfirmChangesButtonDisabled: boolean;
-  onConfirmChangesButtonClick: (event: PressEvent) => void;
-  onCancelChangesButtonClick: (event: PressEvent) => void;
+  onConfirmChangesButtonClick: (event: MouseEvent<HTMLButtonElement>) => void;
+  onCancelChangesButtonClick: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
 export interface SelectedServiceCardProps extends PropsWithChildren {
@@ -35,25 +31,15 @@ export const SelectedServiceCard = ({
   children,
   isReadOnly = false,
 }: SelectedServiceCardProps) => {
-  const contentClassNames = classNames([
-    "selected-service-card__content",
-    {
-      "selected-service-card__content--no-footer": !footerProps || isReadOnly,
-      "selected-service-card__content--with-footer": footerProps && !isReadOnly,
-    },
-  ]);
-
   return (
-    <div className="selected-service-card">
-      <div className="selected-service-card__wrapper">
-        <header className="selected-service-card__header">
+    <div>
+      <div className="flex flex-col">
+        <header className="bg-card sticky top-0 z-10 grid grid-cols-[1rem_auto] items-center justify-items-start gap-2 pb-2">
           <ServiceStatusIndicator status={serviceStatus} />
-          <p className="selected-service-card__header__service-name">
-            {serviceName}
-          </p>
+          <p className="font-medium">{serviceName}</p>
           {DebugDialog}
         </header>
-        <div className={contentClassNames}>
+        <div className="flex flex-col gap-1">
           {serviceDetails && (
             <ServiceDetailsGrid serviceDetails={serviceDetails} />
           )}
@@ -77,11 +63,13 @@ const ServiceDetailsGrid = ({ serviceDetails }: ServiceDetailsGridProps) => {
   }
 
   return (
-    <section className="service-details-grid">
+    <section className="mt-2 grid auto-rows-[1.75rem] grid-cols-2 items-center justify-items-start gap-x-2 gap-y-1">
       {Object.entries(serviceDetails).map(([label, value]) => (
         <Fragment key={label}>
-          <p className="service-detail-label">{label}</p>
-          <p className="service-detail-value">{value}</p>
+          <p className="text-xs font-medium">{label}</p>
+          <p className="w-full overflow-hidden text-xs text-ellipsis whitespace-nowrap">
+            {value}
+          </p>
         </Fragment>
       ))}
     </section>
@@ -93,24 +81,22 @@ const SelectedServiceCardFooter = ({
   onConfirmChangesButtonClick,
   onCancelChangesButtonClick,
 }: SelectedServiceCardFooterProps) => (
-  <footer className="selected-service-card__footer">
+  <footer className="bg-card sticky bottom-0 z-10 flex items-center justify-end gap-2 border-t pt-2">
     <Button
       data-testid="confirm-service-changes-button"
       size="sm"
-      color="success"
+      variant="success"
       isDisabled={isConfirmChangesButtonDisabled}
       onPress={onConfirmChangesButtonClick}
-      fullWidth
     >
       Confirm Changes
     </Button>
     <Button
       data-testid="cancel-service-changes-button"
       size="sm"
-      variant="outlined"
+      variant="outline"
       isDisabled={isConfirmChangesButtonDisabled}
       onPress={onCancelChangesButtonClick}
-      fullWidth
     >
       Cancel
     </Button>

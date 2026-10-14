@@ -1,16 +1,10 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./PasteTextTab.scss";
-
-import {
-  addNotification,
-  Button,
-  Label,
-  TextAreaInput,
-} from "@intel-enterprise-rag-ui/components";
+import { Button, Label, Textarea } from "@intel-enterprise-rag-ui/components";
 import { getValidationErrorMessage } from "@intel-enterprise-rag-ui/input-validation";
 import { ChangeEventHandler, useCallback, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import { useSummarizePlainTextMutation } from "@/features/docsum/api";
 import { SummaryType } from "@/features/docsum/api/types";
@@ -107,12 +101,7 @@ const PasteTextTab = () => {
 
       if (error) {
         console.error("Text summary error:", error);
-        dispatch(
-          addNotification({
-            severity: "error",
-            text: `An error occurred while summarizing the text: ${error}`,
-          }),
-        );
+        toast.error(`An error occurred while summarizing the text: ${error}`);
       } else {
         const summaryToSave = summaryRef.current ?? data?.text ?? "";
         if (summaryToSave) {
@@ -126,11 +115,8 @@ const PasteTextTab = () => {
               source: text,
             }),
           );
-          dispatch(
-            addNotification({
-              severity: "success",
-              text: "The summary for the pasted text has been saved successfully.",
-            }),
+          toast.success(
+            "The summary for the pasted text has been saved successfully.",
           );
         }
       }
@@ -147,33 +133,42 @@ const PasteTextTab = () => {
     text.trim().length === 0 || isGeneratingSummaryDisabled;
 
   return (
-    <div className="paste-text-tab">
-      <div className="paste-text-tab__text-area-col">
-        <div className="paste-text-tab__text-area-col__header">
-          <Label htmlFor="paste-text">Text to Summarize</Label>
+    <div className="grid h-[calc(100vh-8rem)] grid-cols-2 gap-8 px-16 pt-6 pb-16">
+      <div className="flex h-full flex-col">
+        <div className="mb-2 flex flex-row items-center justify-between">
+          <Label htmlFor="paste-text" className="font-medium">
+            Text to Summarize
+          </Label>
           <Button
             data-testid="paste-text-clear-button"
             size="sm"
-            variant="outlined"
+            variant="outline"
             isDisabled={isClearBtnDisabled}
             onPress={clearText}
           >
             Clear
           </Button>
         </div>
-        <TextAreaInput
+        <Textarea
           data-testid="paste-text-textarea-input"
           id="paste-text"
           name="paste-text"
           value={text}
           placeholder="Paste your text here..."
-          className="paste-text-tab__text-area"
+          className="h-[calc(100vh-20.5rem)]"
           aria-label="Paste your text here"
+          aria-describedby="paste-text-error-message"
           disabled={isLoading}
           onChange={handleChange}
           isInvalid={isInvalid}
         />
-        <p className="paste-text-tab__error-message">{errorMessage}</p>
+        <p
+          id="paste-text-error-message"
+          aria-live="polite"
+          className="text-destructive mt-2 h-4 text-sm"
+        >
+          {errorMessage}
+        </p>
         <GenerateSummaryDropdownButton
           summaryType={summaryType}
           onSummaryTypeChange={handleSummaryTypeChange}
@@ -182,7 +177,7 @@ const PasteTextTab = () => {
           className="mt-4"
         />
       </div>
-      <div className="paste-text-tab__summary-col">
+      <div className="h-full min-h-0 flex-1 overflow-y-auto">
         <GeneratedSummary
           summary={summary}
           isLoading={isLoading}

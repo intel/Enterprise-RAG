@@ -22,8 +22,6 @@ export interface ControlPlaneTabProps {
   edges: Edge[];
   isLoading: boolean;
   isRenderable: boolean;
-  isAutorefreshEnabled: boolean;
-  onAutorefreshChange: (enabled: boolean) => void;
   onRefresh: () => void;
   isFetching: boolean;
   onNodesChange: (changes: NodeChange<Node<ServiceData>>[]) => void;
@@ -32,6 +30,7 @@ export interface ControlPlaneTabProps {
   onSelectionChange: OnSelectionChangeFunc;
   fitViewOptions?: FitViewOptions;
   ConfigPanel: ReactNode;
+  isConfigPanelDisabled?: boolean;
 }
 
 export const ControlPlaneTab = ({
@@ -39,8 +38,6 @@ export const ControlPlaneTab = ({
   edges,
   isLoading,
   isRenderable,
-  isAutorefreshEnabled,
-  onAutorefreshChange,
   onRefresh,
   isFetching,
   onNodesChange,
@@ -49,6 +46,7 @@ export const ControlPlaneTab = ({
   onSelectionChange,
   fitViewOptions,
   ConfigPanel,
+  isConfigPanelDisabled,
 }: ControlPlaneTabProps) => {
   const { colorScheme: colorMode } = useColorScheme();
 
@@ -66,6 +64,8 @@ export const ControlPlaneTab = ({
       onSelectionChange={onSelectionChange}
       onConnect={onConnect}
       colorMode={colorMode}
+      onRefresh={onRefresh}
+      isFetching={isFetching}
     />
   );
 
@@ -75,10 +75,7 @@ export const ControlPlaneTab = ({
       isRenderable={isRenderable}
       Graph={graph}
       ConfigPanel={ConfigPanel}
-      isAutorefreshEnabled={isAutorefreshEnabled}
-      onAutorefreshChange={onAutorefreshChange}
-      onRefresh={onRefresh}
-      isFetching={isFetching}
+      isConfigPanelDisabled={isConfigPanelDisabled}
     />
   );
 };

@@ -1,10 +1,8 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./CopyButton.scss";
-
 import { IconName } from "@intel-enterprise-rag-ui/icons";
-import classNames from "classnames";
+import { cn } from "@intel-enterprise-rag-ui/utils";
 import { useState } from "react";
 
 import { IconButton } from "@/IconButton/IconButton";
@@ -66,9 +64,11 @@ export const CopyButton = ({
         : "Error";
   const icon: IconName = copyState === "idle" ? "copy" : `copy-${copyState}`;
 
-  const className = classNames("copy-btn", {
-    "copy-btn--code-snippet": forCodeSnippet,
-  });
+  const className = cn(
+    "hover:bg-accent transition-colors duration-300 ease-in-out",
+    forCodeSnippet &&
+      "text-xs text-white hover:bg-inherit dark:hover:bg-inherit",
+  );
 
   return (
     <Tooltip

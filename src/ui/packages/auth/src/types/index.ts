@@ -24,4 +24,12 @@ export interface KeycloakServiceConfig {
   initOptions?: KeycloakInitOptions;
   minTokenValidity?: number;
   onRefreshTokenFailed?: () => void;
+  /**
+   * Dev-only escape hatch: skips the real Keycloak check-sso/login flow and
+   * grants every resource role, so local automation (axe-core, Lighthouse)
+   * can reach authenticated views without following the Keycloak redirect.
+   * Callers must only ever set this from a build-time-eliminated dev branch
+   * (see `initializeKeycloak`) — never from runtime/production config.
+   */
+  skipAuth?: boolean;
 }
