@@ -12,12 +12,12 @@ jobs:
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/read-images-reusable.yml
 
-  update-uv-locks:
+  update-locks:
     needs: read-images
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
-      commit_count: ${{ steps.update_locks.outputs.commit_count }}
+      commit_count: ${{ steps.export.outputs.commit_count }}
     defaults:
       run:
         shell: bash
@@ -44,7 +44,6 @@ jobs:
           enable-cache: false
 
       - name: Update UV lock files
-        id: update_locks
         env:
           IMAGES_MATRIX: ${{ needs.read-images.outputs.matrix }}
         run: |
@@ -136,23 +135,57 @@ jobs:
             echo ""
           done
 
-          echo "commit_count=$COMMIT_COUNT" >> "$GITHUB_OUTPUT"
+          echo "Created $COMMIT_COUNT commit(s)"
+
+      - name: Install pnpm
+        # Keep in sync with the pnpm version prepared in src/ui/apps/*/Dockerfile
+        run: npm install --global pnpm@10.33.4
+
+      - name: Update UI pnpm lock file
+        run: |
+          set -e
+
+          # All UI apps share a single pnpm workspace, so its lock file is updated once
+          PNPM_LOCK="src/ui/pnpm-lock.yaml"
+          echo "Regenerating pnpm lock file $PNPM_LOCK..."
+
+          # Re-resolve the whole tree (incl. transitive deps) within the package.json
+          # ranges and pnpm-workspace.yaml overrides, without installing or running scripts
+          if (cd src/ui && rm pnpm-lock.yaml && pnpm install --lockfile-only --no-frozen-lockfile --ignore-scripts); then
+            echo "  Successfully updated $PNPM_LOCK"
+
+            if [[ -n $(git status --porcelain -- "$PNPM_LOCK") ]]; then
+              git add "$PNPM_LOCK"
+              git commit -m "Upgrade deps for ui"
+              echo "  Committed successfully"
+            else
+              echo "  No changes to commit for ui"
+            fi
+          else
+            echo "  Warning: Failed to update $PNPM_LOCK"
+            git checkout -- "$PNPM_LOCK"
+          fi
 
       - name: Export commits as patches
-        if: steps.update_locks.outputs.commit_count != '0'
-        run: git format-patch "$GITHUB_SHA..HEAD" -o "$RUNNER_TEMP/patches"
+        id: export
+        run: |
+          COMMIT_COUNT=$(git rev-list --count "$GITHUB_SHA..HEAD")
+          echo "commit_count=$COMMIT_COUNT" >> "$GITHUB_OUTPUT"
+          if [[ "$COMMIT_COUNT" != "0" ]]; then
+            git format-patch "$GITHUB_SHA..HEAD" -o "$RUNNER_TEMP/patches"
+          fi
 
       - name: Upload patches
-        if: steps.update_locks.outputs.commit_count != '0'
+        if: steps.export.outputs.commit_count != '0'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: uv-lock-patches
+          name: dep-lock-patches
           path: ${{ runner.temp }}/patches
           retention-days: 1
 
   push-updates:
-    needs: update-uv-locks
-    if: needs.update-uv-locks.outputs.commit_count != '0'
+    needs: update-locks
+    if: needs.update-locks.outputs.commit_count != '0'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -176,7 +209,7 @@ jobs:
       - name: Download patches
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: uv-lock-patches
+          name: dep-lock-patches
           path: ${{ runner.temp }}/patches
 
       - name: Validate and apply patches
@@ -187,7 +220,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          BRANCH_NAME="automated-uv-lock-updates-$(date +%Y%m%d-%H%M%S)"
+          BRANCH_NAME="automated-dep-lock-updates-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH_NAME"
 
           UPDATED_SERVICES=""
@@ -223,8 +256,8 @@ jobs:
               exit 1
             fi
             while read -r FILE; do
-              if [[ "$(basename "$FILE")" != "uv.lock" ]] || ! git ls-files --error-unmatch -- "$FILE" > /dev/null 2>&1; then
-                echo "::error::Patch touches a file other than a tracked uv.lock: $FILE"
+              if [[ ! "$(basename "$FILE")" =~ ^(uv\.lock|pnpm-lock\.yaml)$ ]] || ! git ls-files --error-unmatch -- "$FILE" > /dev/null 2>&1; then
+                echo "::error::Patch touches a file other than a tracked uv.lock or pnpm-lock.yaml: $FILE"
                 exit 1
               fi
             done <<< "$FILES"
@@ -264,22 +297,22 @@ jobs:
       - name: Create PR for dependency updates
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
-          UV_UPDATED_SERVICES: ${{ needs.push-updates.outputs.updated_services }}
-          UV_COMMIT_COUNT: ${{ needs.push-updates.outputs.commit_count }}
+          UPDATED_SERVICES: ${{ needs.push-updates.outputs.updated_services }}
+          COMMIT_COUNT: ${{ needs.push-updates.outputs.commit_count }}
           BRANCH_NAME: ${{ needs.push-updates.outputs.branch_name }}
         with:
           script: |
-            const uvUpdatedServices = process.env.UV_UPDATED_SERVICES || '';
-            const uvCommitCount = parseInt(process.env.UV_COMMIT_COUNT || '0');
+            const updatedServices = process.env.UPDATED_SERVICES || '';
+            const commitCount = parseInt(process.env.COMMIT_COUNT || '0');
             const branchName = process.env.BRANCH_NAME;
 
             const prBody = `## Dependency Updates for CVE Mitigation\n\n` +
-              `This PR automatically updates Python dependencies with ${uvCommitCount} commit(s).\n\n` +
-              `### Python Dependencies (UV Lock Files)\n\n` +
-              `Updated ${uvCommitCount} service(s):\n${uvUpdatedServices}\n\n` +
+              `This PR automatically updates Python and UI dependencies with ${commitCount} commit(s).\n\n` +
+              `### Updated Lock Files (UV and pnpm)\n\n` +
+              `Updated ${commitCount} service(s):\n${updatedServices}\n\n` +
               `Each service was committed separately for better traceability. These updates help mitigate known CVEs by upgrading to the latest compatible dependency versions.\n`;
 
-            const prTitle = 'Update Python dependencies (UV locks) for CVE mitigation';
+            const prTitle = 'Update Python and UI dependencies (UV and pnpm locks) for CVE mitigation';
 
             await github.rest.pulls.create({
               owner: context.repo.owner,
