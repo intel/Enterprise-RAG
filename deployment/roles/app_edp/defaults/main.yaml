@@ -149,8 +149,6 @@ edp_ontap_s3_cors_allow_origins: >-
 edp_ontap_s3_validate_reachability: true
 
 # --- Late chunking ---
-# NOTE: when enabled, embedding_model_id MUST be one of the models listed in
-# late_chunking_compatible_models (see app_pre_install/tasks/solution_config.yaml).
 edp_late_chunking_enabled: false
 edp_late_chunking_chunk_size: 512
 edp_late_chunking_chunk_overlap: 64
