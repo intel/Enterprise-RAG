@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   read-images:
-    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/read-images-reusable.yml
 
   update-locks:
