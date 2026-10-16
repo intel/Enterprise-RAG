@@ -21,7 +21,7 @@ reranking_model_name: ""                           # app_inference_models
 ui_domain_name: "solutions.ai"                                                       # app_ui
 erag_keycloak_domain_name: "auth.solutions.ai"                                        # app_keycloak_config
 erag_keycloak_path_prefix: ""                                                     # app_keycloak_config
-erag_keycloak_default_path_prefix: "/auth"                                        # app_keycloak_config
+erag_keycloak_default_path_prefix: "{{ keycloak_path | default('/keycloak') }}"  # app_keycloak_config; = platform keycloak_path
 edp_minio_domain_name: "seaweedfs.{{ base_domain_name | default('solutions.ai') }}"  # app_edp
 edp_minio_api_domain_name: "s3.{{ base_domain_name | default('solutions.ai') }}"     # app_edp
 edp_seaweedfs_path_prefix: ""                                                    # app_edp

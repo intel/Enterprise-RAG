@@ -12,24 +12,24 @@
   changed_when: false
   when: _edp_ontap_s3_tls_mode == 'ca'
 
-- name: "app_edp | ONTAP S3 | Assert the cluster serves BackendTLSPolicy v1alpha3"
+- name: "app_edp | ONTAP S3 | Assert the cluster serves BackendTLSPolicy v1"
   ansible.builtin.assert:
-    that: "'v1alpha3' in _edp_ontap_btp_versions"
+    that: "'v1' in _edp_ontap_btp_versions"
     fail_msg: >-
       edp_ontap_s3_tls_mode is 'ca', which needs
       CustomResourceDefinition/backendtlspolicies.gateway.networking.k8s.io serving
-      v1alpha3. This cluster serves {{ _edp_ontap_btp_versions | default([]) | join(', ') | default('nothing', true) }}.
-      The kind is experimental-channel only. It normally arrives with envoy-gateway's
-      own Gateway API bundle (gateway-helm, roles/envoy_gateway/defaults/main.yaml),
-      which is a newer bundle than the standard-channel CRDs the istio role installs.
-      Install the experimental channel, or use edp_ontap_s3_tls_mode: insecure, which
-      needs no extra CRD.
-    success_msg: "app_edp: ONTAP S3 BackendTLSPolicy v1alpha3 available"
+      v1. This cluster serves {{ _edp_ontap_btp_versions | default([]) | join(', ') | default('nothing', true) }}.
+      v1 is part of every Gateway API bundle from v1.4 on; the platform's envoy_gateway
+      role installs the bundle that matches its Envoy Gateway release. Upgrade the
+      platform, or use edp_ontap_s3_tls_mode: insecure, which needs no extra CRD.
+    success_msg: "app_edp: ONTAP S3 BackendTLSPolicy v1 available"
     quiet: true
   vars:
+    # Only served versions count: from Gateway API v1.5 on, v1alpha3 stays listed in
+    # the CRD with served: false.
     _edp_ontap_btp_versions: >-
       {{ (_edp_ontap_btp_crd.resources | default([{}]) | first).spec.versions | default([])
-         | map(attribute='name') | list }}
+         | selectattr('served') | map(attribute='name') | list }}
   when: _edp_ontap_s3_tls_mode == 'ca'
 
 - name: "app_edp | ONTAP S3 | Create the CA ConfigMap for upstream TLS"
@@ -60,23 +60,23 @@
   loop_control:
     label: "{{ item.kind }}/{{ item.name }}"
   register: _edp_ontap_prune
-  # An absent CRD is not a failure here: the BackendTLSPolicy kind only exists on
-  # clusters carrying the Gateway API experimental channel, and the Backend kind
-  # only when envoy-gateway enables its extension APIs. Anything else must fail.
+  # An absent CRD is not a failure here: the BackendTLSPolicy kind (v1) only exists
+  # on clusters with a Gateway API bundle from v1.4 on, and the Backend kind only
+  # when envoy-gateway enables its extension APIs. Anything else must fail.
   failed_when: >-
     _edp_ontap_prune is failed
     and 'Failed to find exact match' not in (_edp_ontap_prune.msg | default(''))
   vars:
     _edp_ontap_s3_stale_objects:
       insecure:
-        - {api: gateway.networking.k8s.io/v1alpha3, kind: BackendTLSPolicy, name: "{{ edp_ontap_s3_backend_name }}-tls"}
+        - {api: gateway.networking.k8s.io/v1, kind: BackendTLSPolicy, name: "{{ edp_ontap_s3_backend_name }}-tls"}
         - {api: discovery.k8s.io/v1, kind: EndpointSlice, name: "{{ edp_ontap_s3_backend_name }}"}
         - {api: v1, kind: Service, name: "{{ edp_ontap_s3_backend_name }}"}
         - {api: v1, kind: ConfigMap, name: "{{ edp_ontap_s3_ca_configmap_name }}"}
       ca:
         - {api: gateway.envoyproxy.io/v1alpha1, kind: Backend, name: "{{ edp_ontap_s3_backend_name }}"}
       plaintext:
-        - {api: gateway.networking.k8s.io/v1alpha3, kind: BackendTLSPolicy, name: "{{ edp_ontap_s3_backend_name }}-tls"}
+        - {api: gateway.networking.k8s.io/v1, kind: BackendTLSPolicy, name: "{{ edp_ontap_s3_backend_name }}-tls"}
         - {api: gateway.envoyproxy.io/v1alpha1, kind: Backend, name: "{{ edp_ontap_s3_backend_name }}"}
         - {api: v1, kind: ConfigMap, name: "{{ edp_ontap_s3_ca_configmap_name }}"}
 
@@ -108,6 +108,13 @@
 - name: "app_edp | ONTAP S3 | Resolve the gateway listener to bind"
   ansible.builtin.include_tasks:
     file: s3_listener_section.yaml
+
+# Takes the S3 host from the SeaweedFS ListenerSet first, if it held it.
+- name: "app_edp | ONTAP S3 | Publish the S3 host on the gateway"
+  ansible.builtin.include_tasks:
+    file: gateway_listeners.yaml
+  vars:
+    _edp_ls_scope: ontap
 
 - name: "app_edp | ONTAP S3 | Apply the reverse proxy objects"
   kubernetes.core.k8s:

@@ -33,6 +33,49 @@ _edp_s3_host: >-
   {{ base_domain_name if _edp_s3_path_mode | bool
      else edp_s3_domain_prefix ~ '.' ~ base_domain_name }}
 _edp_s3_prefix: "{{ edp_s3_path_prefix | default(edp_default_s3_path_prefix, true) | string | trim }}"
+# SeaweedFS admin UI hostname (subdomain mode).
+_edp_admin_host: "{{ edp_ui_browser_domain_prefix ~ '.' ~ base_domain_name }}"
+
+# --- Gateway publication (platform roles/gateway, publish.yaml) ---
+# EDP publishes its own hosts through the platform's gateway contract, which
+# picks the mechanism: a ListenerSet per host, a host grant on the shared
+# wildcard listener (older Gateway API / controller), or a path on the apex
+# host (path mode). One publication per host, owned by the namespace of the
+# route that serves it, so the S3 host can move between SeaweedFS and ONTAP
+# without touching the admin UI. The name is also the ListenerSet / listener
+# name. When the platform has a dedicated S3 listener, the S3 host is only
+# granted (the route binds that listener).
+edp_publish_ontap_s3: "ontap-s3"                # in edp_namespace
+edp_publish_seaweedfs_s3: "seaweedfs-s3"        # in edp_seaweedfs_namespace
+edp_publish_seaweedfs_admin: "seaweedfs-admin"  # in edp_seaweedfs_namespace
+_edp_s3_subdomain_host: "{{ edp_s3_domain_prefix ~ '.' ~ base_domain_name }}"
+_edp_seaweedfs_prefix: >-
+  {{ edp_seaweedfs_path_prefix | default(edp_default_seaweedfs_path_prefix, true) | string | trim }}
+# Every publication EDP can own; 'wanted' is evaluated after
+# tasks/s3_listener_section.yaml. tasks/gateway_listeners.yaml publishes the
+# wanted ones and withdraws the rest.
+_edp_publications:
+  - scope: ontap
+    name: "{{ edp_publish_ontap_s3 }}"
+    namespace: "{{ edp_namespace }}"
+    host: "{{ _edp_s3_subdomain_host }}"
+    path: "{{ _edp_s3_prefix }}"
+    s3: true
+    wanted: "{{ _edp_ontap_s3_active | default(false) | bool }}"
+  - scope: seaweedfs
+    name: "{{ edp_publish_seaweedfs_s3 }}"
+    namespace: "{{ edp_seaweedfs_namespace }}"
+    host: "{{ _edp_s3_subdomain_host }}"
+    path: "{{ _edp_s3_prefix }}"
+    s3: true
+    wanted: "{{ not _edp_ontap_s3_active | default(false) | bool and edp_storage_type == 'seaweedfs' }}"
+  - scope: seaweedfs
+    name: "{{ edp_publish_seaweedfs_admin }}"
+    namespace: "{{ edp_seaweedfs_namespace }}"
+    host: "{{ _edp_admin_host }}"
+    path: "{{ _edp_seaweedfs_prefix }}"
+    s3: false
+    wanted: "{{ edp_storage_type == 'seaweedfs' }}"
 
 # --- Helm ---
 edp_helm_version: "{{ helm_version }}"

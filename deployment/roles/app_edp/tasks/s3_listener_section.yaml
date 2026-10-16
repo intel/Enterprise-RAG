@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-# Which gateway listener an S3 route has to name in sectionName. Both the SeaweedFS
-# S3 route and the ONTAP S3 route claim the same hostname, so both bind whatever
-# this resolves.
+# Which gateway listener an S3 route has to name in sectionName (and, on a gateway
+# that accepts ListenerSets, which parent). Both the SeaweedFS S3 route and the
+# ONTAP S3 route claim the same hostname, so both bind whatever this resolves. The
+# SeaweedFS admin route's parent is resolved here too.
 #
 # Gateway API resolves overlapping listener hostnames by specificity, so as soon as
 # the platform gateway carries a listener claiming s3.<base_domain> exactly (the core
@@ -29,15 +30,58 @@
   register: _edp_s3_gw_listeners
   check_mode: false
   changed_when: false
+  # No Gateway API at all (platform already torn down) resolves to the legacy
+  # listeners and publishes nothing; any other error must stop the run.
+  failed_when: >-
+    _edp_s3_gw_listeners is failed
+    and 'Failed to find exact match' not in (_edp_s3_gw_listeners.msg | default(''))
+
+# The platform gateway (roles/gateway, read from its record) decides how a
+# service attaches: its own ListenerSet ('listenerset'), a host grant on the
+# wildcard listener ('shared'), or a path on the apex host (path mode). The order
+# for the S3 host is: an exact listener on the Gateway (the dedicated S3 one,
+# which carries the SigV4 path policy), else the platform's attach mode.
+# Read-only, so validate and teardown can use it. The parents mirror
+# roles/gateway/tasks/publish.yaml (gateway_publish.parent_ref); install takes
+# the authoritative value from publish (tasks/gateway_publish_one.yaml).
+- name: "app_edp | S3 listener | Read the platform gateway record"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: platform.yaml
+  when: gateway_platform is not defined
 
 - name: "app_edp | S3 listener | Select the listener that claims the S3 hostname"
   ansible.builtin.set_fact:
-    _edp_s3_section: "{{ _exact | default(_wildcard, true) }}"
+    _edp_attach: "{{ _attach }}"
+    _edp_s3_exact: "{{ _exact }}"
+    _edp_s3_parent: >-
+      {{ _gw_parent | combine({'sectionName': _exact}) if _exact
+         else _ls_parent | combine({'name': _s3_name, 'namespace': _s3_ns, 'sectionName': _s3_name}) if _ls
+         else _gw_parent | combine({'sectionName': _shared_section}) }}
+    _edp_admin_parent: >-
+      {{ _ls_parent | combine({'name': edp_publish_seaweedfs_admin, 'namespace': edp_seaweedfs_namespace,
+                               'sectionName': edp_publish_seaweedfs_admin}) if _ls
+         else _gw_parent | combine({'sectionName': _shared_section}) }}
   vars:
+    _gw: "{{ _edp_s3_gw_listeners.resources | default([{}]) | first }}"
     _tls_listeners: >-
-      {{ (_edp_s3_gw_listeners.resources | default([{}]) | first).spec.listeners | default([])
-         | selectattr('protocol', 'eq', 'HTTPS') | list }}
+      {{ _gw.spec.listeners | default([]) | selectattr('protocol', 'eq', 'HTTPS') | list }}
+    # Subdomain mode only: in path mode the S3 host is the apex host, published as a path.
     _exact: >-
-      {{ _tls_listeners | selectattr('hostname', 'defined') | selectattr('hostname', 'eq', _edp_s3_host)
+      {{ '' if _edp_s3_path_mode | bool else
+         _tls_listeners | selectattr('hostname', 'defined') | selectattr('hostname', 'eq', _edp_s3_host)
          | map(attribute='name') | list | first | default('', true) }}
-    _wildcard: "{{ 'https-apex' if _edp_s3_path_mode else 'https' }}"
+    _attach: "{{ (gateway_platform | default({})).attach_mode | default('shared', true) }}"
+    # publish.yaml: path mode → apex listener; else ListenerSet, or the wildcard in shared mode.
+    _ls: "{{ _attach == 'listenerset' and not _edp_s3_path_mode | bool }}"
+    _shared_section: "{{ 'https-apex' if _edp_s3_path_mode | bool else 'https' }}"
+    # The S3 host belongs to whichever backend serves it.
+    _s3_ns: "{{ edp_namespace if _edp_ontap_s3_active | default(false) | bool else edp_seaweedfs_namespace }}"
+    _s3_name: >-
+      {{ edp_publish_ontap_s3 if _edp_ontap_s3_active | default(false) | bool else edp_publish_seaweedfs_s3 }}
+    _gw_parent: {name: "{{ gateway_name }}", namespace: "{{ gateway_namespace }}"}
+    _ls_parent: {group: gateway.networking.k8s.io, kind: ListenerSet}
+
+- name: "app_edp | S3 listener | Section the S3 routes bind"
+  ansible.builtin.set_fact:
+    _edp_s3_section: "{{ _edp_s3_parent.sectionName }}"
