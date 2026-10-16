@@ -9,9 +9,8 @@ name: Ansible Lint
 # and is why these workflows live on the public branches only: internal CI runs
 # on self-hosted runners that do not exist for this repository on github.com.
 #
-# Soft-fail for the initial rollout: findings publish to Security -> Code
-# scanning instead of blocking the branch. Tighten the `exit-code` /
-# `--soft-fail` / `continue-on-error` switches once the backlog is triaged.
+# Blocking: any finding fails the job. The backlog was cleared, so a new
+# finding is a regression -- fix it rather than reintroducing soft-fail.
 
 on:
   workflow_dispatch:
@@ -71,7 +70,6 @@ jobs:
       # the playbooks/ and env/ trees referenced by deployment/backup.yaml are
       # supplied per-environment and are not part of this repository.
       - name: Run ansible-lint
-        continue-on-error: true
         run: >-
           ansible-lint --nocolor
           --skip-list name,var-naming,fqcn,yaml,jinja,key-order

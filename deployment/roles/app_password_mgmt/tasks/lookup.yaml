@@ -88,5 +88,6 @@
       template:
         src: credentials_template.j2
         dest: "{{ password_file }}"
+        mode: '0600'
       vars:
         credentials: "{{ merged_credentials }}"

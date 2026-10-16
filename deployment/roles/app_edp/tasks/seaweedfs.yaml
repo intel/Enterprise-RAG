@@ -58,6 +58,7 @@
 - name: "app_edp | Generate STS signing key"
   ansible.builtin.command: openssl rand -hex 32
   register: sts_signing_key_cmd
+  changed_when: false
   no_log: true
   when: useBearerTokenAuth
 

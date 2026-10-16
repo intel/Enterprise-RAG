@@ -183,7 +183,6 @@
       metadata:
         name: "{{ item }}"
   loop: "{{ vector_db_connection_detail_namespaces | flatten }}"
-  ignore_errors: true
 
 - name: "app_vector_databases | Create redis compatible vector store configs for services in namespaces"
   kubernetes.core.k8s:
