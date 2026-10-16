@@ -97,12 +97,15 @@
         fail_msg: >-
           HTTPRoute {{ edp_namespace }}/{{ edp_ontap_s3_route_name }} is missing or not
           programmed. Conditions: {{ _conditions | default([]) }}.
-          Accepted=False means the parent Gateway {{ gateway_namespace }}/{{ gateway_name }}
+          Accepted=False means the parent
+          {{ (_edp_s3_parent | default({})).kind | default('Gateway') }}
+          {{ (_edp_s3_parent | default({})).namespace | default(gateway_namespace) }}/{{ (_edp_s3_parent | default({})).name | default(gateway_name) }}
           rejected the hostname or the sectionName
           '{{ _edp_s3_section | default('(unresolved)', true) }}'. Gateway API gives a
           hostname to the most specific listener claiming it, so a route pinned to the
           '*.{{ base_domain_name }}' listener stops matching once a listener claims
-          {{ _edp_s3_host }} exactly.
+          {{ _edp_s3_host }} exactly. A ListenerSet parent also needs the host granted to
+          {{ edp_namespace }} (namespace annotation gateway.enterprise-ai/hostnames).
           ResolvedRefs=False means the backend cannot be resolved: in
           '{{ _edp_ontap_s3_tls_mode }}' mode the route points at
           {{ 'Backend/' ~ edp_ontap_s3_backend_name ~ ', which needs extensionApis.enableBackend on the envoy-gateway Helm release' if _edp_ontap_s3_tls_mode == 'insecure' else 'Service/' ~ edp_ontap_s3_backend_name }}.

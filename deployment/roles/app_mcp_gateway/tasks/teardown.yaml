@@ -10,6 +10,16 @@
     wait: true
     wait_timeout: "300s"
 
+- name: "app_mcp_gateway | Unpublish the MCP API"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: unpublish.yaml
+  vars:
+    gateway_publish_name: mcp-gateway
+    gateway_publish_namespace: "{{ mcp_namespace }}"
+    gateway_publish_host: "{{ ui_domain_name }}"
+    gateway_publish_path: "/api/v1/mcp"
+
 - name: "app_mcp_gateway | Delete namespace"
   kubernetes.core.k8s:
     state: absent

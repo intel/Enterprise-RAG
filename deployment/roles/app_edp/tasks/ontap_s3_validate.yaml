@@ -102,10 +102,15 @@
     _ok: >-
       {{ (_refs | selectattr('sectionName', 'defined') | selectattr('sectionName', 'eq', _section) | list | length > 0)
          or (_refs | rejectattr('sectionName', 'defined') | list | length > 0) }}
-    _gw: "{{ gateway_namespace ~ '/' ~ gateway_name }}"
-    _msg_ok: "Listener {{ _section }} of Gateway {{ _gw }} keeps signed paths intact (ClientTrafficPolicy)."
+    # A ListenerSet listener is never covered by the Gateway's S3 policy; the
+    # section name alone would not match it, so name the real parent.
+    _gw: >-
+      {{ ('ListenerSet ' ~ _edp_s3_parent.namespace ~ '/' ~ _edp_s3_parent.name)
+         if (_edp_s3_parent | default({})).kind | default('') == 'ListenerSet'
+         else 'Gateway ' ~ gateway_namespace ~ '/' ~ gateway_name }}
+    _msg_ok: "Listener {{ _section }} of {{ _gw }} keeps signed paths intact (ClientTrafficPolicy)."
     _msg_warning: >-
-      WARNING: listener {{ _section }} of Gateway {{ _gw }} normalizes request paths, so a
+      WARNING: listener {{ _section }} of {{ _gw }} normalizes request paths, so a
       signed path holding '//', '/../' or '%2F' reaches ONTAP rewritten and ONTAP answers
       SignatureDoesNotMatch. EDP refuses to presign such object names, so UI uploads are
       unaffected; keys created by other tools cannot be served through the gateway. The

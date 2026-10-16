@@ -89,7 +89,7 @@ bucketNameRegexFilter: {{ lookup('env', 's3_bucket_name_regex_filter') or edp_s3
 presignedUrlCredentialsSystemFallback: {{ edp_presigned_url_credentials_system_fallback | bool | string | lower }}
 {% endif %}
 
-edpOidcConfigUrl: "http://keycloak-service.{{ keycloak_namespace | default('keycloak') }}.svc:8080/realms/{{ ui_keycloak_realm | default('EnterpriseRAG') }}/.well-known/openid-configuration"
+edpOidcConfigUrl: "http://keycloak-service.{{ keycloak_namespace | default('keycloak') }}.svc:8080{{ erag_keycloak_path_prefix | default('') }}/realms/{{ ui_keycloak_realm | default('EnterpriseRAG') }}/.well-known/openid-configuration"
 
 # Use external Redis Operator cluster in same namespace
 redisHost: "edp-redis"
@@ -192,7 +192,8 @@ awsSqs:
 # --- APISIX route wiring (consumed by templates/apisix-routes.yaml in this chart) ---
 {% set _apisix_kc_ns = keycloak_namespace | default('keycloak') %}
 {% set _apisix_realm = (ui_keycloak_realm if (ui_keycloak_realm | default("") | length > 0) else erag_keycloak_realm | default("EnterpriseRAG")) %}
-{% set _apisix_kc_base = 'http://keycloak-service.' ~ _apisix_kc_ns ~ '.svc:8080' %}
+{# erag_keycloak_path_prefix: Keycloak's http-relative-path in path mode, '' otherwise. #}
+{% set _apisix_kc_base = 'http://keycloak-service.' ~ _apisix_kc_ns ~ '.svc:8080' ~ (erag_keycloak_path_prefix | default('')) %}
 apisix:
   enabled: {{ (apisix_enabled | default(false)) | bool | string | lower }}
   ingressClassName: apisix

@@ -7,6 +7,18 @@
     wait: true
     wait_timeout: "300s"
 
+# The path grant lives in the gateway namespace, so deleting the namespace does
+# not release it.
+- name: "app_ui | Unpublish the UI"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: unpublish.yaml
+  vars:
+    gateway_publish_name: rag-ui
+    gateway_publish_namespace: "{{ ui_namespace }}"
+    gateway_publish_host: "{{ ui_domain_name }}"
+    gateway_publish_path: "/"
+
 - name: "app_ui | Delete namespace"
   kubernetes.core.k8s:
     state: absent

@@ -14,7 +14,7 @@ generate_uat_to_file()
 	VITE_KEYCLOAK_REALM="EnterpriseRAG"
 	VITE_KEYCLOAK_CLIENT_ID="EnterpriseRAG-oidc"
 	if [[ "${ERAG_ROUTING_MODE:-subdomain}" == "path" ]]; then
-		VITE_KEYCLOAK_URL="https://${ERAG_DOMAIN_NAME:-solutions.ai}/auth"
+		VITE_KEYCLOAK_URL="https://${ERAG_DOMAIN_NAME:-solutions.ai}${KEYCLOAK_PATH:-/keycloak}"
 	else
 		VITE_KEYCLOAK_URL="https://keycloak.${ERAG_DOMAIN_NAME:-solutions.ai}"
 	fi

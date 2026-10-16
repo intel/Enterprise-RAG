@@ -118,14 +118,16 @@ spec:
       - "http/1.1"
 {% elif _tls_mode == 'ca' %}
 ---
-# v1alpha3 is the version every Gateway API release that has this kind serves:
-# 1.2 offers it in the experimental channel only, 1.3 promoted it to standard and
-# 1.4 added a v1 alias. tasks/ontap_s3_proxy.yaml checks the CRD before applying.
+# v1 is served by every Gateway API bundle from v1.4 on, and it is the only
+# version bundles from v1.5 serve: v1alpha3 stays listed in the CRD but with
+# served: false, so applying it fails with "no matches for kind". The same
+# spec shape applies to both. tasks/ontap_s3_proxy.yaml checks the CRD serves v1
+# before applying.
 #
 # Gateway API has no ALPN control, so this mode cannot pin the upstream to
 # HTTP/1.1 the way the Backend above does. Use edp_ontap_s3_tls_mode: insecure or
 # plaintext if the ONTAP S3 server negotiates h2 and then misbehaves.
-apiVersion: gateway.networking.k8s.io/v1alpha3
+apiVersion: gateway.networking.k8s.io/v1
 kind: BackendTLSPolicy
 metadata:
   name: "{{ _svc }}-tls"
@@ -155,15 +157,15 @@ metadata:
     app.kubernetes.io/managed-by: ansible
 spec:
   parentRefs:
-    - name: "{{ gateway_name }}"
-      namespace: "{{ gateway_namespace }}"
-      # tasks/s3_listener_section.yaml picks the listener whose hostname is exactly
-      # this route's hostname: the core installer's dedicated S3 listener in
-      # subdomain mode, the apex listener in path mode, the wildcard listener when
-      # neither claims the name. Getting this wrong leaves the route Accepted=False
-      # with reason NoMatchingListenerHostname. The default below is the same
-      # decision without a cluster to ask.
-      sectionName: "{{ _edp_s3_section | default('https-apex' if _path_mode else gateway_s3_listener_name) }}"
+    # tasks/s3_listener_section.yaml picks the listener whose hostname is exactly
+    # this route's hostname: the core installer's dedicated S3 listener in
+    # subdomain mode, else the 'ontap-s3' ListenerSet on a gateway that accepts
+    # them, else the wildcard listener; the apex listener in path mode. Getting
+    # this wrong leaves the route Accepted=False with reason
+    # NoMatchingListenerHostname. The default below is the same decision without
+    # a cluster to ask, for a gateway that predates ListenerSets.
+    - {{ _edp_s3_parent | default({'name': gateway_name, 'namespace': gateway_namespace,
+                                    'sectionName': 'https-apex' if _path_mode else gateway_s3_listener_name}, true) | to_json }}
   hostnames:
     - "{{ _edp_s3_host }}"
   rules:

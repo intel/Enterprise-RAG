@@ -8,14 +8,17 @@ Hostnames (subdomain mode):
   - s3.<base_domain_name>          → seaweedfs-s3:8333
   - seaweedfs.<base_domain_name>   → seaweedfs-admin:23646
 
-Parent ref is the core Envoy Gateway. The S3 route binds whichever listener claims
-its hostname (_edp_s3_section, resolved in tasks/s3_listener_section.yaml): the
-wildcard '*.<base_domain_name>' one normally, the apex one in path mode, and the
-dedicated S3 listener when the core installer created one for ONTAP - that listener
-claims s3.<base_domain_name> exactly, which wins over the wildcard by specificity and
-would otherwise leave this route Accepted=False / NoMatchingListenerHostname.
+Parent refs are resolved in tasks/s3_listener_section.yaml (_edp_s3_parent,
+_edp_admin_parent). The S3 route binds whichever listener claims its hostname: the
+dedicated S3 listener when the core installer created one for ONTAP (it claims
+s3.<base_domain_name> exactly and carries the SigV4 path policy), else EDP's own
+ListenerSet when the platform gateway accepts ListenerSets, else the legacy wildcard
+'*.<base_domain_name>' listener; the apex listener in path mode. The admin route
+follows the same rule without the dedicated listener.
 
-No auth attached - S3 clients use SigV4, admin UI has its own session layer.
+No gateway auth on either route - S3 clients use SigV4, the admin UI has its own
+session layer. The exemptions are applied by tasks/seaweedfs.yaml through the
+platform's provider-neutral route_auth_exempt.yaml.
 #}
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -28,9 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: ansible
 spec:
   parentRefs:
-    - name: {{ gateway_name }}
-      namespace: {{ gateway_namespace }}
-      sectionName: {{ _edp_s3_section }}
+    - {{ _edp_s3_parent | to_json }}
   hostnames:
     - "{{ _edp_s3_host }}"
   rules:
@@ -38,7 +39,7 @@ spec:
         - path:
             type: PathPrefix
 {% if routing_mode | default('subdomain') == 'path' %}
-            value: {{ edp_s3_path_prefix | default('/s3') }}
+            value: {{ _edp_s3_prefix }}
       filters:
         - type: URLRewrite
           urlRewrite:
@@ -65,51 +66,22 @@ metadata:
     app.kubernetes.io/managed-by: ansible
 spec:
   parentRefs:
-    - name: {{ gateway_name }}
-      namespace: {{ gateway_namespace }}
-      sectionName: {{ 'https-apex' if routing_mode | default('subdomain') == 'path' else 'https' }}
+    - {{ _edp_admin_parent | to_json }}
   hostnames:
 {% if routing_mode | default('subdomain') == 'path' %}
     - "{{ base_domain_name }}"
 {% else %}
-    - "{{ (edp_ui_browser_domain_prefix | default('seaweedfs')) ~ '.' ~ base_domain_name }}"
+    - "{{ _edp_admin_host }}"
 {% endif %}
   rules:
     - matches:
         - path:
             type: PathPrefix
 {% if routing_mode | default('subdomain') == 'path' %}
-            value: {{ edp_seaweedfs_path_prefix | default('/seaweedfs') }}
+            value: {{ _edp_seaweedfs_prefix }}
 {% else %}
             value: /
 {% endif %}
       backendRefs:
         - name: seaweedfs-admin
           port: 23646
----
-# Bypass gateway-level JWT for the S3 API HTTPRoute.
-# S3 clients use SigV4 signatures (AWS signature v4), not OIDC tokens.
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: SecurityPolicy
-metadata:
-  name: seaweedfs-s3-no-auth
-  namespace: {{ edp_seaweedfs_namespace }}
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: seaweedfs-s3-route
----
-# Bypass gateway-level JWT for the admin UI.
-# seaweedfs-admin has its own session auth; gateway-level JWT would
-# block the login page itself.
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: SecurityPolicy
-metadata:
-  name: seaweedfs-admin-no-auth
-  namespace: {{ edp_seaweedfs_namespace }}
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: seaweedfs-admin-route

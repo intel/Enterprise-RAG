@@ -40,7 +40,7 @@
 
 - name: "app_edp | Set OIDC endpoints for SeaweedFS"
   vars:
-    keycloak_realm_url: "http://keycloak-service.{{ keycloak_namespace }}.svc:8080/realms/{{ keycloakRealm }}"
+    keycloak_realm_url: "http://keycloak-service.{{ keycloak_namespace }}.svc:8080{{ erag_keycloak_path_prefix | default('') }}/realms/{{ keycloakRealm }}"
   ansible.builtin.set_fact:
     oidc_issuer: "https://{{ erag_keycloak_domain_name | default('auth.solutions.ai') }}{{ erag_keycloak_path_prefix | default('') }}/realms/{{ keycloakRealm }}"
     oidc_jwksUri: "{{ keycloak_realm_url }}/protocol/openid-connect/certs"
@@ -211,12 +211,35 @@
 - name: "app_edp | Resolve the gateway listener for the S3 route"
   ansible.builtin.include_tasks:
     file: s3_listener_section.yaml
-  when: _edp_s3_section is not defined
+  when: _edp_s3_parent is not defined
+
+- name: "app_edp | Publish the SeaweedFS hosts on the gateway"
+  ansible.builtin.include_tasks:
+    file: gateway_listeners.yaml
+  vars:
+    _edp_ls_scope: seaweedfs
 
 - name: "app_edp | Apply SeaweedFS HTTPRoutes (S3 API + admin UI)"
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', 'seaweedfs-httproutes.yaml.j2') | from_yaml_all | list }}"
+
+# S3 clients sign with SigV4 and the admin UI has its own login, so neither route
+# takes the gateway's JWT. Same policy names as before, so tasks/ontap_s3_proxy.yaml
+# still finds the S3 one when ONTAP takes the host over.
+- name: "app_edp | Exempt the SeaweedFS routes from gateway auth"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: route_auth_exempt.yaml
+  vars:
+    gateway_route_name: "{{ item.route }}"
+    gateway_route_namespace: "{{ edp_seaweedfs_namespace }}"
+    gateway_route_policy_name: "{{ item.policy }}"
+  loop:
+    - {route: seaweedfs-s3-route, policy: seaweedfs-s3-no-auth}
+    - {route: seaweedfs-admin-route, policy: seaweedfs-admin-no-auth}
+  loop_control:
+    label: "{{ item.route }}"
 
 - name: "app_edp | Mark SeaweedFS secrets for password management"
   ansible.builtin.include_role:

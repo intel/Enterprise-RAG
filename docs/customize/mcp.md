@@ -68,7 +68,7 @@ TOKEN=$(curl -s "https://keycloak.<base_domain_name>/realms/EnterpriseRAG/protoc
 curl -N "https://<base_domain_name>/api/v1/mcp/sse" -H "Authorization: Bearer $TOKEN"
 ```
 
-In `path` routing mode, the token URL is `https://<base_domain_name>/auth/realms/EnterpriseRAG/protocol/openid-connect/token`.
+In `path` routing mode, the token URL is `https://<base_domain_name>/keycloak/realms/EnterpriseRAG/protocol/openid-connect/token`.
 
 The first SSE frame is an `event: endpoint` frame carrying the session-scoped message URL. The MCP client then performs the `initialize` handshake and can call `tools/list`.
 
@@ -287,7 +287,7 @@ Known limitations of this variant in the current release:
 
 `mcp-client` is for development and testing. For production integrations, create a dedicated client per agent so credentials can be rotated or revoked independently. Each production client needs three things: an Intel AI for Enterprise RAG role for backend access, `erag-admin-group` on `EnterpriseRAG-oidc-minio` for S3 file operations, and a `minio_roles` claim mapper.
 
-The Keycloak admin console is at `https://keycloak.<base_domain_name>` in `subdomain` routing mode, or `https://<base_domain_name>/auth` in `path` routing mode.
+The Keycloak admin console is at `https://keycloak.<base_domain_name>` in `subdomain` routing mode, or `https://<base_domain_name>/keycloak` in `path` routing mode.
 
 ### Using the Keycloak admin console
 
