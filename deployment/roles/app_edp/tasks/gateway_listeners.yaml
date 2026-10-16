@@ -1,0 +1,40 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+---
+# Publishes (or withdraws) EDP's hosts on the platform gateway through its
+# contract (roles/gateway publish.yaml / unpublish.yaml), as selected by
+# tasks/s3_listener_section.yaml (_edp_publications in defaults). The platform
+# decides the mechanism (ListenerSet, host grant on the shared wildcard, or an
+# apex path in path mode) and grants the host or path to the owning namespace.
+#
+# Input: _edp_ls_scope
+#   ontap      publish the S3 host for the ONTAP reverse proxy (edp namespace)
+#   seaweedfs  publish the SeaweedFS S3 and admin UI hosts (seaweedfs namespace)
+#   none       publish nothing (stale-proxy cleanup)
+#   teardown   withdraw every EDP publication
+#
+# Every publication that is not wanted is withdrawn first: a host or path is
+# granted to one namespace at a time, so the S3 host has to be given up by one
+# backend before the other one can claim it.
+
+- name: "app_edp | Gateway publish | Withdraw publications that no longer apply"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: unpublish.yaml
+  vars:
+    gateway_publish_name: "{{ item.name }}"
+    gateway_publish_namespace: "{{ item.namespace }}"
+    gateway_publish_host: "{{ item.host }}"
+    gateway_publish_path: "{{ item.path }}"
+  loop: "{{ _edp_publications if _edp_ls_scope == 'teardown' else (_edp_publications | rejectattr('wanted') | list) }}"
+  loop_control:
+    label: "{{ item.namespace }}/{{ item.name }}"
+
+- name: "app_edp | Gateway publish | Publish"
+  ansible.builtin.include_tasks:
+    file: gateway_publish_one.yaml
+  loop: "{{ _edp_publications | selectattr('wanted') | selectattr('scope', 'eq', _edp_ls_scope) | list }}"
+  loop_control:
+    loop_var: _edp_pub
+    label: "{{ _edp_pub.namespace }}/{{ _edp_pub.name }} ({{ _edp_pub.host }})"

@@ -53,6 +53,22 @@
           pod-security.kubernetes.io/warn: "restricted"
   when: enforce_pss | default(false) | bool
 
+# The UI owns the root of the apex host. In path mode the platform admits apex
+# routes only from namespaces holding a path grant, and longer grants
+# (/keycloak, /grafana, /api/v1/mcp, ...) still win over '/'. In subdomain mode
+# the grant is recorded but not enforced. The route itself comes from the chart
+# (httpRoute.gatewayRef, sectionName https-apex = gateway_publish.parent_ref).
+- name: "app_ui | Publish the UI on the apex host"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: publish.yaml
+  vars:
+    gateway_publish_name: rag-ui
+    gateway_publish_namespace: "{{ ui_namespace }}"
+    gateway_publish_host: "{{ ui_domain_name }}"
+    gateway_publish_path: "/"
+    gateway_publish_mode: path
+
 - name: "app_ui | Install or Upgrade Helm chart"
   kubernetes.core.helm:
     name: "{{ ui_helm_release_name }}"

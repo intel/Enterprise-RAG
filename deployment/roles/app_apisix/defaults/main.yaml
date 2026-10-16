@@ -17,6 +17,8 @@ apisix_helm_chart_version: "2.10.0"
 apisix_helm_release_name: "auth-apisix"
 apisix_helm_chart_directory: "{{ deployment_dir }}/components/apisix"
 apisix_helm_default_values_file: "{{ deployment_dir }}/components/apisix/values.yaml"
+# Server-side apply owner of the APISIX CRDs (applied outside Helm, see tasks/install.yaml).
+apisix_crds_field_manager: "erag-app-apisix"
 
 # --- OIDC integration ---
 apisix_oidc_client_id: "EnterpriseRAG-oidc-backend"

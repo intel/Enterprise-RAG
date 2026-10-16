@@ -53,6 +53,21 @@
           pod-security.kubernetes.io/warn: "restricted"
   when: enforce_pss | default(false) | bool
 
+# Both MCP routes (/api/v1/mcp and its exact health / .well-known paths) sit
+# under one apex path grant; in path mode the platform admits nothing else from
+# this namespace. Runs first: it also loads the platform record, whose provider
+# facts include envoy_gateway_namespace for the Service lookup below.
+- name: "app_mcp_gateway | Publish the MCP API on the apex host"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: publish.yaml
+  vars:
+    gateway_publish_name: mcp-gateway
+    gateway_publish_namespace: "{{ mcp_namespace }}"
+    gateway_publish_host: "{{ ui_domain_name }}"
+    gateway_publish_path: "/api/v1/mcp"
+    gateway_publish_mode: path
+
 - name: "app_mcp_gateway | Look up the gateway data-plane Service"
   kubernetes.core.k8s_info:
     api_version: v1

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 ---
 galaxy_info:
+  author: Intel Corporation
   role_name: app_data_consistency
   description: >-
     Counts the rows, keys and users each data store holds, compares two such

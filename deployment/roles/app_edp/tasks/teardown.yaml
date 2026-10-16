@@ -1,4 +1,17 @@
 ---
+# Before the namespaces go: deleting a namespace removes its ListenerSets and host
+# grant, but not what the platform keeps in the gateway namespace for it - the
+# apex path grants (path mode) and the ReferenceGrant (custom TLS mode).
+- name: "app_edp | Resolve the gateway listeners"
+  ansible.builtin.include_tasks:
+    file: s3_listener_section.yaml
+
+- name: "app_edp | Withdraw EDP gateway publications"
+  ansible.builtin.include_tasks:
+    file: gateway_listeners.yaml
+  vars:
+    _edp_ls_scope: teardown
+
 - name: "app_edp | Uninstall SeaweedFS Helm release"
   kubernetes.core.helm:
     name: "seaweedfs"

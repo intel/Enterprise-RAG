@@ -65,6 +65,13 @@
     namespace: default
   when: _apisixroute_crd.resources | length > 0
 
+- name: "app_pipeline | Check whether the GMConnector CRD is present"
+  kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: gmconnectors.gmc.erag.intel.com
+  register: _gmconnector_crd
+
 - name: "app_pipeline | Delete GMConnector resources to allow graceful workload teardown"
   kubernetes.core.k8s:
     state: absent
@@ -72,8 +79,9 @@
     kind: GMConnector
     namespace: "{{ pipeline_namespace }}"
     delete_all: true
-  ignore_errors: true
-  when: pipeline_namespace | length > 0
+  when:
+    - _gmconnector_crd.resources | length > 0
+    - pipeline_namespace | length > 0
 
 - name: "app_pipeline | Wait for pipeline workload pods to terminate before deleting namespace"
   kubernetes.core.k8s_info:

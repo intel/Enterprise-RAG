@@ -1,0 +1,38 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+---
+# One EDP publication (_edp_pub, from _edp_publications). Sets the route parent
+# from the platform's answer (gateway_publish.parent_ref), which is authoritative
+# over the read-only guess in tasks/s3_listener_section.yaml.
+
+# The platform's dedicated S3 listener claims the host exactly, so the route
+# binds it; publishing a ListenerSet for the same host would only conflict.
+# The host is still granted, so no other namespace can route it.
+- name: "app_edp | Gateway publish | Grant the S3 host on the dedicated listener"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: host_grant.yaml
+  vars:
+    gateway_listenerset_name: "{{ _edp_pub.name }}"
+    gateway_listenerset_namespace: "{{ _edp_pub.namespace }}"
+    gateway_listenerset_listeners: [{name: "{{ _edp_pub.name }}", hostname: "{{ _edp_pub.host }}"}]
+  when: _edp_pub.s3 | bool and _edp_s3_exact | length > 0
+
+- name: "app_edp | Gateway publish | Publish {{ _edp_pub.name }}"
+  ansible.builtin.include_role:
+    name: gateway
+    tasks_from: publish.yaml
+  vars:
+    gateway_publish_name: "{{ _edp_pub.name }}"
+    gateway_publish_namespace: "{{ _edp_pub.namespace }}"
+    gateway_publish_host: "{{ _edp_pub.host }}"
+    gateway_publish_path: "{{ _edp_pub.path }}"
+  when: not (_edp_pub.s3 | bool and _edp_s3_exact | length > 0)
+
+- name: "app_edp | Gateway publish | Route parent for {{ _edp_pub.name }}"
+  ansible.builtin.set_fact:
+    _edp_s3_parent: "{{ gateway_publish.parent_ref if _edp_pub.s3 | bool else _edp_s3_parent }}"
+    _edp_s3_section: "{{ gateway_publish.parent_ref.sectionName if _edp_pub.s3 | bool else _edp_s3_section }}"
+    _edp_admin_parent: "{{ _edp_admin_parent if _edp_pub.s3 | bool else gateway_publish.parent_ref }}"
+  when: not (_edp_pub.s3 | bool and _edp_s3_exact | length > 0)

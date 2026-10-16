@@ -14,6 +14,7 @@
     cmd: helm dependency build
     chdir: "{{ apisix_helm_chart_directory }}"
   register: helm_repo_add_result
+  changed_when: true
   until: helm_repo_add_result is succeeded
   retries: "{{ helm_retries }}"
   delay: 15
@@ -74,6 +75,50 @@
           pod-security.kubernetes.io/warn: "restricted"
   when: enforce_pss | default(false) | bool
 
+# The apisix-ingress-controller subchart ships its own CRDs and a Gateway API
+# v1.3.0 experimental bundle in crds/. The Gateway API CRDs belong to the platform
+# (envoy_gateway), whose safe-upgrades ValidatingAdmissionPolicy rejects any bundle
+# before v1.5.0 - including Helm's create of a CRD that already exists, so the
+# install fails although Helm would have skipped them. Apply only the APISIX CRDs
+# here, server-side (Helm never upgrades crds/), and let Helm skip crds/ entirely.
+- name: "app_apisix | Render APISIX CRDs"
+  kubernetes.core.helm_template:
+    chart_ref: "{{ apisix_helm_chart_directory }}"
+    values_files:
+      - "{{ apisix_helm_default_values_file }}"
+    include_crds: true
+  register: _apisix_rendered
+  changed_when: false
+  check_mode: false
+
+- name: "app_apisix | Apply APISIX CRDs (server-side)"
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    server_side_apply:
+      field_manager: "{{ apisix_crds_field_manager }}"
+      force_conflicts: true
+    definition: "{{ _apisix_crds }}"
+  vars:
+    _apisix_crds: >-
+      {{ _apisix_rendered.stdout | from_yaml_all | select
+         | selectattr('kind', 'eq', 'CustomResourceDefinition')
+         | selectattr('spec.group', 'eq', 'apisix.apache.org') | list }}
+
+- name: "app_apisix | Wait for APISIX CRDs to be established"
+  kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: "{{ item }}"
+    wait: true
+    wait_condition:
+      type: Established
+      status: "True"
+    wait_timeout: 120
+  loop:
+    - apisixroutes.apisix.apache.org
+    - gatewayproxies.apisix.apache.org
+
 - name: "app_apisix | Install or Upgrade Helm chart"
   kubernetes.core.helm:
     name: "{{ apisix_helm_release_name }}"
@@ -81,6 +126,8 @@
     namespace: "{{ apisix_namespace }}"
     values_files: "{{ apisix_helm_default_values_file }}"
     state: present
+    # CRDs come from the task above (APISIX) and the platform (Gateway API).
+    skip_crds: true
     create_namespace: true
     wait: true
     timeout: "{{ helm_timeout }}"

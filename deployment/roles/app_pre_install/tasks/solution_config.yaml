@@ -22,7 +22,7 @@
   ansible.builtin.set_fact:
     ui_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
     erag_keycloak_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
-    erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix | default('/auth') }}"
+    erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix | default('/keycloak') }}"
     telemetry_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
     telemetry_path_prefix: "{{ telemetry_default_path_prefix | default('/grafana') }}"
     edp_minio_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"

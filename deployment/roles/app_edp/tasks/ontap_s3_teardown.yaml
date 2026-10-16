@@ -32,7 +32,7 @@
   loop:
     - {api: gateway.envoyproxy.io/v1alpha1, kind: SecurityPolicy, name: "{{ edp_ontap_s3_backend_name }}-no-auth"}
     - {api: gateway.networking.k8s.io/v1, kind: HTTPRoute, name: "{{ edp_ontap_s3_route_name }}"}
-    - {api: gateway.networking.k8s.io/v1alpha3, kind: BackendTLSPolicy, name: "{{ edp_ontap_s3_backend_name }}-tls"}
+    - {api: gateway.networking.k8s.io/v1, kind: BackendTLSPolicy, name: "{{ edp_ontap_s3_backend_name }}-tls"}
     - {api: gateway.envoyproxy.io/v1alpha1, kind: Backend, name: "{{ edp_ontap_s3_backend_name }}"}
     - {api: discovery.k8s.io/v1, kind: EndpointSlice, name: "{{ edp_ontap_s3_backend_name }}"}
     - {api: v1, kind: Service, name: "{{ edp_ontap_s3_backend_name }}"}
@@ -41,10 +41,25 @@
     label: "{{ item.kind }}/{{ item.name }}"
   register: _edp_ontap_td
   # An absent object is already a successful deletion, and the three extension kinds
-  # do not exist at all when envoy-gateway or the Gateway API experimental channel is
+  # do not exist at all when envoy-gateway or a Gateway API bundle serving them is
   # not installed. Everything else - RBAC, a webhook, an unreachable apiserver - must
   # fail: this task runs on every install where the proxy is inactive, and a route
   # left claiming s3.<domain> silently swallows the browser uploads.
   failed_when: >-
     _edp_ontap_td is failed
     and 'Failed to find exact match' not in (_edp_ontap_td.msg | default(''))
+
+- name: "app_edp | ONTAP S3 | Resolve the gateway listeners"
+  ansible.builtin.include_tasks:
+    file: s3_listener_section.yaml
+  when:
+    - _edp_ontap_td_route.resources | default([]) | length > 0
+    - _edp_s3_parent is not defined
+
+# Releases the S3 host (or path) for SeaweedFS, or whichever backend comes next.
+- name: "app_edp | ONTAP S3 | Withdraw the ONTAP S3 publication"
+  ansible.builtin.include_tasks:
+    file: gateway_listeners.yaml
+  vars:
+    _edp_ls_scope: none
+  when: _edp_ontap_td_route.resources | default([]) | length > 0
