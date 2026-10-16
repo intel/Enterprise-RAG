@@ -83,4 +83,5 @@ grafana_oauth_client_secret: ""  # generated/reused at runtime
 grafana_oauth_namespace: "{{ observability_namespace | default('monitoring') }}"
 grafana_oauth_deployment: "kube-prometheus-stack-grafana"
 grafana_oauth_secret_name: "grafana-sso-env"
-grafana_oauth_keycloak_internal_url: "http://keycloak-service.{{ keycloak_namespace | default('keycloak') }}.svc.cluster.local:8080"
+grafana_oauth_keycloak_internal_url: >-
+  http://keycloak-service.{{ keycloak_namespace | default('keycloak') }}.svc.cluster.local:8080{{ erag_keycloak_path_prefix }}

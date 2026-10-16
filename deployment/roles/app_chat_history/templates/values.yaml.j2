@@ -29,7 +29,8 @@ minimalResources:
 # --- APISIX route wiring (consumed by templates/apisix-routes.yaml in this chart) ---
 {% set _apisix_kc_ns = keycloak_namespace | default('keycloak') %}
 {% set _apisix_realm = (ui_keycloak_realm if (ui_keycloak_realm | default("") | length > 0) else erag_keycloak_realm | default("EnterpriseRAG")) %}
-{% set _apisix_kc_base = 'http://keycloak-service.' ~ _apisix_kc_ns ~ '.svc:8080' %}
+{# erag_keycloak_path_prefix: Keycloak's http-relative-path in path mode, '' otherwise. #}
+{% set _apisix_kc_base = 'http://keycloak-service.' ~ _apisix_kc_ns ~ '.svc:8080' ~ (erag_keycloak_path_prefix | default('')) %}
 apisix:
   enabled: {{ (apisix_enabled | default(false)) | bool | string | lower }}
   ingressClassName: apisix

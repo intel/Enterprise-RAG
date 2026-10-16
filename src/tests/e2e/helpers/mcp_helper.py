@@ -16,7 +16,7 @@ from mcp import ClientSession
 from mcp.client.sse import sse_client
 
 from tests.e2e.helpers.keycloak_helper import DEFAULT_CREDENTIALS_PATH
-from tests.e2e.validation.buildcfg import cfg
+from tests.e2e.validation.buildcfg import cfg, keycloak_base_url
 from tests.e2e.validation.constants import VITE_KEYCLOAK_REALM
 
 logger = logging.getLogger(__name__)
@@ -111,8 +111,7 @@ class McpHelper:
 
     def __init__(self, credentials_file):
         fqdn = cfg.get("base_domain_name")
-        routing_mode = cfg.get("routing_mode", "subdomain")
-        auth_domain = f"https://{fqdn}/auth" if routing_mode == "path" else f"https://keycloak.{fqdn}"
+        auth_domain = keycloak_base_url()
 
         self.origin = f"https://{fqdn}"
         self.mcp_base_url = f"{self.origin}/api/v1/mcp"

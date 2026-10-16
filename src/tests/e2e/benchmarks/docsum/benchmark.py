@@ -99,7 +99,7 @@ def refresh_token_file(bearer_path):
     domain = os.environ.get("ERAG_DOMAIN_NAME", "erag.com")
     routing_mode = os.environ.get("ERAG_ROUTING_MODE", "subdomain")
     if routing_mode == "path":
-        auth_domain = f"https://{domain}/auth"
+        auth_domain = f"https://{domain}{os.environ.get('KEYCLOAK_PATH', '/keycloak')}"
     else:
         auth_domain = f"https://auth.{domain}"
     realm = os.environ.get("KEYCLOAK_REALM", "EnterpriseRAG")

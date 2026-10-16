@@ -10,7 +10,7 @@ import requests
 import urllib.parse
 from urllib.parse import urljoin
 
-from tests.e2e.validation.buildcfg import cfg
+from tests.e2e.validation.buildcfg import cfg, keycloak_base_url
 from tests.e2e.validation.constants import VITE_KEYCLOAK_CLIENT_ID, VITE_KEYCLOAK_REALM
 
 logger = logging.getLogger(__name__)
@@ -33,12 +33,7 @@ class KeycloakHelper:
 
     def __init__(self, credentials_file, k8s_helper):
         credentials = self.get_credentials(credentials_file)
-        fqdn = cfg.get('base_domain_name')
-        routing_mode = cfg.get('routing_mode', 'subdomain')
-        if routing_mode == 'path':
-            self.erag_auth_domain = f"https://{fqdn}/auth"
-        else:
-            self.erag_auth_domain = f"https://keycloak.{fqdn}"
+        self.erag_auth_domain = keycloak_base_url()
         self.erag_admin_username = credentials["KEYCLOAK_ERAG_ADMIN_USERNAME"]
         self.erag_admin_password = credentials["KEYCLOAK_ERAG_ADMIN_PASSWORD"]
         self.erag_user_username = credentials["KEYCLOAK_ERAG_USER_USERNAME"]
