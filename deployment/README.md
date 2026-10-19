@@ -77,7 +77,7 @@ The installer:
 Default models for the `chatqna` flavour:
 - **LLM**: `llama3-8b-awq`
 - **Embedding**: `nomic-embed`
-- **Reranking**: `bge-reranker`
+- **Reranking**: `bge-reranker-v2-m3`
 
 Models are deployed in the `llm-inference` namespace. The LLM is accessed via the AI Gateway (`ai-gateway.envoy-gateway-system.svc`); embedding and reranking services are accessed directly via KServe service names.
 
@@ -89,7 +89,7 @@ inference_models:
     role: llm
   - name: nomic-embed
     role: embedding
-  - name: bge-reranker
+  - name: bge-reranker-v2-m3
     role: reranking
 ```
 

@@ -44,7 +44,7 @@ Deploy: `./es_auto_installer.sh install erag --env <name>`.
 
 ## Pipeline architecture
 
-**ChatQnA (base):** Embedding → Retriever → Reranking → PromptTemplate → LLMGuardInput → LLM. Models (llm-inference ns): `llama3-8b-awq`, `nomic-embed`, `bge-reranker`.
+**ChatQnA (base):** Embedding → Retriever → Reranking → PromptTemplate → LLMGuardInput → LLM. Models (llm-inference ns): `llama3-8b-awq`, `nomic-embed`, `bge-reranker-v2-m3`.
 
 <div align="center">
    <img alt="Intel AI for Enterprise RAG ChatQnA pipeline: the query is embedded, candidate documents are retrieved from the vector database and reranked, input guardrails and prompt templating are applied, and the LLM returns a grounded answer" src="../images/architecture_chatqna.svg" width="880">
@@ -104,7 +104,7 @@ inference_models:
     role: llm
   - name: nomic-embed
     role: embedding
-  - name: bge-reranker
+  - name: bge-reranker-v2-m3
     role: reranking
 # ui_chat_maintenance_mode: true   # auto-set for upload/retrieve-rerank; override if needed
 ```

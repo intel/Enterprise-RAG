@@ -30,7 +30,7 @@ gmc_helm_default_values_file: "{{ deployment_dir }}/components/gmc/values.yaml"
 # --- Models + language ---
 llm_model_name: "casperhansen/llama-3-8b-instruct-awq"
 embedding_model_name: "nomic-ai/nomic-embed-text-v1"
-reranking_model_name: "BAAI/bge-reranker-base"
+reranking_model_name: "BAAI/bge-reranker-v2-m3"
 solution_language: "auto"                  # app_fingerprint — "auto" detects from model name
 
 # --- Inference endpoints (computed dynamically by app_inference_models role) ---
