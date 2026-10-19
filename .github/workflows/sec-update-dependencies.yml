@@ -50,6 +50,35 @@ jobs:
 
           COMMIT_COUNT=0
 
+          # Lock files already handled, so the sweep below skips them
+          declare -A LOCKED_FILES
+
+          # Runs uv lock --upgrade for the project in $2 and commits $3 as
+          # "Upgrade deps for $1" if it changed. A failed lock only warns, so the
+          # remaining projects are still updated.
+          lock_uv_project() {
+            local NAME=$1 UV_DIR=$2 UV_LOCK=$3
+
+            LOCKED_FILES["$(realpath -m --relative-to=. "$UV_LOCK")"]=1
+
+            echo "  Running uv lock --upgrade in $UV_DIR..."
+            if (cd "$UV_DIR" && uv lock --upgrade); then
+              echo "  Successfully updated lock file in $UV_DIR"
+
+              if [[ -n $(git status --porcelain -- "$UV_LOCK") ]]; then
+                echo "  Committing changes for $NAME..."
+                git add "$UV_LOCK"
+                git commit -m "Upgrade deps for $NAME"
+                COMMIT_COUNT=$((COMMIT_COUNT + 1))
+                echo "  Committed successfully"
+              else
+                echo "  No changes to commit for $NAME"
+              fi
+            else
+              echo "  Warning: Failed to update lock file in $UV_DIR"
+            fi
+          }
+
           echo "Processing images from read-images-reusable..."
 
           # Parse the matrix JSON output
@@ -101,38 +130,38 @@ jobs:
                 continue
               fi
 
-              echo "  Running uv lock --upgrade in $UV_DIR..."
-
-              # Run uv lock --upgrade
-              cd "$UV_DIR"
-              if uv lock --upgrade; then
-                echo "  Successfully updated lock file in $UV_DIR"
-
-                # Check if there are changes to commit
-                cd "$GITHUB_WORKSPACE"
-                if [[ -n $(git status --porcelain -- "$UV_LOCK") ]]; then
-                  echo "  Committing changes for $IMAGE_NAME..."
-
-                  git add "$UV_LOCK"
-
-                  COMMIT_MSG="Upgrade deps for $IMAGE_NAME"
-                  git commit -m "$COMMIT_MSG"
-
-                  COMMIT_COUNT=$((COMMIT_COUNT + 1))
-                  echo "  Committed successfully"
-                else
-                  echo "  No changes to commit for $IMAGE_NAME"
-                fi
-              else
-                echo "  Warning: Failed to update lock file in $UV_DIR"
-                cd "$GITHUB_WORKSPACE"
-              fi
+              lock_uv_project "$IMAGE_NAME" "$UV_DIR" "$UV_LOCK"
             else
               echo "  No pip-uv dependency found"
             fi
 
             echo ""
           done
+
+          # Lock files no image points to, e.g. src/comps/vectorstores/impl/requirements,
+          # which ingestion and retrievers consume as a path dependency. Their own CI
+          # (uv sync --locked) fails once the pyproject.toml changes and the lock does not.
+          # Dependent projects read the path dependency's pyproject.toml, not its uv.lock,
+          # so the order of locking does not matter.
+          echo "Processing uv projects not covered by any image..."
+
+          while read -r UV_LOCK; do
+            [[ -n "${LOCKED_FILES[$UV_LOCK]:-}" ]] && continue
+
+            UV_DIR=$(dirname "$UV_LOCK")
+            if [[ ! -f "$UV_DIR/pyproject.toml" ]]; then
+              echo "  Warning: pyproject.toml not found in $UV_DIR, skipping"
+              continue
+            fi
+
+            # Derived from the path; must match the subject check in push-updates
+            # (e.g. src/comps/vectorstores/impl/requirements -> comps-vectorstores-requirements)
+            PROJECT_NAME=$(echo "${UV_DIR#src/}" | sed 's|/impl/|/|; s|/|-|g')
+
+            echo "Processing uv project: $PROJECT_NAME ($UV_DIR)"
+            lock_uv_project "$PROJECT_NAME" "$UV_DIR" "$UV_LOCK"
+            echo ""
+          done < <(git ls-files -- 'uv.lock' '*/uv.lock')
 
           echo "Created $COMMIT_COUNT commit(s)"
 
