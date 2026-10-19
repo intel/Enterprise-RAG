@@ -1,0 +1,31 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.upload-errors-popover__trigger {
+  @apply flex items-center gap-2 text-sm;
+}
+.upload-errors-popover__trigger .upload-errors-popover__trigger--icon {
+  @apply text-light-text-error dark:text-dark-text-error;
+}
+.upload-errors-popover__trigger .upload-errors-popover__trigger--text {
+  @apply cursor-pointer font-semibold underline;
+  @apply text-light-text-error dark:text-dark-text-error;
+}
+
+.upload-errors-popover__section {
+  @apply max-w-80 rounded-sm p-3 shadow-lg;
+  @apply bg-light-status-error text-xs dark:bg-dark-status-error;
+  @apply text-light-text-inverse dark:text-dark-text-primary;
+  @apply [overflow-wrap:anywhere];
+}
+.upload-errors-popover__section:not(:last-child) {
+  @apply mb-4;
+}
+.upload-errors-popover__section h4 {
+  @apply mb-2 font-medium;
+}
+.upload-errors-popover__section p {
+  @apply mb-2;
+}

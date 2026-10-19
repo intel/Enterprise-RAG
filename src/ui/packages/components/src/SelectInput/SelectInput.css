@@ -1,0 +1,107 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.select-input {
+  @apply mb-3;
+}
+.select-input__label-wrapper {
+  @apply mb-3 flex flex-row items-center gap-2;
+}
+.select-input button.select-input__button {
+  @apply text-base;
+  @apply py-2 pr-2 pl-4;
+  @apply flex items-center justify-between gap-3;
+  @apply rounded-sm border border-light-border dark:border-dark-border;
+  @apply bg-light-bg-contrast dark:bg-dark-bg-contrast;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+}
+.select-input button.select-input__button[data-disabled] {
+  @apply border-light-border dark:border-dark-border;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply pointer-events-none cursor-default bg-transparent;
+}
+.select-input button.select-input__button[disabled] {
+  @apply border-light-border dark:border-dark-border;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply pointer-events-none cursor-default bg-transparent;
+}
+.select-input
+  button.select-input__button:is(:focus, :focus-within, :focus-visible) {
+  @apply outline-2;
+  @apply outline-light-border dark:outline-dark-border;
+}
+.select-input button.select-input__button[data-focused][data-rac] {
+  @apply outline-2;
+  @apply outline-light-border dark:outline-dark-border;
+}
+.select-input button.select-input__button[data-focus-visible][data-rac] {
+  @apply outline-2;
+  @apply outline-light-border dark:outline-dark-border;
+}
+.select-input__value {
+  @apply text-light-text-primary dark:text-dark-text-primary;
+}
+.select-input__value[data-disabled] {
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply pointer-events-none cursor-default bg-transparent;
+}
+.select-input__value[disabled] {
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply pointer-events-none cursor-default bg-transparent;
+}
+.select-input__options-list {
+  /* --trigger-width is value defined by React ARIA Popover component that indicates the width of the Popover trigger */
+  @apply min-w-(--trigger-width) -translate-y-2;
+  @apply rounded-sm border border-light-border dark:border-dark-border;
+  @apply bg-light-bg-contrast dark:bg-dark-bg-contrast;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+}
+.select-input__options-list-item {
+  @apply cursor-pointer px-4 py-1 text-base outline-hidden;
+  @apply hover:bg-light-bg-2 dark:hover:bg-dark-bg-2;
+  @apply first-of-type:rounded-t-sm last-of-type:rounded-b-sm;
+}
+.select-input__options-list-item[data-focused][data-rac] {
+  @apply bg-light-bg-2 dark:bg-dark-bg-2;
+}
+.select-input__options-list-item[data-focus-visible][data-rac] {
+  @apply bg-light-bg-2 dark:bg-dark-bg-2;
+}
+.select-input__options-list--sm .select-input__options-list-item {
+  @apply px-2 py-1 text-xs;
+}
+.select-input[data-invalid] button.select-input__button {
+  @apply border-light-status-error dark:border-dark-status-error;
+  @apply text-light-text-error dark:text-dark-text-error;
+  @apply bg-light-status-error/10 dark:bg-dark-status-error/10;
+}
+.select-input[data-invalid]
+  button.select-input__button:is(:focus, :focus-within, :focus-visible) {
+  @apply outline-2;
+  @apply outline-light-status-error dark:outline-dark-status-error;
+}
+.select-input[data-invalid]
+  button.select-input__button[data-focused][data-rac] {
+  @apply outline-2;
+  @apply outline-light-status-error dark:outline-dark-status-error;
+}
+.select-input[data-invalid]
+  button.select-input__button[data-focus-visible][data-rac] {
+  @apply outline-2;
+  @apply outline-light-status-error dark:outline-dark-status-error;
+}
+.select-input[data-invalid] .select-input__value {
+  @apply text-light-text-error dark:text-dark-text-error;
+}
+.select-input--sm {
+  @apply mb-2;
+}
+.select-input--sm .select-input__label-wrapper {
+  @apply mb-2 flex flex-row items-center gap-2;
+}
+.select-input--sm button.select-input__button {
+  @apply h-6 py-0 pr-1 pl-2;
+  @apply text-xs;
+}

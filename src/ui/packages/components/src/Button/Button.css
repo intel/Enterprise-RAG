@@ -1,0 +1,69 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.button {
+  @apply flex h-9 items-center justify-center gap-2 rounded-sm;
+  @apply cursor-pointer px-4 py-1.5 text-sm text-nowrap whitespace-nowrap select-none;
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply hover:bg-light-primary/80 dark:hover:bg-dark-primary/80;
+  @apply text-white dark:text-white;
+}
+.button:disabled {
+  @apply disabled:cursor-default;
+  @apply disabled:bg-light-bg-disabled dark:disabled:bg-dark-bg-disabled;
+  @apply disabled:text-light-text-disabled dark:disabled:text-dark-text-disabled;
+}
+.button.button--sm {
+  @apply h-6 px-3 py-1 text-xs;
+}
+.button.button--sm.button--with-icon {
+  @apply gap-1 pr-2 pl-1;
+}
+.button.button--sm.button--with-icon svg {
+  @apply text-xs;
+}
+.button.button--success {
+  @apply bg-light-status-success dark:bg-dark-status-success;
+  @apply hover:bg-light-status-success/80 dark:hover:bg-dark-status-success/80;
+}
+.button.button--error {
+  @apply bg-light-status-error dark:bg-dark-status-error;
+  @apply hover:bg-light-status-error/50 dark:hover:bg-dark-status-error/50;
+}
+.button.button--outlined {
+  @apply border;
+  @apply bg-transparent dark:bg-transparent;
+}
+.button.button--outlined:disabled {
+  @apply disabled:bg-transparent;
+  @apply disabled:text-light-text-disabled dark:disabled:text-dark-text-disabled;
+  @apply disabled:border-light-text-disabled dark:disabled:border-dark-text-disabled;
+}
+.button.button--outlined.button--outlined-primary {
+  @apply border-light-accent dark:border-dark-accent;
+  @apply text-light-text-accent dark:text-dark-text-accent;
+  @apply hover:bg-light-accent/20 dark:hover:bg-dark-accent/20;
+}
+.button.button--outlined.button--outlined-error {
+  @apply border-light-status-error dark:border-dark-status-error;
+  @apply text-light-text-error dark:text-dark-text-error;
+  @apply hover:bg-light-status-error/20 dark:hover:bg-dark-status-error/20;
+}
+.button.button--with-icon {
+  @apply pl-3;
+}
+.button.button--with-icon svg {
+  @apply text-sm;
+}
+.button.button--text {
+  @apply bg-transparent dark:bg-transparent;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply hover:bg-light-bg-1/50 dark:hover:bg-dark-bg-1/50;
+  @apply disabled:text-light-text-disabled dark:disabled:text-dark-text-disabled;
+  @apply disabled:bg-transparent dark:disabled:bg-transparent;
+}
+.button.button--full-width {
+  @apply w-full;
+}

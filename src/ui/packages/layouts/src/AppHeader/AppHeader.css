@@ -1,0 +1,13 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.app-header {
+  @apply h-[6rem] px-16;
+  @apply flex items-center justify-between;
+  @apply bg-light-bg-1 dark:bg-dark-bg-1;
+}
+.app-header .app-header__actions {
+  @apply flex items-center gap-4;
+}

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ServiceCard.scss";
+import "./ServiceCard.css";
 
 import { useDebug } from "@intel-enterprise-rag-ui/utils";
 import { Node } from "@xyflow/react";

@@ -1,0 +1,36 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.side-menu {
+  @apply absolute top-0 z-20;
+  @apply h-full w-64; /* this width should match the margin for open SideMenu in PageLayout */
+  @apply bg-light-bg-2 dark:bg-dark-bg-2;
+  @apply transition-transform duration-300 ease-in-out;
+  @apply p-4;
+}
+.side-menu > .side-menu__header {
+  @apply flex h-[6rem] items-center px-6; /* SideMenu header height matches AppHeader height */
+}
+.side-menu > .side-menu__content {
+  @apply flex-1 overflow-y-auto;
+}
+.side-menu.side-menu--left {
+  @apply left-0;
+}
+.side-menu.side-menu--left.side-menu--open {
+  @apply translate-x-0;
+}
+.side-menu.side-menu--left.side-menu--closed {
+  @apply translate-x-64;
+}
+.side-menu.side-menu--right {
+  @apply right-0;
+}
+.side-menu.side-menu--right.side-menu--open {
+  @apply translate-x-0;
+}
+.side-menu.side-menu--right.side-menu--closed {
+  @apply -translate-x-64;
+}

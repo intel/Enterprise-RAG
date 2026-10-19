@@ -1,0 +1,20 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.copy-btn {
+  @apply hover:bg-light-bg-2 dark:hover:bg-dark-bg-2;
+  @apply transition-colors duration-300 ease-in-out;
+}
+.copy-btn.invisible {
+  @apply pointer-events-none opacity-0;
+}
+.copy-btn.visible {
+  @apply pointer-events-auto opacity-100;
+}
+.copy-btn.copy-btn--code-snippet {
+  /* background color change on hover removed inside code snippets */
+  @apply hover:bg-inherit dark:hover:bg-inherit;
+  @apply text-xs text-white;
+}

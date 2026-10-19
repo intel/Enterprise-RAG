@@ -1,0 +1,24 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.about-dialog {
+  @apply flex flex-col px-4 pt-0 pb-4 text-sm leading-relaxed;
+}
+.about-dialog h2 {
+  @apply text-lg font-semibold text-light-accent dark:text-dark-accent;
+}
+.about-dialog p {
+  @apply mb-2;
+}
+.about-dialog p.app-version {
+  @apply mb-4;
+}
+.about-dialog a {
+  @apply inline-flex items-center underline;
+  @apply text-light-primary dark:text-dark-accent;
+}
+.about-dialog a:not(:last-child) {
+  @apply mb-2;
+}

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./Anchor.scss";
+import "./Anchor.css";
 
 import { ExternalLinkIcon } from "@intel-enterprise-rag-ui/icons";
 import { isSafeHref, sanitizeHref } from "@intel-enterprise-rag-ui/utils";

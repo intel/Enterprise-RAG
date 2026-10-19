@@ -1,0 +1,20 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.progress-bar {
+  @apply rounded-xs;
+  @apply overflow-hidden;
+  @apply h-3 w-32;
+  @apply relative;
+  @apply border border-light-border dark:border-dark-border;
+}
+.progress-bar__bar {
+  @apply bg-light-bg-1 dark:bg-dark-bg-1;
+}
+.progress-bar__bar__fill {
+  @apply absolute top-0 left-0 h-full;
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply transition-all duration-300;
+}

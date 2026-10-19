@@ -1,0 +1,57 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+table.data-table {
+  @apply w-full text-xs;
+}
+table.data-table thead th {
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply text-light-text-inverse dark:text-dark-text-primary;
+  @apply text-left font-semibold;
+  @apply h-8 px-3 py-1;
+}
+table.data-table thead th:first-of-type {
+  @apply rounded-tl-sm;
+}
+table.data-table thead th:last-of-type {
+  @apply rounded-tr-sm;
+}
+table.data-table thead th::selection {
+  @apply bg-light-text-inverse dark:bg-dark-bg-inverse;
+  @apply text-light-primary dark:text-dark-primary;
+}
+table.data-table td {
+  @apply h-12 px-3 py-2 text-nowrap;
+}
+table.data-table tr:not(:has(th)):not(:last-of-type) {
+  @apply border-b border-b-light-border dark:border-b-dark-border;
+}
+table.data-table.data-table--dense td {
+  @apply h-8;
+}
+table.data-table thead {
+  @apply block w-full;
+}
+table.data-table tbody {
+  @apply block w-full;
+}
+table.data-table thead tr {
+  @apply table w-full table-fixed;
+}
+table.data-table tbody tr {
+  @apply table w-full table-fixed;
+}
+
+th.sortable {
+  @apply cursor-pointer select-none;
+}
+
+.data-table-body {
+  @apply max-h-[500px] min-h-[50px] overflow-x-hidden overflow-y-auto;
+}
+
+.virtual-row-spacer td {
+  @apply border-none p-0;
+}

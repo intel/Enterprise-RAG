@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ExportChatDialog.scss";
+import "./ExportChatDialog.css";
 
 import { ActionDialog } from "@intel-enterprise-rag-ui/components";
 

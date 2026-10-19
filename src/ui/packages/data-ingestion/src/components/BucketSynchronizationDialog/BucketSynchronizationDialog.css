@@ -1,0 +1,16 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.bucket-synchronization-dialog__content {
+  @apply h-full w-full px-4 py-3 text-sm;
+}
+
+.bucket-synchronization-dialog__description {
+  @apply mb-4;
+}
+
+.bucket-synchronization-dialog__footer {
+  @apply flex items-center justify-end gap-4 text-sm;
+}

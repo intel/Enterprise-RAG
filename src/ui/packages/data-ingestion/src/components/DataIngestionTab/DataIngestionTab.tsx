@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./DataIngestionTab.scss";
+import "./DataIngestionTab.css";
 
 import { InfoIcon } from "@intel-enterprise-rag-ui/icons";
 

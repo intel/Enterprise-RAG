@@ -3,6 +3,7 @@
 
 import { fileURLToPath } from "node:url";
 
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
@@ -15,20 +16,13 @@ const __dirname = path.dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), viteTsconfigPaths()],
+  plugins: [tailwindcss(), react(), viteTsconfigPaths()],
   define: {
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(packageJson.version),
   },
   resolve: {
     alias: {
       "@/": path.resolve(__dirname, "./src/"),
-    },
-  },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: "modern",
-      },
     },
   },
   build: {

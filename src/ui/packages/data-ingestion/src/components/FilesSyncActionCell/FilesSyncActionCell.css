@@ -1,0 +1,17 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.files-sync-action-cell {
+  @apply mr-2 flex items-center gap-1;
+}
+.files-sync-action-cell--add {
+  @apply text-light-status-success dark:text-dark-status-success;
+}
+.files-sync-action-cell--delete {
+  @apply text-light-status-error dark:text-dark-status-error;
+}
+.files-sync-action-cell--update {
+  @apply text-light-primary dark:text-dark-primary;
+}

@@ -1,0 +1,15 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.error-route__layout {
+  @apply h-screen w-full;
+  @apply flex flex-col items-center justify-center gap-2;
+}
+.error-route__layout .error-message {
+  @apply text-light-text-error dark:text-dark-text-error;
+}
+.error-route__layout a {
+  @apply text-light-text-accent dark:text-dark-text-accent;
+}

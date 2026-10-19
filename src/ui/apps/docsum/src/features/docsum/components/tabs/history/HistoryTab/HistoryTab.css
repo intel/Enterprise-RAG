@@ -1,0 +1,41 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.history-tab {
+  @apply h-[calc(100vh-8rem)];
+  @apply grid grid-cols-[21.25rem_1fr];
+}
+.history-tab .history-list-col {
+  @apply pt-8 pr-8 pb-16 pl-16;
+  @apply flex flex-col;
+  @apply h-full;
+  @apply bg-light-bg-2 dark:bg-dark-bg-2;
+}
+.history-tab .history-list-col > p:first-of-type {
+  @apply mb-4 text-base font-medium;
+}
+.history-tab .history-list-col__items-list {
+  @apply min-h-0 flex-1 overflow-y-auto;
+  @apply h-full;
+  @apply [scrollbar-gutter:stable] overflow-y-auto;
+}
+.history-tab .history-list-col__items-list__no-history {
+  @apply h-40;
+  @apply flex items-center justify-center;
+  @apply text-xs;
+  @apply text-center;
+}
+.history-tab .history-details-col {
+  @apply pt-6 pr-16 pb-16 pl-8;
+  @apply h-full min-h-0;
+}
+.history-tab .history-details-col__no-selection {
+  @apply text-light-text-accent dark:text-dark-text-accent;
+  @apply rounded-sm;
+  @apply h-full;
+  @apply flex items-center justify-center;
+  @apply text-sm;
+  @apply text-center;
+}

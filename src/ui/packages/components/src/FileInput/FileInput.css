@@ -1,0 +1,27 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.file-input__box {
+  @apply h-48 w-full rounded-sm p-6 text-center select-none;
+  @apply flex flex-col items-center justify-center gap-2.5;
+  @apply bg-light-bg-2 dark:bg-dark-bg-2;
+}
+.file-input__box__caption {
+  @apply text-xs;
+}
+.file-input__box__input {
+  @apply hidden;
+}
+.file-input__box--drag-over {
+  @apply bg-light-bg-2/50 dark:bg-dark-bg-2/50;
+}
+.file-input__error-message {
+  @apply -mt-2 rounded-b-sm p-4 py-3 text-center text-sm;
+  @apply bg-light-status-error dark:bg-dark-status-error;
+  @apply text-light-text-inverse dark:text-dark-text-primary;
+}
+.file-input__supported-formats-message {
+  @apply pt-2 text-xs;
+}

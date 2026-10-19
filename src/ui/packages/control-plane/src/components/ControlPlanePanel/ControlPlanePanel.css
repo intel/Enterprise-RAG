@@ -1,0 +1,63 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.control-plane-panel {
+  @apply grid grid-cols-1 bg-light-bg-1 dark:bg-dark-bg-1;
+  @apply relative;
+  @apply h-[calc(100vh_-_8rem)] overflow-hidden;
+}
+.control-plane-panel__with-config-panel {
+  @apply grid-cols-[1fr_22rem];
+}
+.control-plane-panel__not-renderable {
+  @apply flex h-full w-full items-center justify-center;
+}
+
+.config-panel-wrapper {
+  @apply absolute top-0 right-0 w-[22rem];
+  @apply h-full overflow-hidden;
+  @apply transition-transform duration-300 ease-in-out;
+}
+.config-panel-wrapper--visible {
+  @apply translate-x-0;
+}
+.config-panel-wrapper--hidden {
+  @apply translate-x-full;
+}
+
+.config-panel-toggle-wrapper {
+  @apply absolute top-4 right-[22rem] z-20;
+  @apply transition-transform duration-300 ease-in-out;
+}
+.config-panel-toggle-wrapper--panel-hidden {
+  @apply translate-x-[22rem];
+}
+
+.config-panel-toggle-button {
+  @apply flex items-center justify-center;
+  @apply h-10 w-8;
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply rounded-l-md rounded-r-none;
+  @apply text-white;
+  @apply hover:bg-light-primary/80 dark:hover:bg-dark-primary/80;
+}
+
+.graph-wrapper {
+  @apply relative h-[calc(100vh_-_8rem)] w-full;
+}
+.graph-wrapper .react-flow {
+  @apply bg-light-bg-1;
+}
+.graph-wrapper .react-flow.dark {
+  @apply bg-dark-bg-1;
+}
+.graph-wrapper .react-flow__controls {
+  @apply ml-16 flex flex-row gap-0.5;
+}
+.graph-wrapper .react-flow__controls .react-flow__controls-button {
+  @apply rounded-none border-b-0;
+  @apply bg-light-primary text-light-text-inverse;
+  @apply dark:bg-light-bg-1 dark:text-dark-text-inverse;
+}

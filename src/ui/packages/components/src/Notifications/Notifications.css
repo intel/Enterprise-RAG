@@ -1,0 +1,26 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.notifications {
+  @apply absolute right-4 bottom-4 z-50 flex flex-col items-end gap-2;
+}
+.notifications .notification-toast {
+  @apply flex max-w-sm items-center gap-2 rounded-lg py-1.5 pr-2 pl-3 text-sm break-words shadow-md;
+  @apply text-light-text-inverse dark:text-dark-text-primary;
+  word-wrap: break-word;
+}
+.notifications .notification-toast.notification-toast--success {
+  @apply bg-light-status-success dark:bg-dark-status-success;
+}
+.notifications .notification-toast.notification-toast--error {
+  @apply bg-light-status-error dark:bg-dark-status-error;
+}
+.notifications .notification-toast .notification-toast__icon {
+  @apply h-4 w-4 shrink-0;
+}
+.notifications .notification-toast .notification-toast__dismiss-btn {
+  @apply h-7 w-7 shrink-0 rounded-full p-0.5;
+  @apply text-light-text-inverse dark:text-dark-text-primary;
+}

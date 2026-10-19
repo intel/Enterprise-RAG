@@ -1,0 +1,9 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.username__text {
+  @apply text-left text-xs leading-4 font-normal;
+  @apply text-light-text-accent dark:text-dark-text-accent;
+}

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./RenameChatDialog.scss";
+import "./RenameChatDialog.css";
 
 import { ActionDialog, TextInput } from "@intel-enterprise-rag-ui/components";
 import { ChangeEvent, useEffect, useRef, useState } from "react";

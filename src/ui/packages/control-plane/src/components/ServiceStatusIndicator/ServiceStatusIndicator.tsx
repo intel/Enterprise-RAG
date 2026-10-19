@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ServiceStatusIndicator.scss";
+import "./ServiceStatusIndicator.css";
 
 import { Tooltip } from "@intel-enterprise-rag-ui/components";
 import classNames from "classnames";

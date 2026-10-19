@@ -1,0 +1,12 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.tooltip {
+  @apply m-2;
+  @apply rounded-sm px-3 py-2;
+  @apply bg-tooltip-background text-tooltip-text drop-shadow-md;
+  @apply text-xs font-normal break-words whitespace-normal;
+  @apply [overflow-wrap:anywhere];
+}

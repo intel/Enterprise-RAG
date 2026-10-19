@@ -1,0 +1,72 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.selected-service-card {
+  @apply relative;
+  @apply h-full;
+  @apply bg-light-bg-2 dark:bg-dark-bg-2;
+  @apply border-l border-l-light-border dark:border-l-dark-border;
+}
+.selected-service-card .selected-service-card__wrapper {
+  @apply h-full;
+  @apply [scrollbar-gutter:stable];
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__header {
+  @apply relative px-4 pt-4;
+  @apply grid grid-cols-[1rem_auto] items-center justify-items-start gap-2;
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__header
+  .selected-service-card__header__service-name {
+  @apply font-medium;
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__content {
+  @apply mr-2 overflow-y-auto pr-2 pb-2 pl-4;
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__content.selected-service-card__content--no-footer {
+  height: calc(100vh - 10.75rem);
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__content.selected-service-card__content--with-footer {
+  height: calc(100vh - 12.75rem);
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__content
+  .service-details-grid {
+  @apply mt-2 grid auto-rows-[1.75rem] grid-cols-2 items-center justify-items-start;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__content
+  .service-details-grid
+  .service-detail-label {
+  @apply text-xs font-medium;
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__content
+  .service-details-grid
+  .service-detail-value {
+  @apply w-full;
+  @apply overflow-hidden text-xs text-ellipsis whitespace-nowrap;
+}
+.selected-service-card
+  .selected-service-card__wrapper
+  .selected-service-card__footer {
+  @apply absolute bottom-0 w-full;
+  @apply px-4 pb-3;
+  @apply flex items-center justify-between gap-4;
+}

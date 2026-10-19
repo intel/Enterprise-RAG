@@ -1,0 +1,10 @@
+// Copyright (C) 2024-2026 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+// Sass is used here only to scope the third-party highlight.js dark theme under
+// `.dark` (plain CSS can't nest an @import). Tailwind never processes this file.
+@use "sass:meta";
+
+.dark {
+  @include meta.load-css("highlight.js/styles/github-dark");
+}

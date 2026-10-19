@@ -1,0 +1,14 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+a {
+  @apply inline-flex items-center gap-1.5;
+  @apply underline! underline-offset-4!;
+  @apply text-light-text-accent! dark:text-dark-text-accent!;
+}
+a.invalid {
+  @apply text-light-text-error! dark:text-dark-text-error!;
+  @apply cursor-not-allowed;
+}

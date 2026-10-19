@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ErrorRoute.scss";
+import "./ErrorRoute.css";
 
 import { Anchor } from "@intel-enterprise-rag-ui/components";
 import { isRouteErrorResponse, useRouteError } from "react-router-dom";

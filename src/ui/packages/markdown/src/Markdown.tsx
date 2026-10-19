@@ -81,7 +81,7 @@ export function Markdown({ text }: MarkdownProps) {
     <>
       {error && (
         <div
-          className="border-light-status-error dark:border-dark-status-error bg-light-status-error/10 dark:bg-dark-status-error/10 text-light-status-error dark:text-dark-status-error mb-2 rounded border px-3 py-2 text-sm"
+          className="mb-2 rounded-sm border border-light-status-error bg-light-status-error/10 px-3 py-2 text-sm text-light-status-error dark:border-dark-status-error dark:bg-dark-status-error/10 dark:text-dark-status-error"
           role="alert"
         >
           {error}
