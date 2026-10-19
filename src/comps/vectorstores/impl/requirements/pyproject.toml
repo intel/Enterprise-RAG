@@ -9,7 +9,7 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "shortuuid>=1.0.13,<2.0.0",
     "redis>=7.3.0,<8.0.0",
-    "redisvl>=0.16.0,<1.0.0",
+    "redisvl>=0.16.0,<0.28",
     "pyodbc>=5.3.0,<6.0.0",
     "urllib3>=2.8.0,<3.0.0",
 ]
