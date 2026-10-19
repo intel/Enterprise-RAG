@@ -21,7 +21,7 @@ def test_class():
     """Fixture to create EragReranker instance."""
     with patch.object(EragReranker, '_validate', return_value='Mocked Method'):
         return EragReranker(service_endpoint="http:/test:1234", model_server="vllm",
-                            model_name="BAAI/bge-reranker-base", late_chunking_enabled=False)
+                            model_name="BAAI/bge-reranker-v2-m3", late_chunking_enabled=False)
 
 @pytest.fixture
 def mock_input_data():
@@ -322,19 +322,19 @@ async def test_run_raises_exception_on_top_N_below_one(mock_post, test_class):
 def test_vllm_initialization_appends_score_suffix():
     with patch.object(EragReranker, '_validate', return_value=None):
         reranker = EragReranker(
-            service_endpoint="http://bge-reranker-base-predictor.llm-inference.svc.cluster.local/v1",
+            service_endpoint="http://bge-reranker-v2-m3-predictor.llm-inference.svc.cluster.local/v1",
             model_server="vllm",
-            model_name="BAAI/bge-reranker-base",
+            model_name="BAAI/bge-reranker-v2-m3",
             late_chunking_enabled=False,
         )
     assert reranker._service_endpoint.endswith("/score")
-    assert reranker._model_name == "BAAI/bge-reranker-base"
+    assert reranker._model_name == "BAAI/bge-reranker-v2-m3"
 
 
 def test_vllm_initialization_raises_when_model_name_missing():
     with pytest.raises(ValueError, match="RERANKING_MODEL_NAME"):
         EragReranker(
-            service_endpoint="http://bge-reranker-base-predictor.llm-inference.svc.cluster.local/v1",
+            service_endpoint="http://bge-reranker-v2-m3-predictor.llm-inference.svc.cluster.local/v1",
             model_server="vllm",
             late_chunking_enabled=False,
         )
@@ -344,9 +344,9 @@ def test_vllm_initialization_raises_when_model_name_missing():
 def vllm_reranker():
     with patch.object(EragReranker, '_validate', return_value=None):
         return EragReranker(
-            service_endpoint="http://bge-reranker-base-predictor.llm-inference.svc.cluster.local/v1",
+            service_endpoint="http://bge-reranker-v2-m3-predictor.llm-inference.svc.cluster.local/v1",
             model_server="vllm",
-            model_name="BAAI/bge-reranker-base",
+            model_name="BAAI/bge-reranker-v2-m3",
             late_chunking_enabled=False,
         )
 

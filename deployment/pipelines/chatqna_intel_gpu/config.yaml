@@ -48,7 +48,7 @@ inference_models:
   - name: nomic-embed
     role: embedding
     accelerator: cpu
-  - name: bge-reranker
+  - name: bge-reranker-v2-m3
     role: reranking
     accelerator: cpu
 
