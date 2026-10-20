@@ -535,7 +535,7 @@ def test_edp_regular_user_can_download_from_default_bucket(
     assert download.text == content, "Downloaded content does not match"
 
 
-# IMPORTANT: get the Allure testcase id from the validation team.
+@allure.testcase("IEASG-T738")
 @pytest.mark.parametrize("bucket", ["default", "only-admin"])
 @pytest.mark.parametrize("method", ["PUT", "DELETE"])
 def test_edp_regular_user_cannot_presign_writes(
@@ -558,7 +558,7 @@ EDP_ADMIN_READ_ONLY_ROUTES = [
 ]
 
 
-# IMPORTANT: get the Allure testcase id from the validation team.
+@allure.testcase("IEASG-T739")
 def test_edp_backend_enforces_roles_without_gateway(keycloak_helper, temporarily_remove_regular_user_required_actions):
     """edp-backend itself must refuse a regular user the admin API."""
     user_headers = {"Authorization": f"Bearer {keycloak_helper.get_access_token(as_user=True)}"}
@@ -571,7 +571,7 @@ def test_edp_backend_enforces_roles_without_gateway(keycloak_helper, temporarily
             )
 
 
-# IMPORTANT: get the Allure testcase id from the validation team.
+@allure.testcase("IEASG-T740")
 def test_edp_backend_refuses_presigned_url_without_token():
     """edp-backend must not sign a URL for a caller that presents no token."""
     payload = {"bucket_name": "only-admin", "object_name": "any.txt", "method": "GET"}
