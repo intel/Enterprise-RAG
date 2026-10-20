@@ -32,7 +32,7 @@ def make_token(roles, key=SIGNING_KEY, expires_in=300):
         "aud": [BACKEND_CLIENT, "account"],
         "resource_access": {BACKEND_CLIENT: {"roles": roles}},
     }
-    return jwt.encode(claims, key, algorithm="RS256", headers={"kid": "test"})
+    return jwt.encode(claims, key, algorithm="RS384", headers={"kid": "test"})
 
 
 def auth(token):
@@ -41,6 +41,8 @@ def auth(token):
 
 @pytest.fixture(autouse=True)
 def keycloak_jwks(monkeypatch):
+    monkeypatch.setenv("EDP_OIDC_CONFIG_URL", "http://keycloak/realms/EnterpriseRAG/.well-known/openid-configuration")
+    monkeypatch.setattr("app.main._jwks_client", None)
     signing_key = MagicMock(key=SIGNING_KEY.public_key())
     monkeypatch.setattr(jwt.PyJWKClient, "get_signing_key_from_jwt", lambda self, token: signing_key)
 
