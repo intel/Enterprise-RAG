@@ -8,7 +8,7 @@ FROM public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo:v${vllm_version}
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apk/*
 
-RUN useradd -u 1000 -m -s /bin/bash user
+RUN useradd -u 1000 -g 0 -m -s /bin/bash user && chmod g=u /home/user
 ENV PATH="$PATH:/home/user/.local/bin"
 WORKDIR /home/user/
 
@@ -21,4 +21,6 @@ RUN pip install --no-cache-dir --upgrade \
     "setuptools==82.0.1" \
     "wheel==0.46.2"
 
-USER user
+USER 1000
+# OpenShift (restricted-v2) runs as an arbitrary UID with no passwd entry: keep HOME.
+ENV HOME=/home/user

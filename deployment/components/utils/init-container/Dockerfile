@@ -32,8 +32,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Matches runAsUser in the Helm charts that use this image
-RUN useradd -m -u 1000 -s /bin/bash user
+# Matches runAsUser in the Helm charts that use this image. On OpenShift (restricted-v2)
+# it runs as an arbitrary UID in group 0, so group 0 gets the rights on HOME.
+RUN useradd -m -u 1000 -g 0 -s /bin/bash user && chmod g=u /home/user
 USER 1000
+ENV HOME=/home/user
 
 ENTRYPOINT ["/bin/bash"]

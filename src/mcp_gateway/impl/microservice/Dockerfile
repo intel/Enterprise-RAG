@@ -21,22 +21,28 @@ RUN rm -f /usr/bin/dmesg /usr/bin/base64 /usr/bin/perl
 RUN rm -rf /home/user/.local/lib/python${python_version}/site-packages/*
 RUN rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
-RUN useradd -m -s /bin/bash user
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PATH="$PATH:/home/user/.local/bin"
 ENV PYTHONPATH="/home/user"
 
 WORKDIR /home/user
-COPY --chown=user:user ./mcp_gateway/impl/microservice/pyproject.toml pyproject.toml
-COPY --chown=user:user ./mcp_gateway/impl/microservice/uv.lock uv.lock
+COPY --chown=user:0 ./mcp_gateway/impl/microservice/pyproject.toml pyproject.toml
+COPY --chown=user:0 ./mcp_gateway/impl/microservice/uv.lock uv.lock
 
 RUN uv sync --locked --no-cache --group security-overrides
 ENV PATH="/home/user/.venv/bin:$PATH"
 
-COPY --chown=user:user ./mcp_gateway/utils ./mcp_gateway/utils
-COPY --chown=user:user ./mcp_gateway/mcp_gateway.py ./mcp_gateway/mcp_gateway.py
-COPY --chown=user:user ./comps/cores/mega/logger.py ./comps/cores/mega/logger.py
+COPY --chown=user:0 ./mcp_gateway/utils ./mcp_gateway/utils
+COPY --chown=user:0 ./mcp_gateway/mcp_gateway.py ./mcp_gateway/mcp_gateway.py
+COPY --chown=user:0 ./comps/cores/mega/logger.py ./comps/cores/mega/logger.py
 
 WORKDIR /home/user/mcp_gateway
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 CMD ["python", "mcp_gateway.py"]

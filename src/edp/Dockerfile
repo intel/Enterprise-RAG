@@ -21,9 +21,10 @@ RUN rm -rf /home/user/.local/lib/python${python_version}/site-packages/*
 RUN rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
 # Add non-root user
-RUN useradd -m -s /bin/bash user
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PATH="$PATH:/home/user/.local/bin"
 ENV PYTHONPATH="/home/user"
 
@@ -38,14 +39,19 @@ RUN uv sync --locked --no-cache
 ENV PATH="/home/user/.venv/bin:$PATH"
 
 # Copy the rest of the application code into the container
-COPY --chown=user:user ./edp/app ./app
-COPY --chown=user:user ./comps/cores/mega/logger.py ./comps/cores/mega/logger.py
+COPY --chown=user:0 ./edp/app ./app
+COPY --chown=user:0 ./comps/cores/mega/logger.py ./comps/cores/mega/logger.py
 
 # Expose the port the app runs on
 EXPOSE 5000
 
 # Set workdir
 WORKDIR /home/user/app
-COPY --chown=user:user ./edp/entrypoint.sh ./entrypoint.sh
+COPY --chown=user:0 ./edp/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 ENTRYPOINT ["./entrypoint.sh"]

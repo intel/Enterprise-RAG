@@ -21,11 +21,12 @@ RUN apt-get update -y && \
 RUN rm -rf /home/user/.local/lib/python${python_version}/site-packages/*
 RUN rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
-RUN useradd -m -s /bin/bash user && \
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user && \
     mkdir -p /home/user && \
     chown -R user /home/user/
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PATH="/home/user/.local/bin:${PATH}"
 ENV PYTHONPATH="/home/user"
 
@@ -38,10 +39,15 @@ COPY ./comps/prompt_template/impl/microservice/uv.lock uv.lock
 RUN uv sync --locked --no-cache --group security-overrides
 ENV PATH="/home/user/.venv/bin:$PATH"
 
-COPY --chown=user:user ./comps/cores ./comps/cores
-COPY --chown=user:user ./comps/prompt_template/utils /home/user/comps/prompt_template/utils
-COPY --chown=user:user ./comps/prompt_template/impl/microservice/.env ./comps/prompt_template/impl/microservice/.env
-COPY --chown=user:user ./comps/prompt_template/erag_prompt_template_microservice.py /home/user/comps/prompt_template/erag_prompt_template_microservice.py
+COPY --chown=user:0 ./comps/cores ./comps/cores
+COPY --chown=user:0 ./comps/prompt_template/utils /home/user/comps/prompt_template/utils
+COPY --chown=user:0 ./comps/prompt_template/impl/microservice/.env ./comps/prompt_template/impl/microservice/.env
+COPY --chown=user:0 ./comps/prompt_template/erag_prompt_template_microservice.py /home/user/comps/prompt_template/erag_prompt_template_microservice.py
 
 WORKDIR /home/user/comps/prompt_template
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 CMD ["python", "erag_prompt_template_microservice.py"]

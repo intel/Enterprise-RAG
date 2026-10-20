@@ -20,11 +20,12 @@ RUN apt-get update -y && \
     rm -rf /home/user/.local/lib/python${python_version}/site-packages/* && \
     rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
-RUN useradd -m -s /bin/bash user && \
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user && \
     mkdir -p /home/user && \
     chown -R user /home/user/
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PATH="/home/user/.local/bin:${PATH}"
 ENV PYTHONPATH="/home/user"
 
@@ -38,10 +39,15 @@ RUN uv sync --locked --no-cache --group security-overrides
 ENV PATH="/home/user/.venv/bin:$PATH"
 RUN rm uv.lock pyproject.toml
 
-COPY --chown=user:user ./comps/cores ./comps/cores
-COPY --chown=user:user ./comps/asr/utils ./comps/asr/utils
-COPY --chown=user:user ./comps/asr/impl/microservice/.env ./comps/asr/impl/microservice/.env
-COPY --chown=user:user ./comps/asr/erag_asr_microservice.py ./comps/asr/erag_asr_microservice.py
+COPY --chown=user:0 ./comps/cores ./comps/cores
+COPY --chown=user:0 ./comps/asr/utils ./comps/asr/utils
+COPY --chown=user:0 ./comps/asr/impl/microservice/.env ./comps/asr/impl/microservice/.env
+COPY --chown=user:0 ./comps/asr/erag_asr_microservice.py ./comps/asr/erag_asr_microservice.py
 
 WORKDIR /home/user/comps/asr
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 CMD ["python", "erag_asr_microservice.py"]
