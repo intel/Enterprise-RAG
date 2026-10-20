@@ -108,6 +108,12 @@ def test_regular_user_can_presign_read(signer, bucket):
     assert response.json() == {"url": "http://s3/presigned"}
 
 
+@pytest.mark.parametrize("bucket,status", [("erag-docs", 200), ("billing-exports", 403)])
+def test_system_signed_presign_is_limited_to_managed_buckets(signer, monkeypatch, bucket, status):
+    monkeypatch.setenv("BUCKET_NAME_REGEX_FILTER", "^erag-")
+    assert presign(bucket, "GET", make_token(USER)).status_code == status
+
+
 @pytest.mark.parametrize("roles", [MAINTAINER, ADMIN], ids=["maintainer", "admin"])
 @pytest.mark.parametrize("bucket", ["default", "only-admin"])
 @pytest.mark.parametrize("method", ["GET", "PUT", "DELETE"])

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import re
 from typing import List, Union
 import uuid
 
@@ -203,7 +204,8 @@ def _get_jwks_client():
         # resolve; the certs endpoint sits next to it on the in-cluster service.
         jwks_url = os.getenv('EDP_OIDC_CONFIG_URL', '').replace(
             '/.well-known/openid-configuration', '/protocol/openid-connect/certs')
-        _jwks_client = jwt.PyJWKClient(jwks_url)
+        # A short timeout: the fetch holds the client lock, so a hung Keycloak would stall every request.
+        _jwks_client = jwt.PyJWKClient(jwks_url, timeout=5)
     return _jwks_client
 
 
@@ -347,6 +349,11 @@ def presigned_url(input: PresignedRequest, request: Request, roles: set = Depend
                 credentials = None # System credentials will be used inside generate_presigned_url() when credentials is None
             else:
                 raise ValueError("PresignedUrl generation failed using token credentials and system fallback is disabled.")
+
+        # The service credentials may reach buckets EDP does not manage (e.g. a shared S3 account).
+        regex_filter = os.getenv('BUCKET_NAME_REGEX_FILTER', '')
+        if credentials is None and regex_filter and not re.match(regex_filter, bucket_name):
+            raise HTTPException(status_code=403, detail="Access denied")
 
         ensure_bucket_exists(bucket_check_client, bucket_name)
 

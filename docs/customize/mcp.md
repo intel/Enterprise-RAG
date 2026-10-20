@@ -32,7 +32,7 @@ When `mcp_enabled` is true, the Keycloak configurator Job creates a ready-to-use
 
 - `ERAG-maintainer` on `EnterpriseRAG-oidc-backend` (EDP access; every MCP tool calls EDP routes that require maintainer)
 - `erag-admin-group` on `EnterpriseRAG-oidc-minio` (S3 read/write for `ingest_file`)
-- A `minio_roles` client-role mapper, so those roles land in the token the EDP presigned-URL path authorizes against
+- A `minio_roles` client-role mapper, so the `EnterpriseRAG-oidc-minio` roles land in the token SeaweedFS checks when `edp_rbac_enabled` is true
 - An audience mapper adding `mcp-gateway`, the audience the gateway requires
 - `access.token.lifespan` of 900s, so agent tokens stay short-lived without changing the realm default
 
@@ -285,7 +285,7 @@ Known limitations of this variant in the current release:
 
 ## Creating a production agent client in Keycloak
 
-`mcp-client` is for development and testing. For production integrations, create a dedicated client per agent so credentials can be rotated or revoked independently. Each production client needs three things: an Intel AI for Enterprise RAG role for backend access, `erag-admin-group` on `EnterpriseRAG-oidc-minio` for S3 file operations, and a `minio_roles` claim mapper.
+`mcp-client` is for development and testing. For production integrations, create a dedicated client per agent so credentials can be rotated or revoked independently. Each production client needs three things: `ERAG-maintainer` (or `ERAG-admin`) on `EnterpriseRAG-oidc-backend` for backend access, `erag-admin-group` on `EnterpriseRAG-oidc-minio` for S3 file operations, and a `minio_roles` claim mapper.
 
 The Keycloak admin console is at `https://keycloak.<base_domain_name>` in `subdomain` routing mode, or `https://<base_domain_name>/keycloak` in `path` routing mode.
 
