@@ -97,11 +97,13 @@ seaweedfs:
         - ALL
     seccompProfile:
       type: RuntimeDefault
+  # anonymousRead: true lets anyone who knows an object name read it without a signature.
+  # Downloads go through presigned URLs (or the bearer token with RBAC), so keep it false.
   createBuckets:
   - name: default
-    anonymousRead: true
+    anonymousRead: false
   - name: secondary
-    anonymousRead: true
+    anonymousRead: false
   - name: only-admin
     anonymousRead: false
   iamKeycloak: # used when rbac is enables in the main config yaml
