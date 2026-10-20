@@ -153,6 +153,8 @@
   kubernetes.core.helm:
     name: "{{ mcp_helm_release_name }}"
     chart_ref: "{{ mcp_helm_chart_directory }}"
+    # OpenShift assigns the UIDs: drop the charts' fixed runAsUser/runAsGroup/fsGroup.
+    post_renderer: "{{ (role_path ~ '/../../scripts/openshift_post_renderer.py') if cluster_distribution | default('kubernetes') == 'openshift' else omit }}"
     release_namespace: "{{ mcp_namespace }}"
     values_files: "{{ values_files }}"
     state: present

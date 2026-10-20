@@ -184,6 +184,8 @@
   kubernetes.core.helm:
     name: seaweedfs
     chart_ref: seaweedfs/seaweedfs
+    # OpenShift assigns the UIDs: drop the charts' fixed runAsUser/runAsGroup/fsGroup.
+    post_renderer: "{{ (role_path ~ '/../../scripts/openshift_post_renderer.py') if cluster_distribution | default('kubernetes') == 'openshift' else omit }}"
     chart_version: "{{ edp_helm_values.seaweedfs.version }}"
     namespace: "{{ edp_seaweedfs_namespace }}"
     create_namespace: true

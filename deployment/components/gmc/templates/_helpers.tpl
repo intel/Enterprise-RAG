@@ -199,7 +199,6 @@ Usage: {{ include "manifest.balloons.initContainer" . }}
 - name: wait-for-balloons
   image: {{ include "manifest.image" (list "init-container" .Values) }}
   securityContext:
-    runAsUser: 1000
     allowPrivilegeEscalation: false
     capabilities:
       drop:

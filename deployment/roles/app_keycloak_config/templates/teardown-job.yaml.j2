@@ -21,7 +21,9 @@ spec:
       restartPolicy: OnFailure
       securityContext:
         runAsNonRoot: true
+{% if cluster_distribution | default('kubernetes') != 'openshift' %}
         runAsUser: 1000
+{% endif %}
         seccompProfile:
           type: RuntimeDefault
       containers:

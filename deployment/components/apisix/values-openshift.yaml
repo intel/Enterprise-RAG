@@ -1,0 +1,72 @@
+# Copyright (C) 2024-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+# OpenShift overlay on values.yaml (app_apisix adds it when cluster_distribution
+# is openshift). restricted-v2 runs APISIX as an arbitrary UID that cannot write
+# the image's /usr/local/apisix (owned by 636): conf/ (nginx.conf is generated at
+# start), logs/ (nginx.pid) and the nginx *_temp dirs become emptyDirs, with conf/
+# and logs/ seeded from the image.
+apisix:
+  extraVolumes:
+    - name: apisix-conf
+      emptyDir: {}
+    - name: apisix-logs
+      emptyDir: {}
+    - name: client-body-temp
+      emptyDir: {}
+    - name: proxy-temp
+      emptyDir: {}
+    - name: fastcgi-temp
+      emptyDir: {}
+    - name: uwsgi-temp
+      emptyDir: {}
+    - name: scgi-temp
+      emptyDir: {}
+  extraVolumeMounts:
+    - {name: apisix-conf, mountPath: /usr/local/apisix/conf}
+    - {name: apisix-logs, mountPath: /usr/local/apisix/logs}
+    - {name: client-body-temp, mountPath: /usr/local/apisix/client_body_temp}
+    - {name: proxy-temp, mountPath: /usr/local/apisix/proxy_temp}
+    - {name: fastcgi-temp, mountPath: /usr/local/apisix/fastcgi_temp}
+    - {name: uwsgi-temp, mountPath: /usr/local/apisix/uwsgi_temp}
+    - {name: scgi-temp, mountPath: /usr/local/apisix/scgi_temp}
+  # Replaces the list in values.yaml: keep wait-for-etcd in step with it.
+  extraInitContainers:
+    - name: seed-conf
+      image: apache/apisix:3.16.0-ubuntu
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      command: ["sh", "-c", "cp -RP /usr/local/apisix/conf/. /seed/conf/ && cp -RP /usr/local/apisix/logs/. /seed/logs/"]
+      volumeMounts:
+        - {name: apisix-conf, mountPath: /seed/conf}
+        - {name: apisix-logs, mountPath: /seed/logs}
+    - name: wait-for-etcd
+      image: alpine/curl
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for etcd to be ready..."
+          until curl -sf http://auth-apisix-etcd-client:2379/health | grep -q '"health":"true"'; do
+            echo "etcd not ready, waiting..."
+            sleep 3
+          done
+          echo "etcd is ready!"
