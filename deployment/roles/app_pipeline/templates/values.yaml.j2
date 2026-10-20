@@ -15,6 +15,12 @@ tokens:
 {% endif %}
 common_tag: &tag "{{ tag }}"
 common_registry: &repo "{{ registry }}"
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+{# The model workload svcs serve https with the OpenShift service CA, mounted in #}
+{# every pod: the model-facing usvcs point Python (httpx, aiohttp, requests) and #}
+{# their curl init containers at it.                                             #}
+openshift_service_ca: &service_ca "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+{% endif %}
 
 {# Resolve solution language: explicit value or auto-detect from LLM model name #}
 {% if solution_language is defined and solution_language != "auto" %}
@@ -97,6 +103,11 @@ images:
       EMBEDDING_MODEL_SERVER_ENDPOINT: "{{ embedding_endpoint }}"
       EMBEDDING_MODEL_SERVER: "vllm"
 {% endif %}
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+      SSL_CERT_FILE: *service_ca
+      REQUESTS_CA_BUNDLE: *service_ca
+      CURL_CA_BUNDLE: *service_ca
+{% endif %}
   reranking-usvc:
     image: "enterprise-rag-reranking"
     repository: *repo
@@ -106,6 +117,11 @@ images:
 {% if reranking_endpoint %}
       RERANKING_SERVICE_ENDPOINT: "{{ reranking_endpoint }}"
       RERANKING_MODEL_SERVER: "vllm"
+{% endif %}
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+      SSL_CERT_FILE: *service_ca
+      REQUESTS_CA_BUNDLE: *service_ca
+      CURL_CA_BUNDLE: *service_ca
 {% endif %}
 {% if edp_late_chunking_enabled is true %}
       RERANKING_LATE_CHUNKING_ENABLED: "True"
@@ -152,6 +168,11 @@ images:
       LLM_MODEL_SERVER_ENDPOINT: "{{ llm_endpoint }}"
       LLM_MODEL_NAME: "{{ llm_model_name }}"
       LLM_MODEL_SERVER: "vllm"
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+      SSL_CERT_FILE: *service_ca
+      REQUESTS_CA_BUNDLE: *service_ca
+      CURL_CA_BUNDLE: *service_ca
+{% endif %}
 {% if pipeline_variant == 'output_guard' %}
       LLM_OUTPUT_GUARD_EXISTS: "True"
 {% endif %}
@@ -217,3 +238,12 @@ images:
 
 monitoring:
   enabled: {{ observability_enabled | default(true) | bool | string | lower }}
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+
+# OpenShift assigns the UID and fsGroup (restricted-v2). The GMC manager renders the
+# microservices from these values, past the Helm post-renderer, so unset them here.
+podSecurityContext:
+  runAsUser: null
+  runAsGroup: null
+  fsGroup: null
+{% endif %}

@@ -9,7 +9,6 @@
       - ALL
     readOnlyRootFilesystem: false
     runAsNonRoot: true
-    runAsUser: 1000
   env:
     - name: VECTOR_STORE
       valueFrom:

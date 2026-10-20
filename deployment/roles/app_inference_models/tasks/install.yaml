@@ -563,6 +563,8 @@
 # Build endpoints from declared models only — a role absent from inference_models
 # (e.g. docsum declares no embedding) simply doesn't appear in the dict.
 # LLM goes via the AI gateway; embedding/reranking hit their kserve svc directly.
+# OpenShift has no AI gateway: every model is reached at its workload svc, which
+# serves https only (OpenShift service CA; the usvcs trust it, see app_pipeline).
 - name: "app_inference_models | Resolve endpoints per role"
   ansible.builtin.set_fact:
     inference_endpoints: >-
@@ -570,7 +572,9 @@
            item.role: {
              'model_name': item.name,
              'model_id': _mm_model_ids[item.name] | default(''),
-             'endpoint': inference_aigw_endpoint if item.role == 'llm'
+             'endpoint': ('https://' + item.name + '-kserve-workload-svc.' + inference_namespace + '.svc:8000')
+               if cluster_distribution | default('kubernetes') == 'openshift'
+               else inference_aigw_endpoint if item.role == 'llm'
                else 'http://' + item.name + '-kserve-workload-svc.' + inference_namespace + '.svc:8000'
            }
          }) }}
