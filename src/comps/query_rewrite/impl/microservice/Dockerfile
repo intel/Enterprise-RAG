@@ -21,11 +21,12 @@ RUN rm -f /usr/bin/dmesg /usr/bin/base64 /usr/bin/perl
 RUN rm -rf /home/user/.local/lib/python${python_version}/site-packages/*
 RUN rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
-RUN useradd -m -s /bin/bash user && \
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user && \
     mkdir -p /home/user && \
     chown -R user /home/user/
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PATH="/home/user/.local/bin:${PATH}"
 ENV PYTHONPATH="/home/user"
 
@@ -37,11 +38,16 @@ COPY ./comps/query_rewrite/impl/microservice/uv.lock uv.lock
 RUN uv sync --locked --no-cache
 ENV PATH="/home/user/.venv/bin:$PATH"
 
-COPY --chown=user:user ./comps/cores ./comps/cores
-COPY --chown=user:user ./comps/query_rewrite/utils ./comps/query_rewrite/utils
-COPY --chown=user:user ./comps/query_rewrite/__init__.py ./comps/query_rewrite/__init__.py
-COPY --chown=user:user ./comps/query_rewrite/impl/microservice/.env ./comps/query_rewrite/impl/microservice/.env
-COPY --chown=user:user ./comps/query_rewrite/erag_query_rewrite_microservice.py ./comps/query_rewrite/erag_query_rewrite_microservice.py
+COPY --chown=user:0 ./comps/cores ./comps/cores
+COPY --chown=user:0 ./comps/query_rewrite/utils ./comps/query_rewrite/utils
+COPY --chown=user:0 ./comps/query_rewrite/__init__.py ./comps/query_rewrite/__init__.py
+COPY --chown=user:0 ./comps/query_rewrite/impl/microservice/.env ./comps/query_rewrite/impl/microservice/.env
+COPY --chown=user:0 ./comps/query_rewrite/erag_query_rewrite_microservice.py ./comps/query_rewrite/erag_query_rewrite_microservice.py
 
 WORKDIR /home/user/comps/query_rewrite
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 CMD ["python", "erag_query_rewrite_microservice.py"]

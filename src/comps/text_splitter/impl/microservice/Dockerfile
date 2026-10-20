@@ -21,9 +21,10 @@ RUN rm -f /usr/bin/dmesg /usr/bin/base64 /usr/bin/perl
 RUN rm -rf /home/user/.local/lib/python${python_version}/site-packages/*
 RUN rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
-RUN useradd -m -s /bin/bash user
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PATH="$PATH:/home/user/.local/bin"
 ENV PYTHONPATH="/home/user"
 
@@ -36,10 +37,15 @@ COPY ./comps/text_splitter/impl/microservice/uv.lock uv.lock
 RUN uv sync --locked --no-cache
 ENV PATH="/home/user/.venv/bin:$PATH"
 
-COPY --chown=user:user ./comps/cores ./comps/cores
-COPY --chown=user:user ./comps/text_splitter/utils ./comps/text_splitter/utils
-COPY --chown=user:user ./comps/text_splitter/impl/microservice/.env ./comps/text_splitter/impl/microservice/.env
-COPY --chown=user:user ./comps/text_splitter/erag_text_splitter_microservice.py ./comps/text_splitter/erag_text_splitter_microservice.py
+COPY --chown=user:0 ./comps/cores ./comps/cores
+COPY --chown=user:0 ./comps/text_splitter/utils ./comps/text_splitter/utils
+COPY --chown=user:0 ./comps/text_splitter/impl/microservice/.env ./comps/text_splitter/impl/microservice/.env
+COPY --chown=user:0 ./comps/text_splitter/erag_text_splitter_microservice.py ./comps/text_splitter/erag_text_splitter_microservice.py
 
 WORKDIR /home/user/comps/text_splitter
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 CMD ["python", "erag_text_splitter_microservice.py"]
