@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   read-images:
-    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/read-images-reusable.yml
 
   update-locks:
@@ -50,6 +49,30 @@ jobs:
           set -e
 
           COMMIT_COUNT=0
+
+          # Runs uv lock --upgrade for the project in $2 and commits $3 as
+          # "Upgrade deps for $1" if it changed. A failed lock only warns, so the
+          # remaining projects are still updated.
+          lock_uv_project() {
+            local NAME=$1 UV_DIR=$2 UV_LOCK=$3
+
+            echo "  Running uv lock --upgrade in $UV_DIR..."
+            if (cd "$UV_DIR" && uv lock --upgrade); then
+              echo "  Successfully updated lock file in $UV_DIR"
+
+              if [[ -n $(git status --porcelain -- "$UV_LOCK") ]]; then
+                echo "  Committing changes for $NAME..."
+                git add "$UV_LOCK"
+                git commit -m "Upgrade deps for $NAME"
+                COMMIT_COUNT=$((COMMIT_COUNT + 1))
+                echo "  Committed successfully"
+              else
+                echo "  No changes to commit for $NAME"
+              fi
+            else
+              echo "  Warning: Failed to update lock file in $UV_DIR"
+            fi
+          }
 
           echo "Processing images from read-images-reusable..."
 
@@ -102,36 +125,38 @@ jobs:
                 continue
               fi
 
-              echo "  Running uv lock --upgrade in $UV_DIR..."
-
-              # Run uv lock --upgrade
-              cd "$UV_DIR"
-              if uv lock --upgrade; then
-                echo "  Successfully updated lock file in $UV_DIR"
-
-                # Check if there are changes to commit
-                cd "$GITHUB_WORKSPACE"
-                if [[ -n $(git status --porcelain -- "$UV_LOCK") ]]; then
-                  echo "  Committing changes for $IMAGE_NAME..."
-
-                  git add "$UV_LOCK"
-
-                  COMMIT_MSG="Upgrade deps for $IMAGE_NAME"
-                  git commit -m "$COMMIT_MSG"
-
-                  COMMIT_COUNT=$((COMMIT_COUNT + 1))
-                  echo "  Committed successfully"
-                else
-                  echo "  No changes to commit for $IMAGE_NAME"
-                fi
-              else
-                echo "  Warning: Failed to update lock file in $UV_DIR"
-                cd "$GITHUB_WORKSPACE"
-              fi
+              lock_uv_project "$IMAGE_NAME" "$UV_DIR" "$UV_LOCK"
             else
               echo "  No pip-uv dependency found"
             fi
 
+            echo ""
+          done
+
+          # uv projects that no image points to but whose lock file is still used,
+          # as "<name>:<project dir>". The name must match the subject check in
+          # push-updates. Add a project here only together with the reason for it.
+          EXTRA_UV_PROJECTS=(
+            # Path dependency of the ingestion and retrievers images (they read its
+            # pyproject.toml, not this lock, so the order of locking does not matter).
+            # Its lock is still used by vectorstores_unit_tests (uv sync --locked),
+            # which fails once the pyproject.toml changes and the lock does not.
+            "vectorstores:src/comps/vectorstores/impl/requirements"
+          )
+
+          echo "Processing uv projects without an image..."
+
+          for ENTRY in "${EXTRA_UV_PROJECTS[@]}"; do
+            PROJECT_NAME=${ENTRY%%:*}
+            UV_DIR=${ENTRY#*:}
+
+            echo "Processing uv project: $PROJECT_NAME ($UV_DIR)"
+            if [[ ! -f "$UV_DIR/pyproject.toml" ]]; then
+              echo "  Warning: pyproject.toml not found in $UV_DIR, skipping"
+              continue
+            fi
+
+            lock_uv_project "$PROJECT_NAME" "$UV_DIR" "$UV_DIR/uv.lock"
             echo ""
           done
 
