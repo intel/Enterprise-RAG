@@ -52,7 +52,7 @@ Modify the [./docker/.env](./docker/.env) file to suit your use case.
 #HF_TOKEN=<your-hf-api-key>
 
 ## VLLM Model Server Settings For Reranking ##
-RERANKING_VLLM_MODEL_NAME="BAAI/bge-reranker-base"
+RERANKING_VLLM_MODEL_NAME="BAAI/bge-reranker-v2-m3"
 RERANKING_VLLM_PORT=8109
 
 ## VLLM Settings ##
@@ -69,7 +69,7 @@ The following variables are supported:
 
 | Variable                    | Default                  | Description                                                            |
 | --------------------------- | ------------------------ | ---------------------------------------------------------------------- |
-| `RERANKING_VLLM_MODEL_NAME` | `BAAI/bge-reranker-base` | Hugging Face model name served for reranking.                          |
+| `RERANKING_VLLM_MODEL_NAME` | `BAAI/bge-reranker-v2-m3` | Hugging Face model name served for reranking.                          |
 | `RERANKING_VLLM_PORT`       | `8109`                   | Host port on which the vLLM server is exposed.                         |
 | `VLLM_CPU_KVCACHE_SPACE`    | `0`                      | KV cache space in GB. Reranking does not use a KV cache, so it is `0`. |
 | `VLLM_DTYPE`                | `bfloat16`               | Data type used to load the model.                                      |
@@ -101,7 +101,7 @@ docker compose down
     ```bash
     curl http://localhost:8109/v1/score \
         -X POST \
-        -d '{"model":"BAAI/bge-reranker-base", "text_1":"What is Deep Learning?", "text_2": ["Deep Learning is not...", "Deep learning is..."]}' \
+        -d '{"model":"BAAI/bge-reranker-v2-m3", "text_1":"What is Deep Learning?", "text_2": ["Deep Learning is not...", "Deep learning is..."]}' \
         -H 'Content-Type: application/json'
     ```
 

@@ -14,7 +14,7 @@ inference_models:
     role: llm
   - name: nomic-embed
     role: embedding
-  - name: bge-reranker
+  - name: bge-reranker-v2-m3
     role: reranking
 ```
 
@@ -62,13 +62,14 @@ Only models labeled `app.kubernetes.io/part-of=erag` are managed by the installe
 
 ## Model catalog reference
 
-Default models:
+Default models for RAG Chatqna pipeline:
 
 | Role | Catalog name | Model ID | Language |
 |------|-------------|----------|----------|
 | LLM | `llama3-8b-awq` | `casperhansen/llama-3-8b-instruct-awq` | English |
 | Embedding | `nomic-embed` | `nomic-ai/nomic-embed-text-v1.5` | English |
-| Reranking | `bge-reranker` | `BAAI/bge-reranker-base` | English |
+| Reranking | `bge-reranker-v2-m3` | `BAAI/bge-reranker-v2-m3` | Multi-language |
+
 
 Multilingual recommended:
 
@@ -113,7 +114,7 @@ Each entry includes CPU/memory sizing, engine, category, and optional per-model 
    inference_models:
      - name: your-multilingual-llm
        role: llm
-     - name: multilingual-e5-large
+     - name: e5-large-instruct
        role: embedding
      - name: bge-reranker-v2-m3
        role: reranking

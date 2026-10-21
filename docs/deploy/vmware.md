@@ -53,7 +53,7 @@ Control plane nodes handle Kubernetes orchestration only. All AI inference workl
 |---|---|---|
 | LLM Model Size | Up to 8B parameters | casperhansen/llama-3-8b-instruct-awq - AWQ quantized, served via vLLM on CPU |
 | Embedding Model | ~0.1B parameters | nomic-ai/nomic-embed-text-v1 |
-| Reranking Model | ~0.3B parameters | BAAI/bge-reranker-base |
+| Reranking Model | ~0.6B parameters | BAAI/bge-reranker-v2-m3 |
 | Model Storage | 130 Gi total | 100 Gi LLM + 20 Gi embedding + 10 Gi reranker |
 
 > **Note**: These specifications are guidance for a baseline deployment. Larger models can be used depending on your specific use case requirements and SLA targets. Consider scaling compute resources accordingly for larger model deployments.

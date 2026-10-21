@@ -180,7 +180,7 @@ async def test_request_to_reranker_service_succeeds():
 
    with patch.object(EragReranker, '_validate', return_value='Mocked Method'):
       reranker = EragReranker(service_endpoint="http://testhost:1234", model_server="vllm",
-                              model_name="BAAI/bge-reranker-base", late_chunking_enabled=False)
+                              model_name="BAAI/bge-reranker-v2-m3", late_chunking_enabled=False)
 
       # Mock the response object
       mock_response = AsyncMock()

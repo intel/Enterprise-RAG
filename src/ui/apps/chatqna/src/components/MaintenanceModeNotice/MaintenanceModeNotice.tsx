@@ -18,9 +18,9 @@ const MaintenanceModeNotice = () =>
     <div className="flex h-screen flex-col items-center justify-center p-8 text-center">
       <h2>Chat Not Available</h2>
       <p>
-        This deployment runs a pipeline without a text generation step, so chat answers cannot
-        be generated. Only the {adminPanelLink} is accessible, where documents
-        and pipeline settings can still be managed.
+        This deployment runs a pipeline without a text generation step, so chat
+        answers cannot be generated. Only the {adminPanelLink} is accessible,
+        where documents and pipeline settings can still be managed.
       </p>
     </div>
   ) : (
