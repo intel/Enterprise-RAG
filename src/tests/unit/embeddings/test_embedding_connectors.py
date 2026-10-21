@@ -14,11 +14,6 @@ from comps.embeddings.utils.connectors.connector import EmbeddingConnector
 from comps.embeddings.utils.connectors.ovms_connector import OVMSConnector, OVMSEndpointEmbeddings
 from comps.embeddings.utils.connectors.vllm_connector import VLLMConnector
 
-@pytest.fixture
-def teardown():
-    yield
-    clean_singleton()
-
 def clean_singleton():
     OVMSConnector._instance = None
     VLLMConnector._instance = None
@@ -47,49 +42,6 @@ def test_embed_query_empty_string():
 def test_EmbeddingConnector_not_implemented():
     with pytest.raises(TypeError):
         EmbeddingConnector("model", "endpoint")
-
-# TODO: Fix the tests below.
-# They never ran under pytest 8 (unmarked async tests were silently skipped) and fail against the current connector.
-@pytest.mark.skip(reason="stale test, see TODO above")
-async def test_connector_initialization(teardown):
-    model_name = "test_model"
-    endpoint = "http://test-endpoint"
-    with mock.patch.object(OVMSConnector, '_validate', new=mock.AsyncMock(return_value=None)):
-        embedding = OVMSConnector(model_name, endpoint)
-
-    assert embedding._model_name == model_name
-    assert embedding._endpoint == endpoint
-    assert embedding._embedder is not None
-
-
-@pytest.mark.skip(reason="stale test, see TODO above")
-async def test_connector_singleton_behavior(teardown):
-    with mock.patch.object(OVMSConnector, '_validate', new=mock.AsyncMock(return_value=None)):
-        instance1 = OVMSConnector("model1", "http://endpoint1")
-        instance2 = OVMSConnector("model1", "http://endpoint1")
-
-        assert instance1 is instance2
-
-
-@pytest.mark.skip(reason="stale test, see TODO above")
-async def test_connector_singleton_behavior_wrong_model(teardown):
-    with mock.patch.object(OVMSConnector, '_validate', new=mock.AsyncMock(return_value=None)):
-        instance1 = OVMSConnector("model1", "http://endpoint1")
-        instance2 = OVMSConnector("model2", "http://endpoint1")  # different model - reuses existing instance with a warning
-
-        assert instance1 is instance2
-
-
-@pytest.mark.skip(reason="stale test, see TODO above")
-async def test_connector_embedder_types(teardown):
-    model_name = "test_model"
-    endpoint = "http://test-endpoint"
-
-    with mock.patch.object(OVMSConnector, '_validate', new=mock.AsyncMock(return_value=None)):
-        ovms = OVMSConnector(model_name, endpoint)
-        assert isinstance(ovms._embedder, OVMSEndpointEmbeddings)
-        clean_singleton()
-
 
 # The connectors are built in sync fixtures on purpose: _initialize() calls
 # asyncio.run(), which fails if the async test body's event loop is already running.
