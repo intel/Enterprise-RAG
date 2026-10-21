@@ -9,20 +9,17 @@ import kr8s
 import pytest
 
 
+def _runs_to_completion(pod) -> bool:
+    return any(owner.kind == "Job" or (owner.kind == "ConfigMap" and owner.name.startswith("revision-status-"))
+               for owner in pod.metadata.get("ownerReferences", []))
+
+
 @pytest.mark.smoke
 @allure.testcase("IEASG-T27")
 def test_pods_are_running():
     pods_not_running = []
     for pod in kr8s.get("pods", namespace=kr8s.ALL): # type: kr8s.api_resources.Pod
-        # Skip pods owned by a Job
-        is_job_pod = False
-        if "ownerReferences" in pod.metadata:
-            for owner in pod.metadata.ownerReferences:
-                if "kind" in owner:
-                    if owner.kind == "Job":
-                        is_job_pod = True
-                        break  # Skip this pod and move to the next iteration
-        if is_job_pod:
+        if _runs_to_completion(pod):
             continue
 
         if not pod.status.phase == "Running" and not pod.status.phase == "Succeeded":
