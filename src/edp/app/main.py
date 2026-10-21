@@ -2,14 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import re
 from typing import List, Union
 import uuid
 
+import jwt
 import urllib3
 import validators
 from datetime import timedelta
 from datetime import datetime, timezone
-from fastapi import FastAPI, HTTPException, Request, UploadFile, status
+from fastapi import Depends, FastAPI, HTTPException, Request, UploadFile, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from dotenv import load_dotenv
@@ -184,6 +186,46 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
     content = { 'message': 'Error within database connection' }
     return JSONResponse(content=content, status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
+# -------------- Authorization ------------
+
+KEYCLOAK_BACKEND_CLIENT = "EnterpriseRAG-oidc-backend"
+PRIVILEGED_ROLES = {"ERAG-admin", "ERAG-maintainer"}
+PRODUCT_ROLES = PRIVILEGED_ROLES | {"ERAG-user"}
+# Keycloak signs with the realm default (RS384 as configured by app_keycloak_config); HMAC
+# is excluded so a public JWKS key can never be used as a shared secret.
+TOKEN_ALGORITHMS = ["RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512"]
+_jwks_client = None
+
+
+def _get_jwks_client():
+    global _jwks_client
+    if _jwks_client is None:
+        # Keycloak's discovery document advertises the public jwks_uri, which the pod may not
+        # resolve; the certs endpoint sits next to it on the in-cluster service.
+        jwks_url = os.getenv('EDP_OIDC_CONFIG_URL', '').replace(
+            '/.well-known/openid-configuration', '/protocol/openid-connect/certs')
+        # A short timeout: the fetch holds the client lock, so a hung Keycloak would stall every request.
+        _jwks_client = jwt.PyJWKClient(jwks_url, timeout=5)
+    return _jwks_client
+
+
+def caller_roles(request: Request) -> set:
+    """Verify the caller's Keycloak access token and return its EDP client roles."""
+    token = _extract_bearer_token(request)
+    try:
+        signing_key = _get_jwks_client().get_signing_key_from_jwt(token)
+        claims = jwt.decode(token, signing_key.key, algorithms=TOKEN_ALGORITHMS, audience=KEYCLOAK_BACKEND_CLIENT)
+    except jwt.PyJWTError as e:
+        logger.warning(f"Rejected access token: {e}")
+        raise HTTPException(status_code=401, detail="Invalid access token.")
+    return set(claims.get('resource_access', {}).get(KEYCLOAK_BACKEND_CLIENT, {}).get('roles', []))
+
+
+def require_privileged_role(roles: set = Depends(caller_roles)):
+    if not roles & PRIVILEGED_ROLES:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+
 # -------------- Minio operations ------------
 
 
@@ -207,7 +249,7 @@ def ensure_bucket_exists(client, bucket_name: str):
 
 
 @app.post('/api/presignedUrl')
-def presigned_url(input: PresignedRequest, request: Request) -> PresignedResponse:
+def presigned_url(input: PresignedRequest, request: Request, roles: set = Depends(caller_roles)) -> PresignedResponse:
     """
     Generate a presigned URL for accessing an object in an S3 bucket.
     This function generates a presigned URL for either
@@ -219,6 +261,8 @@ def presigned_url(input: PresignedRequest, request: Request) -> PresignedRespons
         400: Missing bucket_name or object_name.
         400: Invalid method.
         400: An error occurred while generating the presigned URL.
+        401: Missing or invalid access token.
+        403: The caller's role does not allow the requested method.
     Request JSON Parameters:
         bucket_name (str): The name of the S3 bucket.
         object_name (str): The name of the object in the S3 bucket.
@@ -240,6 +284,11 @@ def presigned_url(input: PresignedRequest, request: Request) -> PresignedRespons
 
     if method not in ['PUT', 'GET', 'DELETE']:
         raise HTTPException(status_code=400, detail="Invalid method")
+
+    # The URL is signed with the service's own storage credentials on backends without STS,
+    # so the object store cannot tell callers apart: the role check has to happen here.
+    if not roles & PRODUCT_ROLES or (method != 'GET' and not roles & PRIVILEGED_ROLES):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     unsafe_segments = gateway_unsafe_object_name_segments(object_name)
     if unsafe_segments:
@@ -287,26 +336,24 @@ def presigned_url(input: PresignedRequest, request: Request) -> PresignedRespons
             return PresignedResponse(url=url)
 
         bucket_check_client = minio_internal
-        if access_token:
-            access_token = access_token.replace('Bearer ', '')
-            token = { "access_token": access_token }
-            local_client = get_local_minio_client_using_token_credentials(token)
-            try:
-                local_client._provider.retrieve() # throws ValueError
-                credentials = local_client._provider._credentials
-                bucket_check_client = local_client
-            except (ValueError, urllib3.exceptions.MaxRetryError) as e:
-                if token_fallback:
-                    logger.warning(f"Falling back to system credentials for presignedUrl due to a problem with retrieving token credentials. {e}")
-                    credentials = None # System credentials will be used inside generate_presigned_url() when credentials is None
-                else:
-                    raise ValueError("PresignedUrl generation failed using token credentials and system fallback is disabled.")
-        else:
+        access_token = access_token.replace('Bearer ', '')
+        token = { "access_token": access_token }
+        local_client = get_local_minio_client_using_token_credentials(token)
+        try:
+            local_client._provider.retrieve() # throws ValueError
+            credentials = local_client._provider._credentials
+            bucket_check_client = local_client
+        except (ValueError, urllib3.exceptions.MaxRetryError) as e:
             if token_fallback:
-                logger.warning("Falling back to system credentials for presignedUrl since no Authorization header was provided.")
+                logger.warning(f"Falling back to system credentials for presignedUrl due to a problem with retrieving token credentials. {e}")
                 credentials = None # System credentials will be used inside generate_presigned_url() when credentials is None
             else:
-                raise ValueError("Authorization header is required for token credentials and system fallback is disabled.")
+                raise ValueError("PresignedUrl generation failed using token credentials and system fallback is disabled.")
+
+        # The service credentials may reach buckets EDP does not manage (e.g. a shared S3 account).
+        regex_filter = os.getenv('BUCKET_NAME_REGEX_FILTER', '')
+        if credentials is None and regex_filter and not re.match(regex_filter, bucket_name):
+            raise HTTPException(status_code=403, detail="Access denied")
 
         ensure_bucket_exists(bucket_check_client, bucket_name)
 
@@ -320,7 +367,7 @@ def presigned_url(input: PresignedRequest, request: Request) -> PresignedRespons
         logger.error(f"Error when generating presignedUrl: {e}")
         raise HTTPException(status_code=400, detail="An error occurred while generating a presigned URL.")
 
-@app.get('/api/list_buckets')
+@app.get('/api/list_buckets', dependencies=[Depends(require_privileged_role)])
 def list_buckets():
     """
     List all buckets in the MinIO storage.
@@ -763,7 +810,7 @@ def process_seaweedfs_event(event: SeaweedFSEventData):
 # ------------- API link management ------------
 
 
-@app.get("/api/links")
+@app.get("/api/links", dependencies=[Depends(require_privileged_role)])
 def api_links(request: Request) -> List[LinkResponse]:
     """
     Retrieve and return a list of API links with their statuses and metadata.
@@ -779,7 +826,7 @@ def api_links(request: Request) -> List[LinkResponse]:
         return [link.to_response() for link in links]
 
 
-@app.post('/api/links')
+@app.post('/api/links', dependencies=[Depends(require_privileged_role)])
 def api_add_link(input: LinkRequest, request: Request):
     """
     Adds new links to the database after validating them.
@@ -815,7 +862,7 @@ def api_add_link(input: LinkRequest, request: Request):
         return JSONResponse(content={'message': 'Link(s) added successfully', 'id': added_urls})
 
 
-@app.delete('/api/link/{link_uuid}')
+@app.delete('/api/link/{link_uuid}', dependencies=[Depends(require_privileged_role)])
 def api_delete_link(link_uuid: str, request: Request):
     """
     Deletes a link based on the provided UUID.
@@ -851,7 +898,7 @@ def api_delete_link(link_uuid: str, request: Request):
             raise HTTPException(status_code=400, detail="Error deleting link")
 
 
-@app.post("/api/link/{link_uuid}/retry")
+@app.post("/api/link/{link_uuid}/retry", dependencies=[Depends(require_privileged_role)])
 def api_link_task_retry(link_uuid: str, request: Request):
     """
     Retry processing a link by its UUID.
@@ -892,7 +939,7 @@ def api_link_task_retry(link_uuid: str, request: Request):
             raise HTTPException(status_code=404, detail="Link not found")
 
 
-@app.delete("/api/link/{link_uuid}/task")
+@app.delete("/api/link/{link_uuid}/task", dependencies=[Depends(require_privileged_role)])
 def api_link_task_cancel(link_uuid: str, request: Request):
     """
     Cancel a processing task associated with a link.
@@ -933,7 +980,7 @@ def api_link_task_cancel(link_uuid: str, request: Request):
 
 # ------------- API file management ------------
 
-@app.get("/api/files")
+@app.get("/api/files", dependencies=[Depends(require_privileged_role)])
 def api_files(request: Request) -> List[FileResponse]:
     """
     Retrieve a list of files with their statuses and metadata from the database.
@@ -948,7 +995,7 @@ def api_files(request: Request) -> List[FileResponse]:
         return [file.to_response() for file in files]
 
 
-@app.post("/api/file/{file_uuid}/retry")
+@app.post("/api/file/{file_uuid}/retry", dependencies=[Depends(require_privileged_role)])
 def api_file_task_retry(file_uuid: str, request: Request):
     """
     Retry processing a file by its UUID.
@@ -989,7 +1036,7 @@ def api_file_task_retry(file_uuid: str, request: Request):
             raise HTTPException(status_code=404, detail="File not found")
 
 
-@app.delete("/api/file/{file_uuid}/task")
+@app.delete("/api/file/{file_uuid}/task", dependencies=[Depends(require_privileged_role)])
 def api_file_task_cancel(file_uuid: str, request: Request):
     """
     Cancel a processing task associated with a file.
@@ -1027,7 +1074,7 @@ def api_file_task_cancel(file_uuid: str, request: Request):
         else:
             raise HTTPException(status_code=404, detail="File not found")
 
-@app.get('/api/files/sync')
+@app.get('/api/files/sync', dependencies=[Depends(require_privileged_role)])
 def api_sync_diff(request: Request):
     """
     This function shows the difference between the files in MinIO storage and the database.
@@ -1055,7 +1102,7 @@ def api_sync_diff(request: Request):
 
     return JSONResponse(content=diff)
 
-@app.post('/api/files/sync')
+@app.post('/api/files/sync', dependencies=[Depends(require_privileged_role)])
 def api_sync(request: Request):
     """
     This function calls the sync_files function to synchronize files between MinIO storage and the database.
@@ -1082,7 +1129,7 @@ def api_sync(request: Request):
 
 # -------------- Debugging Features ---------------
 
-@app.post("/api/file/{file_uuid}/extract")
+@app.post("/api/file/{file_uuid}/extract", dependencies=[Depends(require_privileged_role)])
 def api_file_text_extract(file_uuid: str, request: Request):
     try:
         file_id = uuid.UUID(file_uuid, version=4)
@@ -1169,7 +1216,7 @@ def api_file_text_extract(file_uuid: str, request: Request):
                 minio_response.close()
                 minio_response.release_conn()
 
-@app.post("/api/link/{link_uuid}/extract")
+@app.post("/api/link/{link_uuid}/extract", dependencies=[Depends(require_privileged_role)])
 def api_link_text_extract(link_uuid: str, request: Request):
     try:
         link_id = uuid.UUID(link_uuid, version=4)
@@ -1222,7 +1269,7 @@ def api_link_text_extract(link_uuid: str, request: Request):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error downloading link. {e}")
 
-@app.post("/api/retrieve")
+@app.post("/api/retrieve", dependencies=[Depends(require_privileged_role)])
 async def api_retrieve(body: RetrieveRequest, request: Request):
     try:
         import requests
@@ -1295,7 +1342,7 @@ def _require_sharepoint():
         )
 
 
-@app.get('/api/sharepoint/sites', response_model=SharePointSitesResponse)
+@app.get('/api/sharepoint/sites', response_model=SharePointSitesResponse, dependencies=[Depends(require_privileged_role)])
 async def sharepoint_list_sites(request: Request):
     """List SharePoint sites stored in the database."""
     _extract_bearer_token(request)
@@ -1330,7 +1377,7 @@ async def sharepoint_list_sites(request: Request):
         raise HTTPException(status_code=502, detail=str(e))
 
 
-@app.post('/api/sharepoint/sites', status_code=201)
+@app.post('/api/sharepoint/sites', status_code=201, dependencies=[Depends(require_privileged_role)])
 async def sharepoint_add_site(body: SharePointSiteAddRequest, request: Request):
     """Register a new SharePoint site for tracking."""
     _extract_bearer_token(request)
@@ -1384,7 +1431,7 @@ async def sharepoint_add_site(body: SharePointSiteAddRequest, request: Request):
     )
 
 
-@app.delete('/api/sharepoint/sites/{site_id}', status_code=200)
+@app.delete('/api/sharepoint/sites/{site_id}', status_code=200, dependencies=[Depends(require_privileged_role)])
 async def sharepoint_disconnect_site(site_id: str, request: Request):
     """Disconnect a SharePoint site from tracking."""
     _extract_bearer_token(request)
@@ -1425,7 +1472,7 @@ async def sharepoint_disconnect_site(site_id: str, request: Request):
     }
 
 
-@app.get('/api/sharepoint/sync')
+@app.get('/api/sharepoint/sync', dependencies=[Depends(require_privileged_role)])
 async def sharepoint_sync_diff(request: Request):
     """Show the difference between tracked SharePoint sites and the database."""
     _extract_bearer_token(request)
@@ -1453,7 +1500,7 @@ async def sharepoint_sync_diff(request: Request):
     ])
 
 
-@app.post('/api/sharepoint/sync')
+@app.post('/api/sharepoint/sync', dependencies=[Depends(require_privileged_role)])
 async def sharepoint_sync(request: Request):
     """Synchronize files from tracked SharePoint sites."""
     _extract_bearer_token(request)
@@ -1491,7 +1538,7 @@ async def sharepoint_sync(request: Request):
     return JSONResponse(content={'message': 'SharePoint files synced successfully'})
 
 
-@app.post('/api/sharepoint/files')
+@app.post('/api/sharepoint/files', dependencies=[Depends(require_privileged_role)])
 async def sharepoint_upload_file(file: UploadFile, request: Request, site_id: str = None):
     """Upload a file to a SharePoint site using app permissions.
 
@@ -1532,7 +1579,7 @@ async def sharepoint_upload_file(file: UploadFile, request: Request, site_id: st
         raise HTTPException(status_code=500, detail="Error uploading file to SharePoint")
 
 
-@app.delete('/api/sharepoint/files')
+@app.delete('/api/sharepoint/files', dependencies=[Depends(require_privileged_role)])
 async def sharepoint_delete_file(request: Request):
     """Delete a file that originated from a SharePoint site.
 
@@ -1577,7 +1624,7 @@ async def sharepoint_delete_file(request: Request):
     return JSONResponse(content={'message': f"File '{object_name}' deletion initiated."})
 
 
-@app.post('/api/sharepoint/file-url')
+@app.post('/api/sharepoint/file-url', dependencies=[Depends(require_privileged_role)])
 async def sharepoint_file_url(request: Request):
     """Return the SharePoint web URL for a file so the UI can open it.
 
