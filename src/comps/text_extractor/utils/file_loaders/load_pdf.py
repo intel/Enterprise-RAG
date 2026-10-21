@@ -42,7 +42,6 @@ from docling.datamodel.accelerator_options import AcceleratorDevice, Accelerator
 from docling.datamodel.base_models import DocumentStream, InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions, TesseractCliOcrOptions, TableFormerMode
 from docling.document_converter import DocumentConverter, PdfFormatOption, ImageFormatOption
-import nltk
 import pymupdf
 import pymupdf.layout
 import pymupdf4llm.helpers.document_layout as pymupdf4llm_dl
@@ -51,6 +50,7 @@ import tabulate
 from comps.cores.mega.logger import get_erag_logger
 from comps.text_extractor.utils.file_loaders.abstract_loader import AbstractLoader
 from comps.text_extractor.utils.file_loaders.load_image import LoadImage
+from comps.text_extractor.utils.nltk_data import ensure_nltk_data
 
 
 logger = get_erag_logger(f"{__file__.split('comps/')[1].split('/', 1)[0]}_microservice")
@@ -560,9 +560,7 @@ def _save_image(data, save_path="/tmp/erag_upload"):
 class LoadPdf(AbstractLoader):
     def __init__(self, file_path):
         super().__init__(file_path)
-        nltk.download('punkt_tab', quiet=True)
-        nltk.download('averaged_perceptron_tagger', quiet=True)
-        nltk.download('averaged_perceptron_tagger_eng', quiet=True)
+        ensure_nltk_data()
 
     def extract_text(self):
         """
