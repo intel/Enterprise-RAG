@@ -58,6 +58,7 @@ TEXT_SPLITTER_ENDPOINT  = os.environ.get('TEXT_SPLITTER_ENDPOINT')
 EMBEDDING_ENDPOINT = os.environ.get('EMBEDDING_ENDPOINT')
 EMBEDDING_MODEL_NAME = os.environ.get('EMBEDDING_MODEL_NAME', 'unknown')
 LATE_CHUNKING_ENDPOINT = os.environ.get('LATE_CHUNKING_ENDPOINT')
+CONTEXTUAL_RAG_ENDPOINT = os.environ.get('CONTEXTUAL_RAG_ENDPOINT')
 INGESTION_ENDPOINT = os.environ.get('INGESTION_ENDPOINT')
 EMBEDDING_TIMEOUT = int(os.getenv('EMBEDDING_TIMEOUT_SECONDS', '120'))
 TEXT_PROCESSING_TIMEOUT_SECONDS = int(os.getenv('TEXT_PROCESSING_TIMEOUT_SECONDS', '300'))  # timeout for compression and splitter requests
@@ -849,6 +850,9 @@ def process_file_task(self, file_id: Any, *args, **kwargs):
             raise Exception('No text compressed.')
         file_db.chunk_size = len(dataprep_compressed_docs[0]) # Update chunk size
         file_db.chunks_total = len(dataprep_compressed_docs) # Update chunks count
+        # The compressed text is what the splitter is about to cut into chunks, so
+        # it is the document each chunk must be situated within (step 4.6).
+        source_document_text = "\n".join(d.get('text', '') for d in dataprep_compressed_docs)
         file_db.text_compression_end = datetime.datetime.now()
         self.safe_commit()
     except Exception as e:
@@ -894,6 +898,28 @@ def process_file_task(self, file_id: Any, *args, **kwargs):
         file_db.text_splitter_end = datetime.datetime.now()
         self.safe_commit()
         raise Exception(f"Error parsing response from data splitting service. {e} {response.text}")
+
+    # Step 4.6 (Optional) - Contextual RAG: prepend an LLM-generated context blurb to each chunk.
+    # Toggled by CONTEXTUAL_RAG_ENABLED; when disabled the pipeline is unchanged.
+    contextual_rag_enabled = os.getenv('CONTEXTUAL_RAG_ENABLED', "false").lower()
+    if contextual_rag_enabled == "true" and CONTEXTUAL_RAG_ENDPOINT:
+        logger.info(f"[{file_db.id}] Contextual RAG enabled - contextualizing {len(dataprep_docs)} chunks.")
+        # One request per source document, carrying that document's own text and a
+        # stable id so the service can reuse its cached prompt prefix.
+        cr_response = requests.post(CONTEXTUAL_RAG_ENDPOINT, json={
+            'docs': dataprep_docs,
+            'whole_document': source_document_text,
+            'document_id': str(file_db.id),
+        }, timeout=TEXT_PROCESSING_TIMEOUT_SECONDS)
+        if cr_response.status_code != 200:
+            file_db.status = 'error'
+            file_db.job_message = f"Error encountered while contextual RAG. {response_err(cr_response)}"
+            self.safe_commit()
+            raise Exception(f"Error encountered while contextual RAG. {response_err(cr_response)}")
+        dataprep_docs = cr_response.json()['docs']
+        file_db.chunks_total = len(dataprep_docs)
+        self.safe_commit()
+        logger.info(f"[{file_db.id}] Contextual RAG completed.")
 
     # 4.1 Update the metadata info from database
     for doc in dataprep_docs:
@@ -1397,6 +1423,9 @@ def process_link_task(self, link_id: Any, *args, **kwargs):
             raise Exception('No text compressed.')
         link_db.chunk_size = len(dataprep_compressed_docs[0]) # Update chunk size
         link_db.chunks_total = len(dataprep_compressed_docs) # Update chunks count
+        # The compressed text is what the splitter is about to cut into chunks, so
+        # it is the document each chunk must be situated within (step 4.6).
+        source_document_text = "\n".join(d.get('text', '') for d in dataprep_compressed_docs)
         link_db.text_compression_end = datetime.datetime.now()
         self.safe_commit()
     except Exception as e:
@@ -1438,6 +1467,28 @@ def process_link_task(self, link_id: Any, *args, **kwargs):
         link_db.text_splitter_end = datetime.datetime.now()
         self.safe_commit()
         raise Exception(f"Error parsing response from data splitting service. {e} {response.text}")
+
+    # Step 4.6 (Optional) - Contextual RAG: prepend an LLM-generated context blurb to each chunk.
+    # Toggled by CONTEXTUAL_RAG_ENABLED; when disabled the pipeline is unchanged.
+    contextual_rag_enabled = os.getenv('CONTEXTUAL_RAG_ENABLED', "false").lower()
+    if contextual_rag_enabled == "true" and CONTEXTUAL_RAG_ENDPOINT:
+        logger.info(f"[{link_db.id}] Contextual RAG enabled - contextualizing {len(dataprep_docs)} chunks.")
+        # One request per source document, carrying that document's own text and a
+        # stable id so the service can reuse its cached prompt prefix.
+        cr_response = requests.post(CONTEXTUAL_RAG_ENDPOINT, json={
+            'docs': dataprep_docs,
+            'whole_document': source_document_text,
+            'document_id': str(link_db.id),
+        }, timeout=TEXT_PROCESSING_TIMEOUT_SECONDS)
+        if cr_response.status_code != 200:
+            link_db.status = 'error'
+            link_db.job_message = f"Error encountered while contextual RAG. {response_err(cr_response)}"
+            self.safe_commit()
+            raise Exception(f"Error encountered while contextual RAG. {response_err(cr_response)}")
+        dataprep_docs = cr_response.json()['docs']
+        link_db.chunks_total = len(dataprep_docs)
+        self.safe_commit()
+        logger.info(f"[{link_db.id}] Contextual RAG completed.")
 
     # 4.1 Update the metadata info from database
     for doc in dataprep_docs:
