@@ -86,8 +86,23 @@ apisix:
             sleep 3
           done
           echo "etcd is ready!"
+  # Workers are per pod (scale out with replicas): keep them in step with the CPU
+  # limit below. "auto" counts the host's CPUs, not the pod's cpuset, and starts
+  # one worker each (224 on a 2x56-core node, 4.6 GiB); where the pod is pinned to
+  # a subset (NRI balloons) pinning fails, some workers never come up and the
+  # connections their listen sockets get hang. CPU placement is left to the
+  # kubelet / NRI policy.
+  resources:
+    requests:
+      cpu: "1"
+      memory: 512Mi
+    limits:
+      cpu: "4"
+      memory: 2Gi
   apisix:
     nginx:
+      workerProcesses: 4
+      enableCPUAffinity: false
       configurationSnippet:
         httpStart: |
           proxy_read_timeout 3600s;
