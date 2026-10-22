@@ -186,6 +186,46 @@ A request with `return_pooling=true` is rejected with an error rather than silen
 
 Support will return once token-level pooling is available through the Model Manager catalog.
 
+### Contextual RAG
+
+**Status:** Opt-in, disabled by default.
+
+A chunk taken out of its document often loses what it was about: *"the segment's revenue grew 3%"* does not say which company or quarter. [Anthropic's Contextual Retrieval](https://www.anthropic.com/engineering/contextual-retrieval) fixes this at ingest time: an LLM writes a short blurb situating each chunk **within its own source document**, and the blurb is prepended to the chunk before it is embedded and indexed. Enabling it also turns on hybrid search in the retriever, so the recipe has both halves:
+
+1. **Contextual embeddings** (ingest time) — Anthropic measure 35% fewer retrieval failures.
+2. **Contextual BM25 + rank fusion** (query time) — a BM25 search over the same contextualised chunks, fused with the dense ranking by weighted Reciprocal Rank Fusion and handed to the reranker. Anthropic measure 49% fewer failures, 67% with reranking. See [hybrid search](../../src/comps/retrievers/README.md#hybrid-search-contextual-bm25--contextual-embeddings).
+
+**Enable it** by declaring the blurb model with `role: contextual_rag` and setting the flag in `env/<name>/config.erag.yaml`:
+
+```yaml
+inference_models:
+  - name: llama3-8b-awq
+    role: llm
+  - name: qwen3-4b-w8a8-blurb       # writes the context blurbs
+    role: contextual_rag
+  - name: nomic-embed
+    role: embedding
+  - name: bge-reranker-v2-m3
+    role: reranking
+
+edp_contextual_rag_enabled: true
+# edp_contextual_rag_max_prompt_tokens: 16384   # documents that do not fit get no blurbs
+```
+
+`qwen3-4b-w8a8-blurb` (`RedHatAI/Qwen3-4B-Instruct-2507-quantized.w8a8`) is sized like `llama3-8b-awq` (32 CPU, 24Gi) and served with a 16384-token window, so ingestion does not compete with query traffic. Its KServe Service and served name are propagated to EDP; no endpoint is typed in. It is reached directly rather than through the AI gateway, because the blurb writer needs the served `max_model_len` and vLLM's `/tokenize`. The `contextual_rag` role is sized from its catalog entry, outside the replica calculator. The installer fails when the flag is on and no such model is declared. To use an external OpenAI-compatible endpoint instead, set `edp_contextual_rag_endpoint` and `edp_contextual_rag_model_name`.
+
+**Fit or skip, never truncate.** A document gets blurbs only if, for every chunk, the blurb prompt (whole document + chunk + template) plus `edp_contextual_rag_max_new_tokens` fits `edp_contextual_rag_max_prompt_tokens` (default 16384, capped at the served window). Otherwise it is indexed without blurbs. On MultiHop-RAG that contextualises 606 of 607 documents (98.9% of chunks); a larger document costs one `/tokenize` call.
+
+**Drawbacks:**
+- One LLM call per chunk at ingest time: documents that get blurbs take longer to become searchable (about 2–3× for mid-sized documents). Prefix caching, document-first prompts and document-sticky routing keep this affordable.
+- The blurb model needs its own CPU and memory.
+- Documents ingested before enabling it keep their old embeddings; re-ingest them.
+- Hybrid search requires the `redis-cluster` vector store, and a deeper reranking list adds query latency.
+
+**Measured** (MultiHop-RAG, 200 sampled queries, setting C with `llama3-8b-awq` answering): Hits@10 0.805, MRR@10 0.606, answer correctness 0.597, against a baseline of 0.785 / 0.572 / 0.592. This is level with whole-document contextualisation (0.825 / 0.614 / 0.637) at two thirds of its ingest time; the gain over the baseline is not statistically significant at n = 200. See [contextual_RAG_evaluation_200q_Qwen_C_new_variant1.md](../../contextual_RAG_evaluation_200q_Qwen_C_new_variant1.md) and [contextual_RAG_integration.md](../../contextual_RAG_integration.md).
+
+All `edp_contextual_rag_*` settings, with their defaults and rationale, are in [`deployment/roles/app_edp/defaults/main.yaml`](../../deployment/roles/app_edp/defaults/main.yaml). The query-time half can be turned off alone with `edp_contextual_rag_hybrid_search_enabled: false`.
+
 ## Accuracy evaluator
 
 Intel AI for Enterprise RAG includes a comprehensive accuracy evaluator for automated end-to-end testing using the MultiHop dataset (2,556 queries). It computes 10+ metrics including:
