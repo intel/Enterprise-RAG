@@ -34,6 +34,10 @@ edpOidcConfigUrl: "http://keycloak-service.keycloak.svc:8080/realms/EnterpriseRA
 edpOidcClientSecret: ""
 bucketNameRegexFilter: '.*'
 presignedUrlCredentialsSystemFallback: "false"
+# Timeout the celery worker applies to each of the text-compression, text-splitting
+# and contextual-RAG requests. Raise it when contextualRag is enabled and documents
+# produce many chunks -- contextual RAG makes one LLM call per chunk.
+textProcessingTimeoutSeconds: "300"
 # Catalog name (models.yaml -> name): what KServe serves the model as, and what
 # vLLM accepts in the request "model" field
 embedding_model_name: &embedding_model_name "nomic-embed"
@@ -298,6 +302,16 @@ celery:
         configMapKeyRef:
           name: edp-configmap
           key: LATE_CHUNKING_ENDPOINT
+    - name: CONTEXTUAL_RAG_ENDPOINT
+      valueFrom:
+        configMapKeyRef:
+          name: edp-configmap
+          key: CONTEXTUAL_RAG_ENDPOINT
+    - name: TEXT_PROCESSING_TIMEOUT_SECONDS
+      valueFrom:
+        configMapKeyRef:
+          name: edp-configmap
+          key: TEXT_PROCESSING_TIMEOUT_SECONDS
     - name: EMBEDDING_ENDPOINT
       valueFrom:
         configMapKeyRef:
@@ -358,6 +372,11 @@ celery:
         configMapKeyRef:
           name: edp-configmap
           key: LATE_CHUNKING_ENABLED
+    - name: CONTEXTUAL_RAG_ENABLED
+      valueFrom:
+        configMapKeyRef:
+          name: edp-configmap
+          key: CONTEXTUAL_RAG_ENABLED
     - name: BATCH_SIZE
       valueFrom:
         configMapKeyRef:
@@ -659,6 +678,88 @@ lateChunking:
     limits:
       cpu: "8"
       memory: "8Gi"
+  hpa:
+    minReplicas: 1
+    maxReplicas: 2
+    targetValue: 2
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 60
+        policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 15
+        - type: Pods
+          value: 1
+          periodSeconds: 15
+      scaleUp:
+        selectPolicy: Max
+        stabilizationWindowSeconds: 0
+        policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 15
+
+contextualRag:
+  enabled: false
+  nameOverride: "edp-contextual-rag"
+  name: "enterprise-rag-contextual-rag"
+  repository: "docker.io/intel"
+  tag: latest
+  pullPolicy: Always
+  replicas: 1
+  environment:
+    - name: OMP_NUM_THREADS
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.cpu
+  config:
+    # LLM that writes the contextual chunk blurbs: a dedicated blurb model
+    # (qwen3-4b-w8a8-blurb, sized like the answer LLM and deployed next to it, so
+    # ingestion never competes with query serving). It is deployed separately
+    # (model-manager / KServe, see deployment/models.yaml), so both values are mandatory.
+    # Neither is configured by hand: app_edp renders them from
+    # edp_contextual_rag_endpoint / edp_contextual_rag_model_name, which default to the
+    # KServe Service and served name app_inference_models resolved for the
+    # inference_models entry with role: contextual_rag. app_pre_install fails the
+    # deployment when contextual RAG is enabled and no such model is declared.
+    vllm_endpoint: ""
+    context_model_name: ""
+    # Anthropic's reference implementation produces 50-100 token blurbs.
+    max_new_tokens: "100"
+    # Chunks of one document kept in flight at once; this is the effective batch size
+    # the model server sees for a document.
+    max_concurrency: "32"
+    # Token budget for one blurb request: the WHOLE source document + the WHOLE chunk +
+    # the chat template + max_new_tokens. A document is contextualised only if the
+    # request for every one of its chunks fits; otherwise it is skipped and its chunks
+    # are indexed unchanged -- documents are never truncated. 16384 is the window
+    # qwen3-4b-w8a8-blurb is served with and contextualises 606 of the 607 MultiHop-RAG
+    # corpus documents whole (98.9% of their chunks). Capped at the window the server
+    # reports in /v1/models; "0" = that whole served window.
+    max_prompt_tokens: "16384"
+    # Only used if the server's /tokenize endpoint is unreachable: chars-per-token
+    # estimate of the prompt length. Deliberately below the ~4.0 English average so the
+    # estimate errs towards over-counting, i.e. towards skipping rather than overflowing.
+    chars_per_token: "3.5"
+    request_timeout: "300"
+    max_retries: "2"
+    # Pin every chunk of a document to one model-server replica so the replica-local
+    # prefix cache is actually hit; round-robin across N replicas would drop it to ~1/N.
+    sticky_routing: "true"
+    # Defaults to "<endpoint host>-headless" when empty.
+    vllm_replica_host: ""
+    vllm_replica_ttl: "60"
+    # Sticky routing dials pod IPs, which no_proxy (Service names only) does not cover,
+    # so env proxies are ignored. Set "true" only for an external endpoint.
+    trust_env_proxy: "false"
+  resources:
+    requests:
+      cpu: "2"
+      memory: "1Gi"
+    limits:
+      cpu: "4"
+      memory: "4Gi"
   hpa:
     minReplicas: 1
     maxReplicas: 2

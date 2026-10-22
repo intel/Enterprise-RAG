@@ -201,6 +201,98 @@ edp_late_chunking_chunk_overlap: 64
 # embedding model, so it is the model_id and not the catalog name.
 edp_late_chunking_model_name: "{{ embedding_model_id }}"
 
+# --- Contextual RAG ---
+# Anthropic Contextual Retrieval (https://www.anthropic.com/engineering/contextual-retrieval):
+# an LLM writes a short blurb situating each chunk within its OWN source document, and the
+# blurb is prepended to the chunk before it is embedded and indexed. One LLM call per chunk.
+edp_contextual_rag_enabled: false
+# Blurb LLM — a dedicated model, NOT configured by hand. Both values are propagated from
+# the model that declares role: contextual_rag in inference_models (qwen3-4b-w8a8-blurb,
+# deployment/models.yaml): app_inference_models deploys it through model-manager / KServe
+# next to the answer LLM and exports contextual_rag_endpoint -- the model's own KServe
+# Service, not the AI gateway, because the service needs /tokenize and the served
+# max_model_len to decide exactly whether a document fits, and sticky routing needs the
+# replicas -- and contextual_rag_model_name, the catalog/served name the endpoint accepts
+# in the request "model" field. So enabling the feature is:
+#
+#   edp_contextual_rag_enabled: true
+#   inference_models:
+#     - name: qwen3-4b-w8a8-blurb      # see deployment/models.yaml
+#       role: contextual_rag
+#
+# app_pre_install fails the deployment when contextual RAG is enabled and no such model
+# is declared, rather than silently ingesting documents without blurbs.
+# Setting either var in the inventory still wins (role defaults lose to group/host vars),
+# which is the escape hatch for an endpoint this solution does not deploy: an external
+# OpenAI-compatible service, or the answer LLM's own KServe Service to reuse it.
+edp_contextual_rag_endpoint: "{{ contextual_rag_endpoint | default('') }}"
+edp_contextual_rag_model_name: "{{ contextual_rag_model_name | default('') }}"
+# Anthropic's reference implementation produces 50-100 token blurbs.
+edp_contextual_rag_max_new_tokens: 100
+# Chunks of one document in flight at once - the effective batch size the model server
+# sees for a document.
+edp_contextual_rag_max_concurrency: 32
+# Token budget for one blurb request: the WHOLE source document + the WHOLE chunk + the
+# chat template + max_new_tokens. A document is contextualised only if the request for
+# every one of its chunks fits; otherwise contextual RAG is skipped for it and its chunks
+# are indexed exactly as they are. Documents are never truncated: a blurb computed
+# against a cut-down document would situate a chunk in text that does not contain it.
+# 16384 is the window qwen3-4b-w8a8-blurb is served with; on the MultiHop-RAG corpus it
+# contextualises 606 of 607 documents whole (98.9% of their chunks, against 98.0% of
+# the documents and 89.7% of the chunks at 8192). The service caps it at the window
+# the LLM reports in /v1/models; 0 = that whole served window.
+edp_contextual_rag_max_prompt_tokens: 16384
+# Only used when the server's /tokenize endpoint is unreachable (it is a vLLM extension,
+# so a gateway may not route it). Deliberately below the ~4.0 English average so the
+# estimate errs towards over-counting, i.e. towards skipping rather than overflowing.
+edp_contextual_rag_chars_per_token: 3.5
+edp_contextual_rag_request_timeout: 300
+edp_contextual_rag_max_retries: 2
+# All chunks of a document go to one model-server replica: the prefix cache is per
+# replica, so round-robin across N replicas would cut the hit rate to ~1/N. Behind a
+# ClusterIP Service or a gateway the replica lookup finds nothing and the configured URL
+# is used as-is.
+edp_contextual_rag_sticky_routing: true
+# Empty derives "<endpoint host>-headless", which stays correct if the endpoint is
+# repointed at another model.
+edp_contextual_rag_replica_host: ""
+edp_contextual_rag_replica_ttl: 60
+# Sticky routing dials pod IPs, which no_proxy (Service names only) does not cover, so
+# env proxies are ignored. Set true only for an external endpoint.
+edp_contextual_rag_trust_env_proxy: false
+# Timeout the celery worker applies to each of the text-compression, text-splitting and
+# contextual-RAG requests. Contextual RAG issues one LLM call per chunk, so raise this
+# when it is enabled and documents produce many chunks.
+edp_text_processing_timeout_seconds: 300
+
+# Query-time half of the recipe: the retriever runs a lexical BM25 search and the dense
+# vector search over the SAME contextualised chunks, then fuses the two rankings with
+# weighted Reciprocal Rank Fusion before reranking. Anthropic measure 35% fewer retrieval
+# failures for contextual embeddings alone and 67% for the full hybrid stack, so this is ON
+# by default whenever contextual RAG is enabled. Requires a Redis vector store (RediSearch
+# provides the full-text index); consumed by app_pipeline, which renders the retriever's
+# HYBRID_SEARCH_* environment.
+edp_contextual_rag_hybrid_search_enabled: true
+# Candidates fetched from EACH leg before fusion (Anthropic use 150). Raised to the
+# retriever's k when smaller.
+edp_contextual_rag_hybrid_candidate_k: 100
+# Depth of the fused list handed to the reranker, which then cuts it to top_n. Anthropic
+# fuse 150 candidates per leg and rerank to 20 - that depth is the difference between
+# their 49% and 67% failure-reduction figures, so keep this above the retriever's k.
+# Raising it to 50 buys some recall at the cost of query latency, because the reranker
+# scores every fused chunk.
+edp_contextual_rag_hybrid_result_k: 20
+# RRF rank-smoothing constant: score contribution is weight / (rrf_k + rank).
+# 0 = Anthropic's reference weight/rank. Raising it to the canonical RRF value of 60 with
+# the 0.8/0.2 weights below makes the lexical leg inert - the best BM25-only contribution
+# (0.2/61) loses even to the worst dense one in a 100-candidate pool (0.8/160) -
+# i.e. hybrid search silently degrades to dense-only - use 60 only with balanced weights.
+edp_contextual_rag_hybrid_rrf_k: 0
+# Relative weight of each leg. Ranks are fused, not raw scores, so cosine distance and
+# BM25 never have to be normalised against each other.
+edp_contextual_rag_hybrid_semantic_weight: 0.8
+edp_contextual_rag_hybrid_bm25_weight: 0.2
+
 # --- Scheduled sync (SharePoint / S3 polling) ---
 edp_scheduled_sync_enabled: false
 edp_scheduled_sync_period_seconds: "60"
@@ -230,6 +322,11 @@ apisix_oidc_client_id: "EnterpriseRAG-oidc-backend"     # app_apisix
 audio_namespace: "audio"           # app_audio
 embedding_model_name: "nomic-embed"                # app_inference_models (catalog/served name)
 embedding_model_id: "nomic-ai/nomic-embed-text-v1"        # app_inference_models (HuggingFace repo id)
+# Blurb LLM for contextual RAG, resolved from the inference_models entry with
+# role: contextual_rag. Empty here so a standalone run of this role renders, and so
+# the two edp_contextual_rag_* defaults above have something to template from.
+contextual_rag_endpoint: ""                        # app_inference_models
+contextual_rag_model_name: ""                      # app_inference_models (catalog/served name)
 pipeline_namespace: "{{ pipeline_type | default('chatqna') }}"        # app_pipeline
 erag_keycloak_realm: "EnterpriseRAG"        # app_keycloak_config
 erag_keycloak_domain_name: "auth.solutions.ai"  # app_keycloak_config

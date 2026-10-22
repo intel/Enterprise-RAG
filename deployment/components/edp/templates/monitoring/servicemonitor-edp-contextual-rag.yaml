@@ -1,0 +1,20 @@
+{{- if .Values.monitoring.enabled }}
+# Copyright (C) 2024-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: edp-contextual-rag-svc
+  labels:
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+spec:
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: edp-contextual-rag
+  endpoints:
+  - port: "edp-contextual-rag"
+{{- end }}

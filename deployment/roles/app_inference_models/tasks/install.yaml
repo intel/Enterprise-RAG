@@ -27,6 +27,32 @@
       A typo here would silently deploy every model on CPU.
     quiet: true
 
+# The role is the propagation key: it selects the sizing baseline, the deploy
+# overrides and the <role>_endpoint var every downstream role reads. A typo would
+# otherwise surface as an undefined _deploy_overrides key deep in the deploy loop,
+# and a role declared twice would silently export only the last entry's endpoint.
+- name: "app_inference_models | Validate inference_models roles are known"
+  ansible.builtin.assert:
+    that: (inference_models | map(attribute='role') | list) | difference(inference_known_roles) | length == 0
+    fail_msg: >-
+      Unknown role(s) in inference_models:
+      {{ (inference_models | map(attribute='role') | list) | difference(inference_known_roles) | join(', ') }}.
+      Known roles: {{ inference_known_roles | join(', ') }}.
+    quiet: true
+
+- name: "app_inference_models | Validate inference_models is unambiguous"
+  ansible.builtin.assert:
+    that:
+      - ((inference_models | map(attribute='role') | list) | unique | length) == (inference_models | length)
+      - ((inference_models | map(attribute='name') | list) | unique | length) == (inference_models | length)
+    fail_msg: >-
+      inference_models must declare at most one model per role and name each model
+      once (roles: {{ inference_models | map(attribute='role') | join(', ') }};
+      names: {{ inference_models | map(attribute='name') | join(', ') }}).
+      A repeated role exports only the last entry's endpoint; a repeated name is
+      deployed twice at two different sizes.
+    quiet: true
+
 - name: "app_inference_models | Assert upload mode declares embedding models only"
   ansible.builtin.assert:
     that: inference_models | rejectattr('role', 'equalto', 'embedding') | list | length == 0
@@ -112,6 +138,7 @@
       {% if 'llm' in _roles_present %}  llm       cpu={{ _sizing_baseline.llm.cpu       | default(inference_default_llm_cpu) }}       memory={{ _sizing_baseline.llm.memory       | default(inference_default_llm_memory) }}
       {% endif %}{% if 'embedding' in _roles_present %}  embedding cpu={{ _sizing_baseline.embedding.cpu | default(inference_default_embedding_cpu) }} memory={{ _sizing_baseline.embedding.memory | default(inference_default_embedding_memory) }}
       {% endif %}{% if 'reranking' in _roles_present %}  reranking cpu={{ _sizing_baseline.reranking.cpu | default(inference_default_reranking_cpu) }} memory={{ _sizing_baseline.reranking.memory | default(inference_default_reranking_memory) }}
+      {% endif %}{% if 'contextual_rag' in _roles_present %}  contextual_rag cpu={{ _sizing_baseline.contextual_rag.cpu | default(inference_default_contextual_rag_cpu) }} memory={{ _sizing_baseline.contextual_rag.memory | default(inference_default_contextual_rag_memory) }} (catalog verbatim, not calculator-sized)
       {% endif %}
 
 - name: "app_inference_models | Discover node topology (multinode)"
@@ -314,6 +341,16 @@
         cpu: "{{ _sizing.reranking.cpu_size }}"
         memory: "{{ _sizing_baseline.reranking.memory | default(inference_default_reranking_memory) }}"
         replicas: "{{ _replicas_reranking }}"
+      # Catalog verbatim even under auto-size: calculate_replicas.py takes one vLLM
+      # size (--vllm-size) and windows embedding+reranking around it, so there is no
+      # input for a second vLLM. Feeding the blurb model through --vllm-size would
+      # resize the answer LLM instead. Its cores and memory are consequently not part of
+      # the calculator's NUMA fit or memory reservation — the catalog entry (or
+      # inference_default_contextual_rag_*) is what gets deployed.
+      contextual_rag:
+        cpu: "{{ _sizing_baseline.contextual_rag.cpu | default(inference_default_contextual_rag_cpu) }}"
+        memory: "{{ _sizing_baseline.contextual_rag.memory | default(inference_default_contextual_rag_memory) }}"
+        replicas: "{{ _sizing_baseline.contextual_rag.replicas | default(inference_default_contextual_rag_replicas) }}"
   when: inference_auto_size | bool
 
 # Auto-size disabled: use models.yaml values verbatim. Same _deploy_overrides
@@ -334,6 +371,10 @@
         cpu: "{{ _sizing_baseline.reranking.cpu | default(inference_default_reranking_cpu) }}"
         memory: "{{ _sizing_baseline.reranking.memory | default(inference_default_reranking_memory) }}"
         replicas: "{{ _sizing_baseline.reranking.replicas | default(1) }}"
+      contextual_rag:
+        cpu: "{{ _sizing_baseline.contextual_rag.cpu | default(inference_default_contextual_rag_cpu) }}"
+        memory: "{{ _sizing_baseline.contextual_rag.memory | default(inference_default_contextual_rag_memory) }}"
+        replicas: "{{ _sizing_baseline.contextual_rag.replicas | default(inference_default_contextual_rag_replicas) }}"
   when: not (inference_auto_size | bool)
 
 - name: "app_inference_models | Sizing summary"
@@ -346,6 +387,7 @@
       {% endif %}{% if 'llm' in _roles_present %}LLM:        {{ _deploy_overrides.llm.replicas }} × ({{ _deploy_overrides.llm.cpu }} CPU, {{ _deploy_overrides.llm.memory }})
       {% endif %}{% if 'embedding' in _roles_present %}Embedding:  {{ _deploy_overrides.embedding.replicas }} × ({{ _deploy_overrides.embedding.cpu }} CPU, {{ _deploy_overrides.embedding.memory }})
       {% endif %}{% if 'reranking' in _roles_present %}Reranking:  {{ _deploy_overrides.reranking.replicas }} × ({{ _deploy_overrides.reranking.cpu }} CPU, {{ _deploy_overrides.reranking.memory }})
+      {% endif %}{% if 'contextual_rag' in _roles_present %}Blurb LLM:  {{ _deploy_overrides.contextual_rag.replicas }} × ({{ _deploy_overrides.contextual_rag.cpu }} CPU, {{ _deploy_overrides.contextual_rag.memory }})  [catalog verbatim — outside the calculator's NUMA fit]
       {% endif %}
 
 # ── Best-effort: compute per-role CPU bind list ────────────────────────────
@@ -355,6 +397,7 @@
 #   llm      → cores [0 : cpu_llm]
 #   rerank   → cores [cpu_llm : cpu_llm + cpu_rerank]
 #   embed    → cores [cpu_llm + cpu_rerank : cpu_llm + cpu_rerank + cpu_embed]
+#   blurb    → the window after embed (contextual_rag; present only when the role is)
 # All replicas of a role share the same list — since replicas ≤ amx_node_count
 # and each replica lands on a different homogeneous AMX node, the list refers
 # to real CPUs on every host. Under nri-balloons / kubelet-static this whole
@@ -388,19 +431,22 @@
   ansible.builtin.assert:
     that: >-
       _numa0_primaries | length
-       >= (('llm' in _roles_present)       | ternary(_deploy_overrides.llm.cpu       | int, 0)
-         + ('reranking' in _roles_present) | ternary(_deploy_overrides.reranking.cpu | int, 0)
-         + ('embedding' in _roles_present) | ternary(_deploy_overrides.embedding.cpu | int, 0))
+       >= (('llm' in _roles_present)            | ternary(_deploy_overrides.llm.cpu            | int, 0)
+         + ('reranking' in _roles_present)      | ternary(_deploy_overrides.reranking.cpu      | int, 0)
+         + ('embedding' in _roles_present)      | ternary(_deploy_overrides.embedding.cpu      | int, 0)
+         + ('contextual_rag' in _roles_present) | ternary(_deploy_overrides.contextual_rag.cpu | int, 0))
     fail_msg: >-
       NUMA-0 has {{ _numa0_primaries | length }} physical cores but roles need
-      {{ ('llm' in _roles_present)       | ternary(_deploy_overrides.llm.cpu       | int, 0)
-       + ('reranking' in _roles_present) | ternary(_deploy_overrides.reranking.cpu | int, 0)
-       + ('embedding' in _roles_present) | ternary(_deploy_overrides.embedding.cpu | int, 0) }} total
+      {{ ('llm' in _roles_present)            | ternary(_deploy_overrides.llm.cpu            | int, 0)
+       + ('reranking' in _roles_present)      | ternary(_deploy_overrides.reranking.cpu      | int, 0)
+       + ('embedding' in _roles_present)      | ternary(_deploy_overrides.embedding.cpu      | int, 0)
+       + ('contextual_rag' in _roles_present) | ternary(_deploy_overrides.contextual_rag.cpu | int, 0) }} total
       (roles={{ _roles_present | join(',') }};
       llm={{ _deploy_overrides.llm.cpu }},
       rerank={{ _deploy_overrides.reranking.cpu }},
-      embed={{ _deploy_overrides.embedding.cpu }}).
-      Reduce catalog CPU sizes or add a larger node.
+      embed={{ _deploy_overrides.embedding.cpu }},
+      blurb={{ _deploy_overrides.contextual_rag.cpu }}).
+      Reduce catalog CPU sizes, drop the contextual_rag model, or add a larger node.
   when: (kubernetes_cpu_policy | default('nri-balloons')) == 'best-effort'
 
 - name: "app_inference_models | best-effort | Compute per-role bind lists"
@@ -410,9 +456,10 @@
     # downstream roles occupy the space they would have taken. Emitted bind
     # strings for absent roles are '' — deploy step below only reads bind_lists
     # entries for roles that appear in inference_models.
-    _cpu_llm:        "{{ ('llm'       in _roles_present) | ternary(_deploy_overrides.llm.cpu       | int, 0) }}"
-    _cpu_reranking:  "{{ ('reranking' in _roles_present) | ternary(_deploy_overrides.reranking.cpu | int, 0) }}"
-    _cpu_embedding:  "{{ ('embedding' in _roles_present) | ternary(_deploy_overrides.embedding.cpu | int, 0) }}"
+    _cpu_llm:            "{{ ('llm'            in _roles_present) | ternary(_deploy_overrides.llm.cpu            | int, 0) }}"
+    _cpu_reranking:      "{{ ('reranking'      in _roles_present) | ternary(_deploy_overrides.reranking.cpu      | int, 0) }}"
+    _cpu_embedding:      "{{ ('embedding'      in _roles_present) | ternary(_deploy_overrides.embedding.cpu      | int, 0) }}"
+    _cpu_contextual_rag: "{{ ('contextual_rag' in _roles_present) | ternary(_deploy_overrides.contextual_rag.cpu | int, 0) }}"
   when: (kubernetes_cpu_policy | default('nri-balloons')) == 'best-effort'
 
 - name: "app_inference_models | best-effort | Build bind list slices"
@@ -426,6 +473,11 @@
         {{ _numa0_primaries[(_cpu_llm | int) + (_cpu_reranking | int)
                             : (_cpu_llm | int) + (_cpu_reranking | int) + (_cpu_embedding | int)]
            | join(',') }}
+      contextual_rag: >-
+        {{ _numa0_primaries[(_cpu_llm | int) + (_cpu_reranking | int) + (_cpu_embedding | int)
+                            : (_cpu_llm | int) + (_cpu_reranking | int) + (_cpu_embedding | int)
+                              + (_cpu_contextual_rag | int)]
+           | join(',') }}
   when: (kubernetes_cpu_policy | default('nri-balloons')) == 'best-effort'
 
 - name: "app_inference_models | best-effort | debug | bind lists"
@@ -436,6 +488,7 @@
       LLM       bind:     {{ _bind_lists.llm }}
       Reranker  bind:     {{ _bind_lists.reranking }}
       Embedding bind:     {{ _bind_lists.embedding }}
+      Blurb LLM bind:     {{ _bind_lists.contextual_rag }}
   when: (kubernetes_cpu_policy | default('nri-balloons')) == 'best-effort'
 
 # ── Reconcile ───────────────────────────────────────────────────────────────
@@ -563,6 +616,11 @@
 # Build endpoints from declared models only — a role absent from inference_models
 # (e.g. docsum declares no embedding) simply doesn't appear in the dict.
 # LLM goes via the AI gateway; embedding/reranking hit their kserve svc directly.
+# contextual_rag deliberately takes the direct-svc branch too: EDP's blurb writer
+# resolves that Service to its pod IPs and pins all chunks of one document to a
+# single replica (edp_contextual_rag_sticky_routing), because the prefix cache that
+# makes contextual RAG affordable is per replica. Routing it through the gateway
+# would load-balance the chunks and cut the hit rate to ~1/replicas.
 - name: "app_inference_models | Resolve endpoints per role"
   ansible.builtin.set_fact:
     inference_endpoints: >-
@@ -591,6 +649,13 @@
     embedding_model_id: "{{ inference_endpoints.embedding.model_id | default('') }}"
     reranking_endpoint: "{{ inference_endpoints.reranking.endpoint | default('') }}"
     reranking_model_name: "{{ inference_endpoints.reranking.model_name | default('') }}"
+    # Consumed by app_edp as the defaults for edp_contextual_rag_endpoint /
+    # edp_contextual_rag_model_name, so enabling contextual RAG needs no address in
+    # the inventory: declaring the blurb model with role: contextual_rag is enough.
+    # Empty when the role is not declared — app_pre_install turns that into a clear
+    # failure if edp_contextual_rag_enabled is true.
+    contextual_rag_endpoint: "{{ inference_endpoints.contextual_rag.endpoint | default('') }}"
+    contextual_rag_model_name: "{{ inference_endpoints.contextual_rag.model_name | default('') }}"
 
 # Only DocSum consumes the model's context length (to pre-validate 'stuff' summaries).
 - name: "app_inference_models | Resolve LLM context length"

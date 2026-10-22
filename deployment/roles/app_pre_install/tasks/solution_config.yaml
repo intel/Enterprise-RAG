@@ -57,6 +57,67 @@
     - edp_enabled | default(false) | bool
     - edp_late_chunking_enabled | default(false) | bool
 
+# Contextual RAG generates one blurb per chunk with a dedicated blurb model, which this
+# role does not deploy: it is served by model-manager / KServe (qwen3-4b-w8a8-blurb, see
+# deployment/models.yaml) next to the answer LLM, so ingestion never competes with query
+# serving. The address is not configured by hand -- app_inference_models ran first
+# (components.yaml: app_pre_install depends_on app_inference_models) and exported
+# contextual_rag_endpoint / contextual_rag_model_name from the inference_models entry with
+# role: contextual_rag. Empty here therefore means no such model was declared, so there is
+# nothing to propagate. Fail here rather than let every EDP upload error out on a missing
+# endpoint.
+#
+# Both conditions are checked because an explicit edp_contextual_rag_* value in the
+# inventory (e.g. an external OpenAI-compatible endpoint) overrides the propagated one
+# and is equally valid.
+- name: "app_pre_install | Require a blurb model for contextual RAG"
+  ansible.builtin.set_fact:
+    configuration_issues: >-
+      {{ configuration_issues + [
+        'edp_contextual_rag_enabled is true, but no blurb model endpoint could be resolved
+         for the context blurbs. Declare the blurb model in inference_models with
+         role: contextual_rag (e.g. "- name: qwen3-4b-w8a8-blurb" / "  role: contextual_rag",
+         see deployment/models.yaml) -- app_inference_models then deploys it and propagates
+         its KServe Service
+         http://<name>-kserve-workload-svc.' ~ (inference_namespace | default('llm-inference')) ~ '.svc:8000
+         automatically. Alternatively set edp_contextual_rag_endpoint to an
+         OpenAI-compatible vLLM endpoint this solution does not deploy.'
+      ] }}
+  when:
+    - edp_enabled | default(false) | bool
+    - edp_contextual_rag_enabled | default(false) | bool
+    - edp_contextual_rag_endpoint | default('', true) | string | trim | length == 0
+    - contextual_rag_endpoint | default('', true) | string | trim | length == 0
+
+# Only reachable with an endpoint set by hand: the propagated pair always arrives
+# together (both come from the same inference_models entry).
+- name: "app_pre_install | Require a blurb model name for contextual RAG"
+  ansible.builtin.set_fact:
+    configuration_issues: >-
+      {{ configuration_issues + [
+        'edp_contextual_rag_enabled is true and an endpoint is set, but no model name
+         could be resolved for the context blurbs. Set edp_contextual_rag_model_name to
+         the name the model is SERVED as, which is what the endpoint accepts in the
+         request "model" field -- or drop edp_contextual_rag_endpoint so both values are
+         propagated together from the inference_models entry with role: contextual_rag.'
+      ] }}
+  when:
+    - edp_enabled | default(false) | bool
+    - edp_contextual_rag_enabled | default(false) | bool
+    - edp_contextual_rag_model_name | default('', true) | string | trim | length == 0
+    - contextual_rag_model_name | default('', true) | string | trim | length == 0
+
+# The lexical leg is a RediSearch full-text query over the same index as the vector leg;
+# no other supported vector store provides one. Contextual embeddings alone still work,
+# so this only turns the query-time half off instead of failing the deployment.
+- name: "app_pre_install | Disable hybrid search on a non-Redis vector store"
+  ansible.builtin.set_fact:
+    edp_contextual_rag_hybrid_search_enabled: false
+  when:
+    - edp_contextual_rag_enabled | default(false) | bool
+    - edp_contextual_rag_hybrid_search_enabled | default(true) | bool
+    - vector_databases_vector_store | default('redis', true) not in ['redis', 'redis-cluster']
+
 - name: "app_pre_install | Display HF_TOKEN warning if not set"
   ansible.builtin.debug:
     msg: |
