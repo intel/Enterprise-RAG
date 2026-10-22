@@ -57,6 +57,7 @@
       no_log: "{{ secure_logs | default(true) }}"
 
     - name: "app_keycloak_config | grafana-sso | Wire Secret into Grafana + roll"
+      when: not grafana_oauth_openshift | bool
       kubernetes.core.k8s:
         state: patched
         merge_type: strategic-merge
@@ -80,6 +81,26 @@
                       - secretRef:
                           name: "{{ grafana_oauth_secret_name }}"
                           optional: true
+
+    # The operator owns the Deployment and reverts patches to it: roll through the
+    # Grafana CR's pod template instead.
+    - name: "app_keycloak_config | grafana-sso | Roll Grafana (OpenShift)"
+      when: grafana_oauth_openshift | bool
+      kubernetes.core.k8s:
+        state: patched
+        merge_type: merge
+        api_version: grafana.integreatly.org/v1beta1
+        kind: Grafana
+        name: "{{ grafana_oauth_grafana_cr }}"
+        namespace: "{{ grafana_oauth_namespace }}"
+        definition:
+          spec:
+            deployment:
+              spec:
+                template:
+                  metadata:
+                    annotations:
+                      erag.intel.com/grafana-sso-config-hash: "{{ _grafana_sso_env | to_json | hash('sha1') }}"
 
 - name: "app_keycloak_config | grafana-sso | Skip (platform Grafana not found)"
   ansible.builtin.debug:
