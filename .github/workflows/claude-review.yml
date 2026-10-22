@@ -7,6 +7,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  id-token: write
 concurrency:
   group: claude-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -20,7 +21,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: fetch PR diff
         env:
-          GH_TOKEN: ${{ secrets.AI_SYS_BOT_GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.AI_SYS_BOT_GH_TOKEN || github.token }}
           PR: ${{ github.event.pull_request.number }}
         run: |
           curl -sf -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github.diff" \
@@ -31,7 +32,7 @@ jobs:
           AWS_REGION: us-east-2
         with:
           use_bedrock: "true"
-          github_token: ${{ secrets.AI_SYS_BOT_GH_TOKEN }}
+          github_token: ${{ secrets.AI_SYS_BOT_GH_TOKEN || github.token }}
           track_progress: true
           prompt: |
             Review this PR against .github/REVIEW_RULES.md (read it first).
