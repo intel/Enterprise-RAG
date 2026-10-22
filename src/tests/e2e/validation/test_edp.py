@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (C) 2024 Intel Corporation
+# Copyright (C) 2024-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 import allure
@@ -13,6 +13,7 @@ import os
 import time
 import uuid
 
+from tests.e2e.helpers.api_request_helper import CustomPortForward
 from tests.e2e.validation.constants import DATAPREP_UPLOAD_DIR, TEST_FILES_DIR, EDP_NAMESPACE
 from tests.e2e.validation.buildcfg import cfg
 
@@ -453,13 +454,11 @@ def test_edp_regular_user_has_no_access_to_api(edp_helper, temporarily_remove_re
     response = edp_helper.extract_text("some id", as_user=True)
     assert response.status_code == 403, fail_msg
 
-    # Test upload file API (only if RBAC is enabled)
-    rbac_enabled = cfg.get("edp_rbac_enabled")
-    if rbac_enabled:
-        file = "dataset_en/test_txt.txt"
-        file_path = os.path.join(TEST_FILES_DIR, file)
-        response = edp_helper.generate_presigned_url(file_path, bucket="only-admin", as_user=True)
-        assert response.status_code == 403, fail_msg
+    # Test upload file API
+    file = "dataset_en/test_txt.txt"
+    file_path = os.path.join(TEST_FILES_DIR, file)
+    response = edp_helper.generate_presigned_url(file_path, bucket="only-admin", as_user=True)
+    assert response.status_code == 403, fail_msg
 
 
 @allure.testcase("IEASG-T217")
@@ -516,8 +515,6 @@ def test_edp_regular_user_can_download_from_default_bucket(
         edp_helper, tmp_path, temporarily_remove_regular_user_required_actions):
     """RBAC positive: a regular (non-admin) user can download a file from a bucket they may read
     (default). Verifies non-admin download is not over-blocked."""
-    if not cfg.get("edp_rbac_enabled"):
-        pytest.skip("EDP RBAC is disabled")
 
     content = "regular-user readable default-bucket file"
     file_name = f"regular_user_download_{uuid.uuid4().hex[:8]}.txt"
@@ -536,6 +533,53 @@ def test_edp_regular_user_can_download_from_default_bucket(
     download = requests.get(response.json()["url"], verify=False, headers=headers)
     assert download.status_code == 200, f"Regular user failed to download a readable file: {download.status_code}"
     assert download.text == content, "Downloaded content does not match"
+
+
+@allure.testcase("IEASG-T738")
+@pytest.mark.parametrize("bucket", ["default", "only-admin"])
+@pytest.mark.parametrize("method", ["PUT", "DELETE"])
+def test_edp_regular_user_cannot_presign_writes(
+        edp_helper, temporarily_remove_regular_user_required_actions, method, bucket):
+    """A regular user must not get a presigned PUT or DELETE URL, whatever the storage backend signs with."""
+    response = edp_helper.generate_presigned_url(
+        f"regular_user_write_{uuid.uuid4().hex[:8]}.txt", method=method, bucket=bucket, as_user=True)
+    assert response.status_code == 403, (
+        f"Regular user must not get a presigned {method} URL for {bucket}; got {response.status_code}"
+    )
+
+
+# Called on the edp-backend pod directly, the way in-cluster clients such as the MCP gateway reach it.
+EDP_ADMIN_READ_ONLY_ROUTES = [
+    ("GET", "api/files", None),
+    ("GET", "api/links", None),
+    ("GET", "api/list_buckets", None),
+    ("GET", "api/files/sync", None),
+    ("POST", "api/retrieve", {"query": "test"}),
+]
+
+
+@allure.testcase("IEASG-T739")
+def test_edp_backend_enforces_roles_without_gateway(keycloak_helper, temporarily_remove_regular_user_required_actions):
+    """edp-backend itself must refuse a regular user the admin API."""
+    user_headers = {"Authorization": f"Bearer {keycloak_helper.get_access_token(as_user=True)}"}
+    with CustomPortForward(5000, EDP_NAMESPACE, {"app.kubernetes.io/name": "edp-backend"}) as pf:
+        for method, path, body in EDP_ADMIN_READ_ONLY_ROUTES:
+            response = requests.request(method, f"http://127.0.0.1:{pf.local_port}/{path}",
+                                        headers=user_headers, json=body, timeout=30)
+            assert response.status_code == 403, (
+                f"Regular user reached {method} /{path} on edp-backend; got {response.status_code}"
+            )
+
+
+@allure.testcase("IEASG-T740")
+def test_edp_backend_refuses_presigned_url_without_token():
+    """edp-backend must not sign a URL for a caller that presents no token."""
+    payload = {"bucket_name": "only-admin", "object_name": "any.txt", "method": "GET"}
+    with CustomPortForward(5000, EDP_NAMESPACE, {"app.kubernetes.io/name": "edp-backend"}) as pf:
+        response = requests.post(f"http://127.0.0.1:{pf.local_port}/api/presignedUrl", json=payload, timeout=30)
+    assert response.status_code == 401, (
+        f"edp-backend issued a presigned URL without a token; got {response.status_code}"
+    )
 
 
 TEXT_EXTRACTOR_POD_LABEL_SELECTOR = "app.kubernetes.io/name=edp-ingestion"

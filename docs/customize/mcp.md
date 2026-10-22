@@ -30,9 +30,9 @@ Agents obtain their own Keycloak access token with the `client_credentials` gran
 
 When `mcp_enabled` is true, the Keycloak configurator Job creates a ready-to-use service-account client. Its ID comes from `mcp_keycloak_client_id` and defaults to `mcp-client`. The client is confidential, with `serviceAccountsEnabled: true` and standard, implicit, and browser flows disabled, so `client_credentials` is the only usable grant. Its service account gets:
 
-- `ERAG-user` on `EnterpriseRAG-oidc-backend` (EDP access)
+- `ERAG-maintainer` on `EnterpriseRAG-oidc-backend` (EDP access; every MCP tool calls EDP routes that require maintainer)
 - `erag-admin-group` on `EnterpriseRAG-oidc-minio` (S3 read/write for `ingest_file`)
-- A `minio_roles` client-role mapper, so those roles land in the token the EDP presigned-URL path authorizes against
+- A `minio_roles` client-role mapper, so the `EnterpriseRAG-oidc-minio` roles land in the token SeaweedFS checks when `edp_rbac_enabled` is true
 - An audience mapper adding `mcp-gateway`, the audience the gateway requires
 - `access.token.lifespan` of 900s, so agent tokens stay short-lived without changing the realm default
 
@@ -285,7 +285,7 @@ Known limitations of this variant in the current release:
 
 ## Creating a production agent client in Keycloak
 
-`mcp-client` is for development and testing. For production integrations, create a dedicated client per agent so credentials can be rotated or revoked independently. Each production client needs three things: an Intel AI for Enterprise RAG role for backend access, `erag-admin-group` on `EnterpriseRAG-oidc-minio` for S3 file operations, and a `minio_roles` claim mapper.
+`mcp-client` is for development and testing. For production integrations, create a dedicated client per agent so credentials can be rotated or revoked independently. Each production client needs three things: `ERAG-maintainer` (or `ERAG-admin`) on `EnterpriseRAG-oidc-backend` for backend access, `erag-admin-group` on `EnterpriseRAG-oidc-minio` for S3 file operations, and a `minio_roles` claim mapper.
 
 The Keycloak admin console is at `https://keycloak.<base_domain_name>` in `subdomain` routing mode, or `https://<base_domain_name>/keycloak` in `path` routing mode.
 
@@ -298,7 +298,7 @@ The Keycloak admin console is at `https://keycloak.<base_domain_name>` in `subdo
 5. Disable **Standard flow** and **Direct access grants**
 6. Enable **Service accounts roles** → **Save**
 7. Open the **Credentials** tab and copy the client secret
-8. Open the **Service accounts roles** tab → **Assign role** → select `ERAG-admin`, `ERAG-user`, or `ERAG-maintainer` as appropriate
+8. Open the **Service accounts roles** tab → **Assign role** → select `ERAG-maintainer` (or `ERAG-admin`) on `EnterpriseRAG-oidc-backend`. EDP reads roles from that client only, and `ERAG-user` alone is refused every tool that reaches EDP
 9. To enable `ingest_url` and `ingest_file`: go to **Clients → EnterpriseRAG-oidc-minio → Service account roles** for `service-account-my-agent` → assign `erag-admin-group`
 10. Add a **Client scope mapper**: **Clients → my-agent → Client scopes → Add mapper → By configuration → User Client Role** → set Token Claim Name to `minio_roles`, Client ID to `EnterpriseRAG-oidc-minio`
 
