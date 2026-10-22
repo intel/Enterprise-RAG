@@ -1,13 +1,23 @@
+# Copyright (C) 2025-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import os
+import pytest
 from unittest.mock import patch, MagicMock
 from minio.error import S3Error
-from app.main import app
+from app.main import app, caller_roles
 from fastapi.testclient import TestClient
 from urllib3.response import HTTPResponse as BaseHTTPResponse
 from app.main import add_new_file, delete_existing_file
 from app.utils import filtered_list_bucket
 
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def admin_caller():
+    app.dependency_overrides[caller_roles] = lambda: {"ERAG-admin"}
+    yield
+    app.dependency_overrides.pop(caller_roles, None)
 
 def test_health_check():
     response = client.get('/health')
@@ -160,6 +170,13 @@ def test_delete_existing_file_no_files(mock_get_db):
     # Check that no files were marked for deletion and no tasks were enqueued
     mock_db.commit.assert_not_called()
 
+TOKEN_HEADER = {"Authorization": "Bearer token"}
+
+def sts_unavailable():
+    sts_client = MagicMock()
+    sts_client._provider.retrieve.side_effect = ValueError("AssumeRoleWithWebIdentity failed with HTTP status code 405")
+    return sts_client
+
 def test_presigned_url():
     methods = ["GET", "PUT", "DELETE"]
     for method in methods:
@@ -169,11 +186,12 @@ def test_presigned_url():
             "method": method
         }
         os.environ["PRESIGNED_URL_CREDENTIALS_SYSTEM_FALLBACK"] = "True"
-        with patch('app.main.ensure_bucket_exists') as mock_ensure_bucket:
+        with patch('app.main.ensure_bucket_exists') as mock_ensure_bucket, \
+                patch('app.main.get_local_minio_client_using_token_credentials', return_value=sts_unavailable()):
             with patch('app.main.generate_presigned_url') as mock_generate_presigned_url:
                 mock_ensure_bucket.return_value = None
                 mock_generate_presigned_url.return_value = "http://example.com/presigned-url"
-                response = client.post('/api/presignedUrl', json=payload)
+                response = client.post('/api/presignedUrl', json=payload, headers=TOKEN_HEADER)
                 assert response.status_code == 200
                 assert response.json() == {'url': 'http://example.com/presigned-url'}
 
@@ -202,7 +220,8 @@ def test_presigned_url_s3_error():
             "method": method
         }
         os.environ["PRESIGNED_URL_CREDENTIALS_SYSTEM_FALLBACK"] = "True"
-        with patch('app.main.ensure_bucket_exists') as mock_ensure_bucket:
+        with patch('app.main.ensure_bucket_exists') as mock_ensure_bucket, \
+                patch('app.main.get_local_minio_client_using_token_credentials', return_value=sts_unavailable()):
             with patch('app.main.generate_presigned_url' ) as mock_generate_presigned_url:
                 mock_ensure_bucket.return_value = None
                 mock_generate_presigned_url.side_effect = S3Error(
@@ -213,7 +232,7 @@ def test_presigned_url_s3_error():
                     host_id='',
                     response=BaseHTTPResponse()
                 )
-                response = client.post('/api/presignedUrl', json=payload)
+                response = client.post('/api/presignedUrl', json=payload, headers=TOKEN_HEADER)
                 assert response.status_code == 400
                 assert response.json()['detail'].startswith('An error occurred')
 

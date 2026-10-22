@@ -238,7 +238,8 @@ create_mcp_client() {
 
   log_info "Service account user '$sa_username' found (ID: ${sa_user_id:0:8}...)"
 
-  assign_user_client_role "$realm_name" "$sa_username" "ERAG-user" "EnterpriseRAG-oidc-backend"
+  # Every MCP tool calls EDP routes that require maintainer.
+  assign_user_client_role "$realm_name" "$sa_username" "ERAG-maintainer" "EnterpriseRAG-oidc-backend"
   assign_user_client_role "$realm_name" "$sa_username" "erag-admin-group" "EnterpriseRAG-oidc-minio"
 
   # Project the MinIO client roles into the token so the EDP presigned-URL path authorizes.
