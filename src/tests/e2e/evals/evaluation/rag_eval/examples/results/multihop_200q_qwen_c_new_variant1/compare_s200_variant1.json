@@ -1,0 +1,788 @@
+{
+ "dataset": "MultiHop-RAG",
+ "queries": {
+  "C_v1": 200,
+  "A_llama": 200,
+  "C_new_llama": 200,
+  "C_old_llama": 200,
+  "C_new_qwen": 200,
+  "C_old_qwen": 200
+ },
+ "query_sample_manifest": "src/tests/e2e/evals/evaluation/rag_eval/examples/results/multihop_200q/sample200_manifest.json",
+ "settings": {
+  "C_v1": {
+   "report": "perf_blurb_bench/eval_rerun/output/v1_final/report_s200_C_v1.json",
+   "log": "perf_blurb_bench/eval_rerun/output/v1_final/s200_C_v1.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path src/tests/e2e/evals/evaluation/rag_eval/examples/output/MultiHopRAG_sample200.json --docs_path perf_blurb_bench/eval_rerun/erag230/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir perf_blurb_bench/eval_rerun/output/v1_C_new --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-deployment>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-deployment>/deployment/inventory/erag_test/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 1.682,
+    "mean": 1.679,
+    "phase_minutes": 5.6
+   },
+   "retrieved_list_depth": {
+    "30": 200
+   },
+   "reranked_chunks": {
+    "total": 1813,
+    "mean_per_query": 9.06,
+    "queries_with_full_top10": 156,
+    "found_by_bm25_leg_only": 23,
+    "found_by_bm25_leg_only_pct": 1.27
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.8415
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.8108
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.7273
+    }
+   }
+  },
+  "A_llama": {
+   "report": "perf_blurb_bench/eval_rerun/output/final/report_s200_A.json",
+   "log": "perf_blurb_bench/eval_rerun/output/final/s200_A.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path src/tests/e2e/evals/evaluation/rag_eval/examples/output/MultiHopRAG_sample200.json --docs_path perf_blurb_bench/eval_rerun/erag230/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir perf_blurb_bench/eval_rerun/output/A --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-deployment>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-deployment>/deployment/inventory/erag_test/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 1.443,
+    "mean": 1.444,
+    "phase_minutes": 4.8
+   },
+   "retrieved_list_depth": {
+    "30": 200
+   },
+   "reranked_chunks": {
+    "total": 1575,
+    "mean_per_query": 7.88,
+    "queries_with_full_top10": 113,
+    "found_by_bm25_leg_only": 0,
+    "found_by_bm25_leg_only_pct": 0.0
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.8415
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.7568
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.7273
+    }
+   }
+  },
+  "C_new_llama": {
+   "report": "perf_blurb_bench/eval_rerun/output/final/report_s200_C_new.json",
+   "log": "perf_blurb_bench/eval_rerun/output/final/s200_C_new.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path src/tests/e2e/evals/evaluation/rag_eval/examples/output/MultiHopRAG_sample200.json --docs_path perf_blurb_bench/eval_rerun/erag230/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir perf_blurb_bench/eval_rerun/output/C_new --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-deployment>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-deployment>/deployment/inventory/erag_test/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 1.583,
+    "mean": 1.606,
+    "phase_minutes": 5.3
+   },
+   "retrieved_list_depth": {
+    "30": 200
+   },
+   "reranked_chunks": {
+    "total": 1744,
+    "mean_per_query": 8.72,
+    "queries_with_full_top10": 149,
+    "found_by_bm25_leg_only": 18,
+    "found_by_bm25_leg_only_pct": 1.03
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.8537
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.8108
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.7045
+    }
+   }
+  },
+  "C_old_llama": {
+   "report": "perf_blurb_bench/eval_rerun/output/final/report_s200_C_old.json",
+   "log": "perf_blurb_bench/eval_rerun/output/final/s200_C_old.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path src/tests/e2e/evals/evaluation/rag_eval/examples/output/MultiHopRAG_sample200.json --docs_path perf_blurb_bench/eval_rerun/erag230/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir perf_blurb_bench/eval_rerun/output/C_old --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-deployment>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-deployment>/deployment/inventory/erag_test/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 1.725,
+    "mean": 1.72,
+    "phase_minutes": 5.7
+   },
+   "retrieved_list_depth": {
+    "30": 200
+   },
+   "reranked_chunks": {
+    "total": 1828,
+    "mean_per_query": 9.14,
+    "queries_with_full_top10": 157,
+    "found_by_bm25_leg_only": 26,
+    "found_by_bm25_leg_only_pct": 1.42
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.8659
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.8378
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.7273
+    }
+   }
+  },
+  "C_new_qwen": {
+   "report": "perf_blurb_bench/eval_rerun/output/q_final/report_s200_C_new.json",
+   "log": "perf_blurb_bench/eval_rerun/output/q_final/s200_C_new.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path src/tests/e2e/evals/evaluation/rag_eval/examples/output/MultiHopRAG_sample200.json --docs_path perf_blurb_bench/eval_rerun/erag230/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir perf_blurb_bench/eval_rerun/output/q_C_new --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-deployment>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-deployment>/deployment/inventory/erag_test/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 1.655,
+    "mean": 1.68,
+    "phase_minutes": 5.6
+   },
+   "retrieved_list_depth": {
+    "30": 200
+   },
+   "reranked_chunks": {
+    "total": 1804,
+    "mean_per_query": 9.02,
+    "queries_with_full_top10": 153,
+    "found_by_bm25_leg_only": 27,
+    "found_by_bm25_leg_only_pct": 1.5
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.8902
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.8514
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.6818
+    }
+   }
+  },
+  "C_old_qwen": {
+   "report": "perf_blurb_bench/eval_rerun/output/q_final/report_s200_C_old.json",
+   "log": "perf_blurb_bench/eval_rerun/output/q_final/s200_C_old.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path src/tests/e2e/evals/evaluation/rag_eval/examples/output/MultiHopRAG_sample200.json --docs_path perf_blurb_bench/eval_rerun/erag230/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir perf_blurb_bench/eval_rerun/output/q_C_old --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-deployment>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-deployment>/deployment/inventory/erag_test/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 1.683,
+    "mean": 1.692,
+    "phase_minutes": 5.6
+   },
+   "retrieved_list_depth": {
+    "30": 200
+   },
+   "reranked_chunks": {
+    "total": 1820,
+    "mean_per_query": 9.1,
+    "queries_with_full_top10": 159,
+    "found_by_bm25_leg_only": 27,
+    "found_by_bm25_leg_only_pct": 1.48
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.8537
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.8378
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.7273
+    }
+   }
+  }
+ },
+ "retrieval_failure_rate_hits_at_10": {
+  "C_v1": 0.195,
+  "A_llama": 0.215,
+  "C_new_llama": 0.195,
+  "C_old_llama": 0.175,
+  "C_new_qwen": 0.17,
+  "C_old_qwen": 0.18,
+  "reduction_pct_C_v1_vs_A_llama": 9.3,
+  "reduction_pct_C_v1_vs_C_new_llama": -0.0,
+  "reduction_pct_C_v1_vs_C_old_llama": -11.43,
+  "reduction_pct_C_v1_vs_C_new_qwen": -14.71,
+  "reduction_pct_C_v1_vs_C_old_qwen": -8.33
+ },
+ "metrics": {
+  "avg. Hits@10": {
+   "C_v1": 0.805,
+   "A_llama": 0.785,
+   "C_new_llama": 0.805,
+   "C_old_llama": 0.825,
+   "C_new_qwen": 0.83,
+   "C_old_qwen": 0.82,
+   "delta_C_v1_vs_A_llama": 0.02,
+   "improve_pct_C_v1_vs_A_llama": 2.55,
+   "delta_C_v1_vs_C_new_llama": 0.0,
+   "improve_pct_C_v1_vs_C_new_llama": 0.0,
+   "delta_C_v1_vs_C_old_llama": -0.02,
+   "improve_pct_C_v1_vs_C_old_llama": -2.42,
+   "delta_C_v1_vs_C_new_qwen": -0.025,
+   "improve_pct_C_v1_vs_C_new_qwen": -3.01,
+   "delta_C_v1_vs_C_old_qwen": -0.015,
+   "improve_pct_C_v1_vs_C_old_qwen": -1.83
+  },
+  "avg. Hits@4": {
+   "C_v1": 0.71,
+   "A_llama": 0.675,
+   "C_new_llama": 0.705,
+   "C_old_llama": 0.75,
+   "C_new_qwen": 0.725,
+   "C_old_qwen": 0.725,
+   "delta_C_v1_vs_A_llama": 0.035,
+   "improve_pct_C_v1_vs_A_llama": 5.19,
+   "delta_C_v1_vs_C_new_llama": 0.005,
+   "improve_pct_C_v1_vs_C_new_llama": 0.71,
+   "delta_C_v1_vs_C_old_llama": -0.04,
+   "improve_pct_C_v1_vs_C_old_llama": -5.33,
+   "delta_C_v1_vs_C_new_qwen": -0.015,
+   "improve_pct_C_v1_vs_C_new_qwen": -2.07,
+   "delta_C_v1_vs_C_old_qwen": -0.015,
+   "improve_pct_C_v1_vs_C_old_qwen": -2.07
+  },
+  "avg. MAP@10": {
+   "C_v1": 0.2967,
+   "A_llama": 0.2807,
+   "C_new_llama": 0.2766,
+   "C_old_llama": 0.2982,
+   "C_new_qwen": 0.2827,
+   "C_old_qwen": 0.3099,
+   "delta_C_v1_vs_A_llama": 0.016,
+   "improve_pct_C_v1_vs_A_llama": 5.7,
+   "delta_C_v1_vs_C_new_llama": 0.0201,
+   "improve_pct_C_v1_vs_C_new_llama": 7.27,
+   "delta_C_v1_vs_C_old_llama": -0.0015,
+   "improve_pct_C_v1_vs_C_old_llama": -0.5,
+   "delta_C_v1_vs_C_new_qwen": 0.014,
+   "improve_pct_C_v1_vs_C_new_qwen": 4.95,
+   "delta_C_v1_vs_C_old_qwen": -0.0132,
+   "improve_pct_C_v1_vs_C_old_qwen": -4.26
+  },
+  "avg. MRR@10": {
+   "C_v1": 0.6059,
+   "A_llama": 0.5719,
+   "C_new_llama": 0.5608,
+   "C_old_llama": 0.6144,
+   "C_new_qwen": 0.5788,
+   "C_old_qwen": 0.6321,
+   "delta_C_v1_vs_A_llama": 0.034,
+   "improve_pct_C_v1_vs_A_llama": 5.95,
+   "delta_C_v1_vs_C_new_llama": 0.0451,
+   "improve_pct_C_v1_vs_C_new_llama": 8.04,
+   "delta_C_v1_vs_C_old_llama": -0.0085,
+   "improve_pct_C_v1_vs_C_old_llama": -1.38,
+   "delta_C_v1_vs_C_new_qwen": 0.0271,
+   "improve_pct_C_v1_vs_C_new_qwen": 4.68,
+   "delta_C_v1_vs_C_old_qwen": -0.0262,
+   "improve_pct_C_v1_vs_C_old_qwen": -4.14
+  },
+  "avg. Hits@10_retrieved": {
+   "C_v1": 0.825,
+   "A_llama": 0.785,
+   "C_new_llama": 0.815,
+   "C_old_llama": 0.81,
+   "C_new_qwen": 0.815,
+   "C_old_qwen": 0.83,
+   "delta_C_v1_vs_A_llama": 0.04,
+   "improve_pct_C_v1_vs_A_llama": 5.1,
+   "delta_C_v1_vs_C_new_llama": 0.01,
+   "improve_pct_C_v1_vs_C_new_llama": 1.23,
+   "delta_C_v1_vs_C_old_llama": 0.015,
+   "improve_pct_C_v1_vs_C_old_llama": 1.85,
+   "delta_C_v1_vs_C_new_qwen": 0.01,
+   "improve_pct_C_v1_vs_C_new_qwen": 1.23,
+   "delta_C_v1_vs_C_old_qwen": -0.005,
+   "improve_pct_C_v1_vs_C_old_qwen": -0.6
+  },
+  "avg. Hits@4_retrieved": {
+   "C_v1": 0.66,
+   "A_llama": 0.63,
+   "C_new_llama": 0.585,
+   "C_old_llama": 0.62,
+   "C_new_qwen": 0.655,
+   "C_old_qwen": 0.645,
+   "delta_C_v1_vs_A_llama": 0.03,
+   "improve_pct_C_v1_vs_A_llama": 4.76,
+   "delta_C_v1_vs_C_new_llama": 0.075,
+   "improve_pct_C_v1_vs_C_new_llama": 12.82,
+   "delta_C_v1_vs_C_old_llama": 0.04,
+   "improve_pct_C_v1_vs_C_old_llama": 6.45,
+   "delta_C_v1_vs_C_new_qwen": 0.005,
+   "improve_pct_C_v1_vs_C_new_qwen": 0.76,
+   "delta_C_v1_vs_C_old_qwen": 0.015,
+   "improve_pct_C_v1_vs_C_old_qwen": 2.33
+  },
+  "avg. MAP@10_retrieved": {
+   "C_v1": 0.2271,
+   "A_llama": 0.2197,
+   "C_new_llama": 0.2112,
+   "C_old_llama": 0.2254,
+   "C_new_qwen": 0.2222,
+   "C_old_qwen": 0.2326,
+   "delta_C_v1_vs_A_llama": 0.0074,
+   "improve_pct_C_v1_vs_A_llama": 3.37,
+   "delta_C_v1_vs_C_new_llama": 0.0159,
+   "improve_pct_C_v1_vs_C_new_llama": 7.53,
+   "delta_C_v1_vs_C_old_llama": 0.0017,
+   "improve_pct_C_v1_vs_C_old_llama": 0.75,
+   "delta_C_v1_vs_C_new_qwen": 0.0049,
+   "improve_pct_C_v1_vs_C_new_qwen": 2.21,
+   "delta_C_v1_vs_C_old_qwen": -0.0055,
+   "improve_pct_C_v1_vs_C_old_qwen": -2.36
+  },
+  "avg. MRR@10_retrieved": {
+   "C_v1": 0.4867,
+   "A_llama": 0.4701,
+   "C_new_llama": 0.4456,
+   "C_old_llama": 0.4835,
+   "C_new_qwen": 0.4848,
+   "C_old_qwen": 0.4995,
+   "delta_C_v1_vs_A_llama": 0.0166,
+   "improve_pct_C_v1_vs_A_llama": 3.53,
+   "delta_C_v1_vs_C_new_llama": 0.0411,
+   "improve_pct_C_v1_vs_C_new_llama": 9.22,
+   "delta_C_v1_vs_C_old_llama": 0.0032,
+   "improve_pct_C_v1_vs_C_old_llama": 0.66,
+   "delta_C_v1_vs_C_new_qwen": 0.0019,
+   "improve_pct_C_v1_vs_C_new_qwen": 0.39,
+   "delta_C_v1_vs_C_old_qwen": -0.0128,
+   "improve_pct_C_v1_vs_C_old_qwen": -2.56
+  },
+  "avg. gain_Hits@10": {
+   "C_v1": -0.02,
+   "A_llama": 0.0,
+   "C_new_llama": -0.01,
+   "C_old_llama": 0.015,
+   "C_new_qwen": 0.015,
+   "C_old_qwen": -0.01,
+   "delta_C_v1_vs_A_llama": -0.02,
+   "improve_pct_C_v1_vs_A_llama": null,
+   "delta_C_v1_vs_C_new_llama": -0.01,
+   "improve_pct_C_v1_vs_C_new_llama": -100.0,
+   "delta_C_v1_vs_C_old_llama": -0.035,
+   "improve_pct_C_v1_vs_C_old_llama": -233.33,
+   "delta_C_v1_vs_C_new_qwen": -0.035,
+   "improve_pct_C_v1_vs_C_new_qwen": -233.33,
+   "delta_C_v1_vs_C_old_qwen": -0.01,
+   "improve_pct_C_v1_vs_C_old_qwen": -100.0
+  },
+  "avg. gain_Hits@4": {
+   "C_v1": 0.05,
+   "A_llama": 0.045,
+   "C_new_llama": 0.12,
+   "C_old_llama": 0.13,
+   "C_new_qwen": 0.07,
+   "C_old_qwen": 0.08,
+   "delta_C_v1_vs_A_llama": 0.005,
+   "improve_pct_C_v1_vs_A_llama": 11.11,
+   "delta_C_v1_vs_C_new_llama": -0.07,
+   "improve_pct_C_v1_vs_C_new_llama": -58.33,
+   "delta_C_v1_vs_C_old_llama": -0.08,
+   "improve_pct_C_v1_vs_C_old_llama": -61.54,
+   "delta_C_v1_vs_C_new_qwen": -0.02,
+   "improve_pct_C_v1_vs_C_new_qwen": -28.57,
+   "delta_C_v1_vs_C_old_qwen": -0.03,
+   "improve_pct_C_v1_vs_C_old_qwen": -37.5
+  },
+  "avg. gain_MAP@10": {
+   "C_v1": 0.0696,
+   "A_llama": 0.0609,
+   "C_new_llama": 0.0654,
+   "C_old_llama": 0.0728,
+   "C_new_qwen": 0.0605,
+   "C_old_qwen": 0.0774,
+   "delta_C_v1_vs_A_llama": 0.0087,
+   "improve_pct_C_v1_vs_A_llama": 14.29,
+   "delta_C_v1_vs_C_new_llama": 0.0042,
+   "improve_pct_C_v1_vs_C_new_llama": 6.42,
+   "delta_C_v1_vs_C_old_llama": -0.0032,
+   "improve_pct_C_v1_vs_C_old_llama": -4.4,
+   "delta_C_v1_vs_C_new_qwen": 0.0091,
+   "improve_pct_C_v1_vs_C_new_qwen": 15.04,
+   "delta_C_v1_vs_C_old_qwen": -0.0078,
+   "improve_pct_C_v1_vs_C_old_qwen": -10.08
+  },
+  "avg. gain_MRR@10": {
+   "C_v1": 0.1192,
+   "A_llama": 0.1018,
+   "C_new_llama": 0.1151,
+   "C_old_llama": 0.1309,
+   "C_new_qwen": 0.094,
+   "C_old_qwen": 0.1326,
+   "delta_C_v1_vs_A_llama": 0.0174,
+   "improve_pct_C_v1_vs_A_llama": 17.09,
+   "delta_C_v1_vs_C_new_llama": 0.0041,
+   "improve_pct_C_v1_vs_C_new_llama": 3.56,
+   "delta_C_v1_vs_C_old_llama": -0.0117,
+   "improve_pct_C_v1_vs_C_old_llama": -8.94,
+   "delta_C_v1_vs_C_new_qwen": 0.0252,
+   "improve_pct_C_v1_vs_C_new_qwen": 26.81,
+   "delta_C_v1_vs_C_old_qwen": -0.0134,
+   "improve_pct_C_v1_vs_C_old_qwen": -10.11
+  },
+  "answer_correctness": {
+   "C_v1": 0.5965,
+   "A_llama": 0.5922,
+   "C_new_llama": 0.5805,
+   "C_old_llama": 0.6375,
+   "C_new_qwen": 0.5292,
+   "C_old_qwen": 0.5501,
+   "delta_C_v1_vs_A_llama": 0.0043,
+   "improve_pct_C_v1_vs_A_llama": 0.73,
+   "delta_C_v1_vs_C_new_llama": 0.016,
+   "improve_pct_C_v1_vs_C_new_llama": 2.76,
+   "delta_C_v1_vs_C_old_llama": -0.041,
+   "improve_pct_C_v1_vs_C_old_llama": -6.43,
+   "delta_C_v1_vs_C_new_qwen": 0.0673,
+   "improve_pct_C_v1_vs_C_new_qwen": 12.72,
+   "delta_C_v1_vs_C_old_qwen": 0.0464,
+   "improve_pct_C_v1_vs_C_old_qwen": 8.43
+  },
+  "answer_relevancy": {
+   "C_v1": 0.738,
+   "A_llama": 0.7399,
+   "C_new_llama": 0.7244,
+   "C_old_llama": 0.7349,
+   "C_new_qwen": 0.5815,
+   "C_old_qwen": 0.6112,
+   "delta_C_v1_vs_A_llama": -0.0019,
+   "improve_pct_C_v1_vs_A_llama": -0.26,
+   "delta_C_v1_vs_C_new_llama": 0.0136,
+   "improve_pct_C_v1_vs_C_new_llama": 1.88,
+   "delta_C_v1_vs_C_old_llama": 0.0031,
+   "improve_pct_C_v1_vs_C_old_llama": 0.42,
+   "delta_C_v1_vs_C_new_qwen": 0.1565,
+   "improve_pct_C_v1_vs_C_new_qwen": 26.91,
+   "delta_C_v1_vs_C_old_qwen": 0.1268,
+   "improve_pct_C_v1_vs_C_old_qwen": 20.75
+  },
+  "answer_similarity": {
+   "C_v1": 0.5117,
+   "A_llama": 0.5099,
+   "C_new_llama": 0.5123,
+   "C_old_llama": 0.5145,
+   "C_new_qwen": 0.5077,
+   "C_old_qwen": 0.5065,
+   "delta_C_v1_vs_A_llama": 0.0018,
+   "improve_pct_C_v1_vs_A_llama": 0.35,
+   "delta_C_v1_vs_C_new_llama": -0.0006,
+   "improve_pct_C_v1_vs_C_new_llama": -0.12,
+   "delta_C_v1_vs_C_old_llama": -0.0028,
+   "improve_pct_C_v1_vs_C_old_llama": -0.54,
+   "delta_C_v1_vs_C_new_qwen": 0.004,
+   "improve_pct_C_v1_vs_C_new_qwen": 0.79,
+   "delta_C_v1_vs_C_old_qwen": 0.0052,
+   "improve_pct_C_v1_vs_C_old_qwen": 1.03
+  },
+  "context_precision": {
+   "C_v1": 0.7139,
+   "A_llama": 0.6309,
+   "C_new_llama": 0.7427,
+   "C_old_llama": 0.7718,
+   "C_new_qwen": 0.7452,
+   "C_old_qwen": 0.752,
+   "delta_C_v1_vs_A_llama": 0.083,
+   "improve_pct_C_v1_vs_A_llama": 13.16,
+   "delta_C_v1_vs_C_new_llama": -0.0288,
+   "improve_pct_C_v1_vs_C_new_llama": -3.88,
+   "delta_C_v1_vs_C_old_llama": -0.0579,
+   "improve_pct_C_v1_vs_C_old_llama": -7.5,
+   "delta_C_v1_vs_C_new_qwen": -0.0313,
+   "improve_pct_C_v1_vs_C_new_qwen": -4.2,
+   "delta_C_v1_vs_C_old_qwen": -0.0381,
+   "improve_pct_C_v1_vs_C_old_qwen": -5.07
+  },
+  "context_recall": {
+   "C_v1": 0.8233,
+   "A_llama": 0.7881,
+   "C_new_llama": 0.8219,
+   "C_old_llama": 0.7956,
+   "C_new_qwen": 0.8069,
+   "C_old_qwen": 0.795,
+   "delta_C_v1_vs_A_llama": 0.0352,
+   "improve_pct_C_v1_vs_A_llama": 4.47,
+   "delta_C_v1_vs_C_new_llama": 0.0014,
+   "improve_pct_C_v1_vs_C_new_llama": 0.17,
+   "delta_C_v1_vs_C_old_llama": 0.0277,
+   "improve_pct_C_v1_vs_C_old_llama": 3.48,
+   "delta_C_v1_vs_C_new_qwen": 0.0164,
+   "improve_pct_C_v1_vs_C_new_qwen": 2.03,
+   "delta_C_v1_vs_C_old_qwen": 0.0283,
+   "improve_pct_C_v1_vs_C_old_qwen": 3.56
+  },
+  "faithfulness": {
+   "C_v1": 0.6343,
+   "A_llama": 0.6657,
+   "C_new_llama": 0.6424,
+   "C_old_llama": 0.6447,
+   "C_new_qwen": 0.5907,
+   "C_old_qwen": 0.623,
+   "delta_C_v1_vs_A_llama": -0.0314,
+   "improve_pct_C_v1_vs_A_llama": -4.72,
+   "delta_C_v1_vs_C_new_llama": -0.0081,
+   "improve_pct_C_v1_vs_C_new_llama": -1.26,
+   "delta_C_v1_vs_C_old_llama": -0.0104,
+   "improve_pct_C_v1_vs_C_old_llama": -1.61,
+   "delta_C_v1_vs_C_new_qwen": 0.0436,
+   "improve_pct_C_v1_vs_C_new_qwen": 7.38,
+   "delta_C_v1_vs_C_old_qwen": 0.0113,
+   "improve_pct_C_v1_vs_C_old_qwen": 1.81
+  },
+  "avg. bleu-avg": {
+   "C_v1": 0.0067,
+   "A_llama": 0.0058,
+   "C_new_llama": 0.0073,
+   "C_old_llama": 0.0071,
+   "C_new_qwen": 0.0028,
+   "C_old_qwen": 0.0031,
+   "delta_C_v1_vs_A_llama": 0.0009,
+   "improve_pct_C_v1_vs_A_llama": 15.52,
+   "delta_C_v1_vs_C_new_llama": -0.0006,
+   "improve_pct_C_v1_vs_C_new_llama": -8.22,
+   "delta_C_v1_vs_C_old_llama": -0.0004,
+   "improve_pct_C_v1_vs_C_old_llama": -5.63,
+   "delta_C_v1_vs_C_new_qwen": 0.0039,
+   "improve_pct_C_v1_vs_C_new_qwen": 139.29,
+   "delta_C_v1_vs_C_old_qwen": 0.0036,
+   "improve_pct_C_v1_vs_C_old_qwen": 116.13
+  },
+  "avg. bleu-1": {
+   "C_v1": 0.0149,
+   "A_llama": 0.0138,
+   "C_new_llama": 0.015,
+   "C_old_llama": 0.0196,
+   "C_new_qwen": 0.0064,
+   "C_old_qwen": 0.0074,
+   "delta_C_v1_vs_A_llama": 0.0011,
+   "improve_pct_C_v1_vs_A_llama": 7.97,
+   "delta_C_v1_vs_C_new_llama": -0.0001,
+   "improve_pct_C_v1_vs_C_new_llama": -0.67,
+   "delta_C_v1_vs_C_old_llama": -0.0047,
+   "improve_pct_C_v1_vs_C_old_llama": -23.98,
+   "delta_C_v1_vs_C_new_qwen": 0.0085,
+   "improve_pct_C_v1_vs_C_new_qwen": 132.81,
+   "delta_C_v1_vs_C_old_qwen": 0.0075,
+   "improve_pct_C_v1_vs_C_old_qwen": 101.35
+  },
+  "avg. bleu-2": {
+   "C_v1": 0.0093,
+   "A_llama": 0.0083,
+   "C_new_llama": 0.01,
+   "C_old_llama": 0.0133,
+   "C_new_qwen": 0.0039,
+   "C_old_qwen": 0.0045,
+   "delta_C_v1_vs_A_llama": 0.001,
+   "improve_pct_C_v1_vs_A_llama": 12.05,
+   "delta_C_v1_vs_C_new_llama": -0.0007,
+   "improve_pct_C_v1_vs_C_new_llama": -7.0,
+   "delta_C_v1_vs_C_old_llama": -0.004,
+   "improve_pct_C_v1_vs_C_old_llama": -30.08,
+   "delta_C_v1_vs_C_new_qwen": 0.0054,
+   "improve_pct_C_v1_vs_C_new_qwen": 138.46,
+   "delta_C_v1_vs_C_old_qwen": 0.0048,
+   "improve_pct_C_v1_vs_C_old_qwen": 106.67
+  },
+  "avg. bleu-3": {
+   "C_v1": 0.0068,
+   "A_llama": 0.006,
+   "C_new_llama": 0.0073,
+   "C_old_llama": 0.0097,
+   "C_new_qwen": 0.0028,
+   "C_old_qwen": 0.0032,
+   "delta_C_v1_vs_A_llama": 0.0008,
+   "improve_pct_C_v1_vs_A_llama": 13.33,
+   "delta_C_v1_vs_C_new_llama": -0.0005,
+   "improve_pct_C_v1_vs_C_new_llama": -6.85,
+   "delta_C_v1_vs_C_old_llama": -0.0029,
+   "improve_pct_C_v1_vs_C_old_llama": -29.9,
+   "delta_C_v1_vs_C_new_qwen": 0.004,
+   "improve_pct_C_v1_vs_C_new_qwen": 142.86,
+   "delta_C_v1_vs_C_old_qwen": 0.0036,
+   "improve_pct_C_v1_vs_C_old_qwen": 112.5
+  },
+  "avg. bleu-4": {
+   "C_v1": 0.0041,
+   "A_llama": 0.0036,
+   "C_new_llama": 0.0045,
+   "C_old_llama": 0.0044,
+   "C_new_qwen": 0.0017,
+   "C_old_qwen": 0.0019,
+   "delta_C_v1_vs_A_llama": 0.0005,
+   "improve_pct_C_v1_vs_A_llama": 13.89,
+   "delta_C_v1_vs_C_new_llama": -0.0004,
+   "improve_pct_C_v1_vs_C_new_llama": -8.89,
+   "delta_C_v1_vs_C_old_llama": -0.0003,
+   "improve_pct_C_v1_vs_C_old_llama": -6.82,
+   "delta_C_v1_vs_C_new_qwen": 0.0024,
+   "improve_pct_C_v1_vs_C_new_qwen": 141.18,
+   "delta_C_v1_vs_C_old_qwen": 0.0022,
+   "improve_pct_C_v1_vs_C_old_qwen": 115.79
+  },
+  "avg. rouge-L": {
+   "C_v1": 0.0281,
+   "A_llama": 0.0261,
+   "C_new_llama": 0.0279,
+   "C_old_llama": 0.034,
+   "C_new_qwen": 0.0126,
+   "C_old_qwen": 0.0145,
+   "delta_C_v1_vs_A_llama": 0.002,
+   "improve_pct_C_v1_vs_A_llama": 7.66,
+   "delta_C_v1_vs_C_new_llama": 0.0002,
+   "improve_pct_C_v1_vs_C_new_llama": 0.72,
+   "delta_C_v1_vs_C_old_llama": -0.0059,
+   "improve_pct_C_v1_vs_C_old_llama": -17.35,
+   "delta_C_v1_vs_C_new_qwen": 0.0155,
+   "improve_pct_C_v1_vs_C_new_qwen": 123.02,
+   "delta_C_v1_vs_C_old_qwen": 0.0136,
+   "improve_pct_C_v1_vs_C_old_qwen": 93.79
+  },
+  "avg. LLM-score": {
+   "C_v1": 0.0,
+   "A_llama": 0.0,
+   "C_new_llama": 0.0,
+   "C_old_llama": 0.0,
+   "C_new_qwen": 0.0,
+   "C_old_qwen": 0.0,
+   "delta_C_v1_vs_A_llama": 0.0,
+   "improve_pct_C_v1_vs_A_llama": null,
+   "delta_C_v1_vs_C_new_llama": 0.0,
+   "improve_pct_C_v1_vs_C_new_llama": null,
+   "delta_C_v1_vs_C_old_llama": 0.0,
+   "improve_pct_C_v1_vs_C_old_llama": null,
+   "delta_C_v1_vs_C_new_qwen": 0.0,
+   "improve_pct_C_v1_vs_C_new_qwen": null,
+   "delta_C_v1_vs_C_old_qwen": 0.0,
+   "improve_pct_C_v1_vs_C_old_qwen": null
+  },
+  "avg. length": {
+   "C_v1": 619.515,
+   "A_llama": 570.095,
+   "C_new_llama": 595.875,
+   "C_old_llama": 599.07,
+   "C_new_qwen": 767.13,
+   "C_old_qwen": 740.445,
+   "delta_C_v1_vs_A_llama": 49.42,
+   "improve_pct_C_v1_vs_A_llama": 8.67,
+   "delta_C_v1_vs_C_new_llama": 23.64,
+   "improve_pct_C_v1_vs_C_new_llama": 3.97,
+   "delta_C_v1_vs_C_old_llama": 20.445,
+   "improve_pct_C_v1_vs_C_old_llama": 3.41,
+   "delta_C_v1_vs_C_new_qwen": -147.615,
+   "improve_pct_C_v1_vs_C_new_qwen": -19.24,
+   "delta_C_v1_vs_C_old_qwen": -120.93,
+   "improve_pct_C_v1_vs_C_old_qwen": -16.33
+  }
+ },
+ "paired_per_query_hits_at_10": {
+  "C_v1_vs_A_llama": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 16,
+   "broken": 12,
+   "both_hit": 145,
+   "both_miss": 27,
+   "net": 4,
+   "mean_delta": 0.02,
+   "mcnemar_p_exact": 0.5715881884098053
+  },
+  "C_v1_vs_C_new_llama": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 9,
+   "broken": 9,
+   "both_hit": 152,
+   "both_miss": 30,
+   "net": 0,
+   "mean_delta": 0.0,
+   "mcnemar_p_exact": 1.0
+  },
+  "C_v1_vs_C_old_llama": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 4,
+   "broken": 8,
+   "both_hit": 157,
+   "both_miss": 31,
+   "net": -4,
+   "mean_delta": -0.02,
+   "mcnemar_p_exact": 0.3876953125
+  },
+  "C_v1_vs_C_new_qwen": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 8,
+   "broken": 13,
+   "both_hit": 153,
+   "both_miss": 26,
+   "net": -5,
+   "mean_delta": -0.025,
+   "mcnemar_p_exact": 0.38331031799316406
+  },
+  "C_v1_vs_C_old_qwen": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 4,
+   "broken": 7,
+   "both_hit": 157,
+   "both_miss": 32,
+   "net": -3,
+   "mean_delta": -0.015,
+   "mcnemar_p_exact": 0.548828125
+  }
+ }
+}

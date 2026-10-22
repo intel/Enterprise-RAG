@@ -222,7 +222,10 @@ python eval_multihop.py --help
 | `--docs_path`             | `multihop_dataset/corpus.json`                    | Path to the documents for retrieval                                                                                                  |
 | `--limits`                | `100`                                             | Number of queries to evaluate (0 means evaluate all; default: 100)                                                                   |
 | `--exclude_types`         | *None*                                            | Exclude queries by question type. Queries matching these question types will be skipped. Example: --exclude_types comparison_query   |
-| `--ingest_docs`           | *(flag)*                                          | Ingest documents into the vector database (use only on first run)                                                                    |
+| `--ingest_docs`           | *(flag)*                                          | Ingest documents into the vector database (use only on first run). Each corpus document is uploaded as its own file                  |
+| `--ingest_batch_size`     | `64`                                              | Concurrent uploads per batch; only used with `--ingest_docs`                                                                         |
+| `--ingest_timeout`        | `14400`                                           | Seconds to wait for the whole corpus to finish ingesting                                                                             |
+| `--ingest_max_failures`   | `0`                                               | Documents allowed to end in status `error` before ingestion fails. Failing documents are named with EDP's `job_message`              |
 | `--generation_metrics`    | *(flag)*                                          | Compute text generation metrics (`BLEU`, `ROUGE`)                                                                                    |
 | `--retrieval_metrics`     | *(flag)*                                          | Compute retrieval metrics (`Hits@K`, `MAP@K`, `MRR@K`)                                                                               |
 | `--skip_normalize`        | *(flag)*                                          | Skip 'None' separator normalization for exact 1:1 text matching                                                                      |
@@ -240,6 +243,8 @@ python eval_multihop.py --help
 > Note: If `--dataset_path` and `--docs_path` are set to their default values and the corresponding files are not found locally, they will be automatically downloaded at runtime from [yixuantt/MultiHopRAG](https://huggingface.co/datasets/yixuantt/MultiHopRAG) and saved to the expected local paths.
 
 > Note: For the first run, make sure to include the --ingest_docs flag to ingest documents into the vector database. For subsequent runs, this flag should be omitted to avoid re-ingesting.
+
+> Note: `--ingest_docs` writes one file per corpus document under `tmp_corpus_docs/` and uploads them in batches, so every ingestion stage sees the correct parent document. This matters for document-aware stages — contextual RAG situates each chunk within its own source document — and it also keeps each upload inside a single `TEXT_PROCESSING_TIMEOUT_SECONDS` window.
 
 ### Usage Guide
 
@@ -433,6 +438,43 @@ python eval_multihop.py --retrieval_metrics --bucket_names secondary
 # Evaluate using documents from both "secondary" and "third" buckets
 python eval_multihop.py --retrieval_metrics --bucket_names secondary third
 ```
+
+### Comparing Two Configurations (A/B Evaluation)
+
+Comparing configurations — for example baseline retrieval against [Contextual RAG](../../../../../../contextual_RAG_integration.md) — requires both runs to see the *same* corpus and the *same* queries. Three helper scripts in [examples/](examples/) make that reproducible:
+
+| Script                                                       | Purpose                                                                                                                                            |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [clean_corpus.py](examples/clean_corpus.py)                   | Deletes every file and link from EDP and waits until the corpus is empty, so the next run does not retrieve vectors produced by the previous one     |
+| [enforce_corpus_parity.py](examples/enforce_corpus_parity.py) | Writes (`--write-snapshot`) or enforces a snapshot of the ingested document set, so both runs index exactly the same documents                       |
+| [reingest_documents.py](examples/reingest_documents.py)       | Deletes and re-uploads named documents (or `--stuck`, every document left in a non-terminal state) from `tmp_corpus_docs/`                           |
+| [compare_crag_settings.py](examples/compare_crag_settings.py) | Folds each run's generation/RAGAS/retrieval passes into one report, then reports deltas, the retrieval failure rate (1 - Hits@10) and an exact McNemar test on paired per-query Hits@10 |
+
+A full A/B cycle, per configuration:
+
+```bash
+# 1. start from an empty corpus
+python clean_corpus.py
+
+# 2. ingest one file per corpus document and evaluate
+python eval_multihop.py --ingest_docs --retrieval_metrics --limits 500 2>&1 | tee output/A.log
+mv output/multihop_*.json output/report_A.json
+
+# 3. record the document set of the first run, and enforce it on later runs
+python enforce_corpus_parity.py --snapshot output/corpus_snapshot.json --write-snapshot
+# ... after re-ingesting under the second configuration:
+python enforce_corpus_parity.py --snapshot output/corpus_snapshot.json
+```
+
+Then compare:
+
+```bash
+python compare_crag_settings.py \
+    --setting A=output/report_A.json --setting C=output/report_C.json \
+    --compare C:A --out output/comparison.json
+```
+
+> Note: `compare_crag_settings.py` reads the generation and RAGAS aggregates from the run log, so pipe each run through `tee` into `output/<setting>.log` as shown above. Without the log, only the metrics of the last pass survive in the report's `overall` block.
 
 ## Acknowledgements
 This example is mostly adapted from [MultiHop-RAG](https://github.com/yixuantt/MultiHop-RAG) repo, we thank the authors for their great work!

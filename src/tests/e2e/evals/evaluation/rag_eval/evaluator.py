@@ -107,34 +107,128 @@ class Evaluator:
             raise ConnectionError(
                 f"Failed to fetch RAG system configuration  from the fingerprint API, err={e}")
 
-    # TODO: Ingest all 609 items as separate documents using parallel uploads.
-    # Previous attempt failed on document '079_israel-s-defense-undone-by-reliance.txt'.
-    # Requires further investigation.
+    def ingest_docs_individually(
+        self,
+        documents_dir: str,
+        file_names: list,
+        upload_batch_size: int = 16,
+        timeout: int = 14400,
+        max_failed_files: int = 0,
+        poll_interval: int = 15,
+    ) -> dict:
+        """Ingest each corpus document as its own file, rather than concatenating the
+        whole corpus into one upload.
 
-    def ingest_docs(self, document_path: str) -> None:
-        """Args:
-        document_path (str): The path to document
+        One file per document is required when a per-document ingestion stage is
+        enabled (e.g. contextual RAG, which builds each chunk's context blurb from
+        the chunks of its parent document). With a single concatenated upload every
+        chunk in the corpus looks like part of one giant document, so the blurbs are
+        written against the wrong parent text. Keeping documents separate also stops
+        chunks from straddling two unrelated articles.
+
+        Uploads happen in bounded batches so the presigned-URL fan-out and the
+        upload thread pool stay small, then all files are polled to completion
+        together so EDP's celery workers process them concurrently.
+
+        Args:
+            documents_dir: Directory holding the per-document files.
+            file_names: File names (relative to documents_dir) to ingest.
+            upload_batch_size: Number of concurrent uploads per batch.
+            timeout: Overall seconds to wait for every file to reach a final status.
+            max_failed_files: Tolerated number of files ending in a failed status.
+                Exceeding this raises. Defaults to 0 (any failure is fatal).
+            poll_interval: Seconds between status polls.
+
+        Returns:
+            dict with 'ingested' and 'failed' file-name lists.
         """
+        def _basename(obj_name):
+            return obj_name.rsplit("/", 1)[-1] if "/" in obj_name else obj_name
 
-        presigned_url = self.edp_helper.generate_presigned_url(document_path).json().get("url")
+        pending = set(file_names)
+        logger.info(
+            f"Ingesting {len(pending)} documents individually from {documents_dir} "
+            f"(upload batch size {upload_batch_size})")
 
-        response = self.edp_helper.upload_file(document_path, presigned_url)
-
-        if response.status_code == 200:
+        # --- Upload phase -------------------------------------------------------
+        # A rejected upload usually means a systemic problem (expired token, wrong
+        # bucket, storage full), so stop at the first bad batch instead of pushing
+        # the remaining hundreds of files.
+        batches = [file_names[i:i + upload_batch_size]
+                   for i in range(0, len(file_names), upload_batch_size)]
+        for batch_index, batch in enumerate(batches, start=1):
+            responses = self.edp_helper.upload_files_in_parallel(documents_dir, batch)
+            failed_in_batch = [r for r in responses if r.status_code != 200]
+            if failed_in_batch:
+                raise Exception(
+                    f"{len(failed_in_batch)} upload(s) failed in batch {batch_index}"
+                    f"/{len(batches)}:\n- "
+                    + "\n- ".join(f"{r.status_code}: {r.text[:200]}"
+                                  for r in failed_in_batch[:10]))
             logger.info(
-                f"File {document_path} uploaded successfully. Waiting for ingestion...")
-            # The file is 6.1 MB and splits into 17,508 chunks.
-            # The full process (uploading, text extracting, embedding, ingesting) usually takes around 3 minutes and 46 seconds,
-            # but can increase to more than 4 minutes on resource-constrained environments.
-            # Setting the timeout to 500 seconds should be a sufficient margin.
-            file = self.edp_helper.wait_for_file_upload(
-                document_path, "ingested", timeout=500)
-            logger.info(f"Successfully ingested {file['object_name']}.")
+                f"Uploaded batch {batch_index}/{len(batches)} "
+                f"({min(batch_index * upload_batch_size, len(file_names))}/{len(file_names)} files)")
+
+        # --- Wait phase ---------------------------------------------------------
+        # Poll to a final status per file rather than aborting on the first error, so
+        # one unprocessable article does not discard a long corpus ingestion.
+        failed_statuses = {"error", "canceled", "blocked", "deleted"}
+        ingested, failed = set(), set()
+        failure_reasons = {}
+        start_time = time.time()
+        last_report = 0.0
+        while time.time() < start_time + timeout:
+            statuses = {}
+            for edp_file in self.edp_helper.list_files().json():
+                name = _basename(edp_file.get("object_name", ""))
+                if name in pending:
+                    statuses[name] = edp_file.get("status")
+                    if edp_file.get("status") in failed_statuses:
+                        failure_reasons[name] = (
+                            f"{edp_file.get('status')}: "
+                            f"{str(edp_file.get('job_message') or '')[:200]}")
+
+            ingested = {n for n, s in statuses.items() if s == "ingested"}
+            failed = {n for n, s in statuses.items() if s in failed_statuses}
+
+            if len(ingested) + len(failed) == len(pending):
+                break
+
+            elapsed = time.time() - start_time
+            if elapsed - last_report >= poll_interval * 4:
+                last_report = elapsed
+                logger.info(
+                    f"[{int(elapsed // 60)}m{int(elapsed % 60):02d}s] "
+                    f"ingested {len(ingested)}/{len(pending)}, failed {len(failed)}, "
+                    f"not yet registered {len(pending) - len(statuses)}")
+            time.sleep(poll_interval)
         else:
-            logger.error(
-                f"Error encountered while ingestion document {document_path}: {response.text}")
+            unfinished = pending - ingested - failed
             raise Exception(
-                f"Error encountered while ingestion document {document_path}: {response.text}")
+                f"Timed out after {timeout}s with {len(unfinished)} document(s) not "
+                f"finished:\n- " + "\n- ".join(sorted(unfinished)[:20]))
+
+        logger.info(
+            f"Individual ingestion finished in {round(time.time() - start_time, 1)}s: "
+            f"{len(ingested)} ingested, {len(failed)} failed.")
+        if failed:
+            logger.error(
+                f"{len(failed)} document(s) failed to ingest:\n- "
+                + "\n- ".join(f"{n} ({failure_reasons.get(n, 'unknown')})"
+                              for n in sorted(failed)))
+            if len(failed) > max_failed_files:
+                raise Exception(
+                    f"{len(failed)} document(s) failed to ingest, which exceeds "
+                    f"max_failed_files={max_failed_files}. Re-run with a higher "
+                    f"--ingest_max_failures to tolerate them.")
+
+        return {"ingested": sorted(ingested), "failed": sorted(failed)}
+
+    # A single-file ingest_docs() used to live here, uploading the whole corpus as one
+    # concatenated document. It was removed: every ingestion stage then treats the
+    # corpus as one document, so chunks straddle unrelated articles and contextual RAG
+    # situates each chunk inside the corpus rather than inside its own source document.
+    # Use ingest_docs_individually() above.
 
     def get_uuid(self, question: str) -> str:
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))

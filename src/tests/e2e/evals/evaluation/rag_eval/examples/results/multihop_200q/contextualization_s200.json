@@ -1,0 +1,45 @@
+{
+ "logs": [
+  "/tmp/crag200/logs/pods_BC/edp-contextual-rag-5b84db5995-4mbgz.log",
+  "/tmp/crag200/logs/pods_BC/edp-contextual-rag-5b84db5995-gxmdc.log"
+ ],
+ "documents": 608,
+ "chunks": 17605,
+ "chunks_per_document": 28.96,
+ "blurb_stage_seconds_total": 30731.9,
+ "blurb_stage_hours_total": 8.54,
+ "blurb_service_time_per_chunk_s": 1.7456,
+ "blurb_service_time_per_chunk_s_mean_of_documents": 1.9361,
+ "per_chunk_latency_s_estimated": 40.483,
+ "mean_effective_concurrency": 23.19,
+ "max_concurrency_setting": 32,
+ "per_document_seconds": {
+  "n": 608,
+  "mean": 50.55,
+  "median": 41.65,
+  "min": 7.2,
+  "max": 373.4,
+  "total": 30731.9
+ },
+ "per_document_chunks": {
+  "n": 608,
+  "mean": 28.96,
+  "median": 22.0,
+  "min": 12.0,
+  "max": 202.0,
+  "total": 17605.0
+ },
+ "prompt_tokens": {
+  "n": 608,
+  "mean": 2530.6,
+  "median": 1900.5,
+  "min": 1235.0,
+  "max": 16643.0,
+  "total": 1538579.0
+ },
+ "documents_truncated_to_fit_window": 0,
+ "model_server_replicas_used": {
+  "http://<blurb-pod-ip>:8008": 314,
+  "http://<blurb-pod-ip>:8008": 294
+ }
+}

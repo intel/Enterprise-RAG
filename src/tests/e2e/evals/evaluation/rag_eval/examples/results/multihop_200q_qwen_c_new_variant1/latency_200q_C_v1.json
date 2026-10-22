@@ -1,0 +1,71 @@
+{
+ "label": "v1_C_new",
+ "dataset": "src/tests/e2e/evals/evaluation/rag_eval/examples/output/MultiHopRAG_sample200.json",
+ "n_queries": 200,
+ "n_failed": 0,
+ "parameters": {
+  "stream": true,
+  "temperature": 0.01,
+  "max_new_tokens": 1024,
+  "top_p": 0.95,
+  "top_k": 10,
+  "typical_p": 0.95,
+  "repetition_penalty": 1.03
+ },
+ "per_query_file": "perf_blurb_bench/eval_rerun/output/v1_C_new/latency_200q_v1_C_new.jsonl",
+ "latency": {
+  "ttft_s": {
+   "n": 200,
+   "mean": 2.433,
+   "median": 2.432,
+   "p90": 2.687,
+   "min": 1.514,
+   "max": 3.172
+  },
+  "inter_token_ms": {
+   "n": 200,
+   "mean": 46.44,
+   "median": 46.07,
+   "p90": 47.89,
+   "min": 43.77,
+   "max": 66.77
+  },
+  "time_to_docs_event_s": {
+   "n": 200,
+   "mean": 7.833,
+   "median": 7.18,
+   "p90": 12.216,
+   "min": 2.729,
+   "max": 14.762
+  },
+  "generation_s": {
+   "n": 200,
+   "mean": 5.355,
+   "median": 4.667,
+   "p90": 9.659,
+   "min": 0.267,
+   "max": 11.924
+  },
+  "total_s": {
+   "n": 200,
+   "mean": 7.834,
+   "median": 7.18,
+   "p90": 12.216,
+   "min": 2.729,
+   "max": 14.762
+  },
+  "tokens": {
+   "n": 200,
+   "mean": 117.0,
+   "median": 101.0,
+   "p90": 213.0,
+   "min": 5.0,
+   "max": 256.0
+  }
+ },
+ "pooled": {
+  "total_tokens": 23403,
+  "total_generation_s": 1071.085,
+  "inter_token_ms_pooled": 46.16
+ }
+}

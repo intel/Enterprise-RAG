@@ -1,0 +1,45 @@
+{
+ "logs": [
+  "perf_blurb_bench/eval_rerun/output/v1_NEW/ctx_edp-contextual-rag-7d9bf89877-8kl4c.log",
+  "perf_blurb_bench/eval_rerun/output/v1_NEW/ctx_edp-contextual-rag-7d9bf89877-lq9r7.log"
+ ],
+ "documents": 606,
+ "chunks": 17389,
+ "chunks_per_document": 28.69,
+ "blurb_stage_seconds_total": 19637.5,
+ "blurb_stage_hours_total": 5.45,
+ "blurb_service_time_per_chunk_s": 1.1293,
+ "blurb_service_time_per_chunk_s_mean_of_documents": 1.248,
+ "per_chunk_latency_s_estimated": 26.186,
+ "mean_effective_concurrency": 23.19,
+ "max_concurrency_setting": 32,
+ "per_document_seconds": {
+  "n": 606,
+  "mean": 32.41,
+  "median": 26.6,
+  "min": 7.1,
+  "max": 200.5,
+  "total": 19637.5
+ },
+ "per_document_chunks": {
+  "n": 606,
+  "mean": 28.69,
+  "median": 22.0,
+  "min": 12.0,
+  "max": 202.0,
+  "total": 17389.0
+ },
+ "prompt_tokens": {
+  "n": 606,
+  "mean": 2525.3,
+  "median": 1920.0,
+  "min": 1246.0,
+  "max": 15805.0,
+  "total": 1530349.0
+ },
+ "documents_truncated_to_fit_window": 0,
+ "documents_skipped_over_budget": 1,
+ "model_server_replicas_used": {
+  "http://crag-qwen-blurb.default.svc:8000": 606
+ }
+}

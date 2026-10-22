@@ -1,0 +1,12 @@
+{
+ "C_v1": {
+  "total": 26,
+  "by_type": {
+   "TimeoutError": 13,
+   "OutputParserException": 7,
+   "RagasOutputParserException": 4,
+   "LLMDidNotFinishException": 2
+  },
+  "log": "v1_C_new_eval.log"
+ }
+}
