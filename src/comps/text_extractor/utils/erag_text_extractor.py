@@ -7,7 +7,6 @@ import time
 from pathlib import Path
 from typing import List
 
-import nltk
 from fastapi import UploadFile
 from requests.exceptions import ConnectionError, HTTPError, ProxyError
 
@@ -16,6 +15,7 @@ from comps.cores.proto.docarray import TextDoc
 from comps.cores.utils.utils import sanitize_env
 from comps.text_extractor.utils.crawler import Crawler
 from comps.text_extractor.utils.file_parser import FileParser
+from comps.text_extractor.utils.nltk_data import ensure_nltk_data
 
 
 logger = get_erag_logger(f"{__file__.split('comps/')[1].split('/', 1)[0]}_microservice")
@@ -33,10 +33,8 @@ class EragTextExtractor:
             cls._instance = super(EragTextExtractor, cls).__new__(cls)
             cls._instance.asr_endpoint = asr_endpoint
 
-            # Download NLTK data once at instance creation to avoid slower performance on first call
-            nltk.download('punkt_tab', quiet=True)
-            nltk.download('averaged_perceptron_tagger', quiet=True)
-            nltk.download('averaged_perceptron_tagger_eng', quiet=True)
+            # Check the NLTK data once at instance creation to avoid slower performance on first call
+            ensure_nltk_data()
 
         return cls._instance
 
