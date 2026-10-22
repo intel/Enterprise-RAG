@@ -44,7 +44,7 @@ erag_keycloak_path_prefix: ""   # app_keycloak_config
 istio_enabled: false                               # global
 enforce_pss: false                                 # global
 telemetry_domain_name: "grafana.solutions.ai"      # app_pre_install (solution_config)
-telemetry_path_prefix: "/grafana"                  # app_pre_install (solution_config)
+telemetry_path_prefix: ""                          # app_pre_install (solution_config); "/grafana" with routing_mode: path
 edp_s3_path_prefix: "/s3"                         # app_pre_install (solution_config)
 rag_tmp_dir: "{{ tmp_dir }}/rag"                   # app_pre_install (derived from tmp_dir)
 pipeline_variant: "base"                           # app_pipeline
