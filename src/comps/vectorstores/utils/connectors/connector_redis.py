@@ -1,14 +1,16 @@
 # Copyright (C) 2024-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import asyncio
 import os
-from typing import Iterable, List, Optional, Union
+import string
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from redis import exceptions
 from redisvl.exceptions import RedisSearchError
 from redisvl.index import AsyncSearchIndex
-from redisvl.query import FilterQuery, VectorQuery, VectorRangeQuery
+from redisvl.query import FilterQuery, TextQuery, VectorQuery, VectorRangeQuery
 from redisvl.query.filter import FilterExpression, Num, Text
 from redisvl.redis.connection import RedisConnectionFactory
 from redisvl.redis.utils import array_to_buffer
@@ -26,6 +28,41 @@ change_erag_logger_level(logger, log_level=os.getenv("ERAG_LOGGER_LEVEL", "INFO"
 class ConnectorRedis(VectorStoreConnector):
     CONTENT_FIELD_NAME = "text"
     EMBEDDING_FIELD_NAME = "embedding"
+
+    # Scorer for the lexical (BM25) leg of hybrid search. BM25STD is RediSearch's
+    # standard-tokenised BM25; see
+    # https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/scoring/
+    BM25_SCORER = "BM25STD"
+
+    # Stopwords removed from the query before it is handed to RediSearch as a BM25
+    # query. redisvl's default is to pull these from nltk, which is deliberately not a
+    # dependency of the retriever image, so the list is inlined here (nltk's English
+    # stopword list). Stopwords are removed from the QUERY only -- the index itself keeps
+    # RediSearch's default server-side stopword handling.
+    _TEXT_QUERY_STOPWORDS = frozenset({
+        "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "you're",
+        "you've", "you'll", "you'd", "your", "yours", "yourself", "yourselves", "he",
+        "him", "his", "himself", "she", "she's", "her", "hers", "herself", "it", "it's",
+        "its", "itself", "they", "them", "their", "theirs", "themselves", "what",
+        "which", "who", "whom", "this", "that", "that'll", "these", "those", "am", "is",
+        "are", "was", "were", "be", "been", "being", "have", "has", "had", "having",
+        "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or",
+        "because", "as", "until", "while", "of", "at", "by", "for", "with", "about",
+        "against", "between", "into", "through", "during", "before", "after", "above",
+        "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under",
+        "again", "further", "then", "once", "here", "there", "when", "where", "why",
+        "how", "all", "any", "both", "each", "few", "more", "most", "other", "some",
+        "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very",
+        "s", "t", "can", "will", "just", "don", "don't", "should", "should've", "now",
+        "d", "ll", "m", "o", "re", "ve", "y", "ain", "aren", "aren't", "couldn",
+        "couldn't", "didn", "didn't", "doesn", "doesn't", "hadn", "hadn't", "hasn",
+        "hasn't", "haven", "haven't", "isn", "isn't", "ma", "mightn", "mightn't",
+        "mustn", "mustn't", "needn", "needn't", "shan", "shan't", "shouldn",
+        "shouldn't", "wasn", "wasn't", "weren", "weren't", "won", "won't", "wouldn",
+        "wouldn't",
+    })
+
+    _TOKEN_TRIM_CHARS = string.punctuation + "“”‘’"
 
     def __init__(self, batch_size: int = 32):
         self.batch_size = batch_size
@@ -290,9 +327,7 @@ class ConnectorRedis(VectorStoreConnector):
 
     async def similarity_search_by_vector(self, input_text: str, embedding: List[float], k: int, distance_threshold: float = None, filter_expression: Optional[Union[str, FilterExpression]] = None, parse_result: bool = True) -> SearchedDoc:
         try:
-            fields = [ConnectorRedis.CONTENT_FIELD_NAME, VectorQuery.DISTANCE_ID]
-            if self._metadata_schema():
-                fields.extend([field['name'] for field in self._metadata_schema()])
+            fields = self._return_fields(include_vector_distance=True)
 
             v = self._build_vector_query(
                 vector=embedding,
@@ -317,6 +352,284 @@ class ConnectorRedis(VectorStoreConnector):
         except Exception as e:
             logger.exception("Error occured while searching by vector")
             raise e
+
+    def _return_fields(self, include_vector_distance: bool = True) -> List[str]:
+        """Fields to fetch back from RediSearch: the chunk text plus all metadata."""
+        fields = [ConnectorRedis.CONTENT_FIELD_NAME]
+        if include_vector_distance:
+            fields.append(VectorQuery.DISTANCE_ID)
+        if self._metadata_schema():
+            fields.extend([field['name'] for field in self._metadata_schema()])
+        return fields
+
+    @classmethod
+    def _has_lexical_tokens(cls, text: str) -> bool:
+        """True if *text* still holds at least one searchable term after stopword removal.
+
+        A query made up entirely of stopwords/punctuation ("what is the?") would produce
+        an empty RediSearch text query, so the lexical leg has to be skipped for it.
+        """
+        for token in text.split():
+            token = token.strip(cls._TOKEN_TRIM_CHARS).lower()
+            if token and token not in cls._TEXT_QUERY_STOPWORDS:
+                return True
+        return False
+
+    def _build_text_query(
+        self,
+        input_text: str,
+        k: int,
+        filter_expression: Optional[Union[str, FilterExpression]] = None,
+        return_fields: Optional[List[str]] = None
+    ) -> Optional[TextQuery]:
+        """Build a BM25 full-text query over the chunk text field.
+
+        The same *filter_expression* used by the vector leg is applied here, so RBAC,
+        links/files and metadata filtering behave identically in both legs. redisvl
+        escapes the query tokens (TokenEscaper), so no manual escaping is needed.
+
+        Returns None when the query has no searchable terms left after stopword removal.
+        """
+        if not input_text or not self._has_lexical_tokens(input_text):
+            logger.warning(
+                "Query has no searchable terms after stopword removal; skipping the BM25 leg."
+            )
+            return None
+
+        filter_str = str(filter_expression) if filter_expression is not None else "None"
+        logger.info(
+            f"Building BM25 text query: k={k}, scorer={ConnectorRedis.BM25_SCORER}, "
+            f"filter_expression={filter_str}"
+        )
+        return TextQuery(
+            text=input_text,
+            text_field_name=ConnectorRedis.CONTENT_FIELD_NAME,
+            text_scorer=ConnectorRedis.BM25_SCORER,
+            filter_expression=filter_expression,
+            return_fields=return_fields,
+            num_results=k,
+            # redisvl type-checks this against typing.Set/List/Tuple, which a frozenset
+            # does not satisfy, so hand it a mutable copy of the constant.
+            stopwords=set(ConnectorRedis._TEXT_QUERY_STOPWORDS),
+        )
+
+    async def bm25_search(
+        self,
+        input_text: str,
+        k: int,
+        filter_expression: Optional[Union[str, FilterExpression]] = None,
+        parse_result: bool = True
+    ) -> SearchedDoc:
+        """Lexical BM25 search over the indexed chunk text.
+
+        With contextual RAG enabled the indexed text is `blurb + "\\n\\n" + chunk`, so this
+        is Anthropic's "contextual BM25": the LLM-generated context is searchable
+        lexically as well as semantically.
+
+        Args:
+            input_text: the user query.
+            k: number of results to return.
+            filter_expression: the same filter expression the vector leg uses.
+            parse_result: return a SearchedDoc (True) or the raw RediSearch result (False).
+        """
+        try:
+            t = self._build_text_query(
+                input_text=input_text,
+                k=k,
+                filter_expression=filter_expression,
+                return_fields=self._return_fields(include_vector_distance=False)
+            )
+            if t is None:
+                return SearchedDoc(retrieved_docs=[], user_prompt=input_text) if parse_result else None
+
+            index = await self.vector_index()
+            result = await index.search(t.query, query_params=t.params)
+            logger.info(f"BM25 leg matched {result.total} chunk(s), returning {len(result.docs)}")
+
+            if parse_result:
+                return self._parse_search_results(input_text=input_text, results=result.docs)
+            return result
+        except exceptions.ResponseError as e:
+            if "no such index" in str(e):
+                logger.warning("No such index found in vector store. Import data first.")
+                return SearchedDoc(retrieved_docs=[], user_prompt=input_text) if parse_result else None
+            raise e
+        except Exception as e:
+            logger.exception("Error occured while searching with BM25")
+            raise e
+
+    @staticmethod
+    def _reciprocal_rank_fusion(
+        ranked_lists: List[Tuple[List[str], float]],
+        rrf_k: int = 0
+    ) -> Dict[str, float]:
+        """Weighted Reciprocal Rank Fusion.
+
+        Each input is a (list of document ids ordered best-first, weight) pair. A document
+        at 0-based rank *r* in a list contributes ``weight / (rrf_k + r + 1)`` to its score.
+        Only ranks matter, so the incomparable score scales of cosine distance and BM25
+        never have to be normalised against each other.
+
+        Args:
+            ranked_lists: the per-retriever ranked id lists with their weights.
+            rrf_k: rank-smoothing constant; larger values flatten the weight given to top
+                ranks. 0 reproduces Anthropic's reference implementation (``weight / rank``).
+                The canonical Cormack RRF constant of 60 flattens ranks so aggressively that
+                with an 0.8/0.2 weighting the lexical leg cannot promote any chunk the dense
+                leg missed (0.2/61 < 0.8/70), so use 60 only with balanced weights.
+
+        Returns:
+            dict mapping document id -> fused score (higher is better).
+        """
+        scores: Dict[str, float] = {}
+        for ids, weight in ranked_lists:
+            if not weight:
+                continue
+            for rank, doc_id in enumerate(ids):
+                scores[doc_id] = scores.get(doc_id, 0.0) + weight / (rrf_k + rank + 1)
+        return scores
+
+    async def hybrid_search_by_vector(
+        self,
+        input_text: str,
+        embedding: List[float],
+        k: int,
+        candidate_k: int = 100,
+        rrf_k: int = 0,
+        semantic_weight: float = 0.8,
+        bm25_weight: float = 0.2,
+        distance_threshold: float = None,
+        filter_expression: Optional[Union[str, FilterExpression]] = None
+    ) -> SearchedDoc:
+        """Hybrid retrieval: dense vector search + BM25, fused with weighted RRF.
+
+        This is the retrieval half of Anthropic's Contextual Retrieval recipe
+        (https://www.anthropic.com/engineering/contextual-retrieval): both legs run over
+        the contextualised chunk text, each returns *candidate_k* candidates, the two
+        rankings are fused by reciprocal rank, and the top *k* fused chunks are handed to
+        the reranker.
+
+        The legs are issued concurrently. The vector leg is authoritative: if the BM25 leg
+        fails the search degrades to vector-only rather than failing the request.
+
+        Args:
+            input_text: the user query (used for the BM25 leg and echoed in the result).
+            embedding: query embedding for the dense leg.
+            k: number of fused chunks to return.
+            candidate_k: candidates fetched from EACH leg before fusion (Anthropic use 150;
+                the default here is 100, raised to *k* when smaller).
+            rrf_k: RRF rank-smoothing constant; 0 = Anthropic's ``weight / rank``.
+            semantic_weight: weight of the dense leg in the fusion.
+            bm25_weight: weight of the lexical leg in the fusion.
+            distance_threshold: optional distance cut-off for the dense leg.
+            filter_expression: filter applied identically to both legs.
+
+        Returns:
+            SearchedDoc with up to *k* documents ordered by fused score. Each document's
+            metadata carries `rrf_score`, `retrieval_source` ("hybrid"/"vector"/"bm25"),
+            and the per-leg ranks/scores it was fused from.
+        """
+        if semantic_weight <= 0 and bm25_weight <= 0:
+            raise ValueError("At least one of semantic_weight / bm25_weight must be greater than 0")
+
+        # Both legs need a deeper candidate pool than the number of fused results.
+        candidate_k = max(candidate_k, k)
+
+        async def vector_leg():
+            if semantic_weight <= 0:
+                return []
+            res = await self.similarity_search_by_vector(
+                input_text=input_text,
+                embedding=embedding,
+                k=candidate_k,
+                distance_threshold=distance_threshold,
+                filter_expression=filter_expression,
+                parse_result=False
+            )
+            # similarity_search_by_vector returns an empty SearchedDoc when the index is missing
+            return list(res.docs) if hasattr(res, "docs") else []
+
+        async def bm25_leg():
+            if bm25_weight <= 0:
+                return []
+            res = await self.bm25_search(
+                input_text=input_text,
+                k=candidate_k,
+                filter_expression=filter_expression,
+                parse_result=False
+            )
+            return list(res.docs) if res is not None and hasattr(res, "docs") else []
+
+        vector_docs, bm25_docs = await asyncio.gather(
+            vector_leg(), bm25_leg(), return_exceptions=True
+        )
+
+        if isinstance(vector_docs, BaseException):
+            # The dense leg is the primary retriever - a failure there is a real failure.
+            logger.error(f"Vector leg of hybrid search failed: {vector_docs}")
+            raise vector_docs
+        if isinstance(bm25_docs, BaseException):
+            logger.warning(
+                f"BM25 leg of hybrid search failed, falling back to vector-only retrieval: {bm25_docs}"
+            )
+            bm25_docs = []
+
+        vector_ranks = {doc.id: rank for rank, doc in enumerate(vector_docs)}
+        bm25_ranks = {doc.id: rank for rank, doc in enumerate(bm25_docs)}
+
+        scores = self._reciprocal_rank_fusion(
+            [
+                ([doc.id for doc in vector_docs], semantic_weight),
+                ([doc.id for doc in bm25_docs], bm25_weight),
+            ],
+            rrf_k=rrf_k
+        )
+        if not scores:
+            return SearchedDoc(retrieved_docs=[], user_prompt=input_text)
+
+        # Prefer the vector-leg copy of a document: it carries vector_distance.
+        raw_docs = {doc.id: doc for doc in bm25_docs}
+        raw_docs.update({doc.id: doc for doc in vector_docs})
+
+        # Sort by fused score, then by each leg's rank, so the order is deterministic
+        # for documents that tie.
+        ordered_ids = sorted(
+            scores,
+            key=lambda doc_id: (
+                -scores[doc_id],
+                vector_ranks.get(doc_id, len(vector_docs)),
+                bm25_ranks.get(doc_id, len(bm25_docs)),
+            )
+        )[:k]
+
+        overlap = len(vector_ranks.keys() & bm25_ranks.keys())
+        logger.info(
+            f"Hybrid search fused {len(vector_docs)} vector + {len(bm25_docs)} BM25 candidates "
+            f"({overlap} in both) into {len(ordered_ids)} result(s); "
+            f"rrf_k={rrf_k}, semantic_weight={semantic_weight}, bm25_weight={bm25_weight}"
+        )
+
+        searched_docs = []
+        for doc_id in ordered_ids:
+            text_doc = self._convert_to_text_doc(raw_docs[doc_id])
+            in_vector = doc_id in vector_ranks
+            in_bm25 = doc_id in bm25_ranks
+            text_doc.metadata["rrf_score"] = scores[doc_id]
+            text_doc.metadata["retrieval_source"] = (
+                "hybrid" if in_vector and in_bm25 else ("vector" if in_vector else "bm25")
+            )
+            if in_vector:
+                text_doc.metadata["vector_rank"] = vector_ranks[doc_id] + 1
+            if in_bm25:
+                text_doc.metadata["bm25_rank"] = bm25_ranks[doc_id] + 1
+                bm25_score = getattr(raw_docs[doc_id], "score", None)
+                if bm25_score is None and doc_id in bm25_ranks:
+                    bm25_score = getattr(bm25_docs[bm25_ranks[doc_id]], "score", None)
+                if bm25_score is not None:
+                    text_doc.metadata["bm25_score"] = float(bm25_score)
+            searched_docs.append(text_doc)
+
+        return SearchedDoc(retrieved_docs=searched_docs, user_prompt=input_text)
 
     def get_files_filter_expression(self) -> FilterExpression:
         """

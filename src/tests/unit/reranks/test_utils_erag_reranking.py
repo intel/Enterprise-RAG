@@ -373,3 +373,37 @@ async def test_async_call_reranker_vllm_normalises_data_wrapper(vllm_reranker):
         result = await vllm_reranker._async_call_reranker("What is DL?", ["DL is not...", "DL is..."])
 
     assert result == [{"index": 1, "score": 0.9}, {"index": 0, "score": 0.3}]
+
+
+# ---------------------------------------------------------------------------
+# Hybrid search compatibility: when the reranker is bypassed (late chunking), documents
+# fused by Reciprocal Rank Fusion must be ranked by their fused score, because a chunk the
+# BM25 leg found on its own carries no vector distance.
+# ---------------------------------------------------------------------------
+
+def test_filter_top_n_by_rrf_score(test_class):
+    docs = [
+        TextDoc(text="bm25 only", metadata={"rrf_score": 0.2, "retrieval_source": "bm25"}),
+        TextDoc(text="best fused", metadata={"rrf_score": 0.9, "vector_distance": 0.5,
+                                            "retrieval_source": "hybrid"}),
+        TextDoc(text="weak fused", metadata={"rrf_score": 0.05, "vector_distance": 0.1,
+                                            "retrieval_source": "vector"}),
+    ]
+
+    top = test_class._filter_top_n_by_vector_distance(docs, top_n=2)
+
+    # Ranked by fused score, not by vector distance: 'weak fused' has the smallest distance
+    # but the lowest fused score, and 'bm25 only' has no distance at all.
+    assert [doc.text for doc in top] == ["best fused", "bm25 only"]
+
+
+def test_filter_top_n_falls_back_to_vector_distance_without_rrf_scores(test_class):
+    docs = [
+        TextDoc(text="far", metadata={"vector_distance": 0.9}),
+        TextDoc(text="near", metadata={"vector_distance": 0.1}),
+        TextDoc(text="no distance", metadata={}),
+    ]
+
+    top = test_class._filter_top_n_by_vector_distance(docs, top_n=3)
+
+    assert [doc.text for doc in top] == ["near", "far", "no distance"]

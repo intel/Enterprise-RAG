@@ -4,7 +4,7 @@
 from datetime import datetime
 from typing import Literal, Optional, List
 
-from pydantic import BaseModel, NonNegativeFloat, PositiveInt
+from pydantic import BaseModel, NonNegativeFloat, NonNegativeInt, PositiveInt
 
 
 class AnonymizeModel(BaseModel):
@@ -255,6 +255,10 @@ Jeśli nie znasz odpowiedzi na pytanie, nie podawaj fałszywych informacji.\n\
 
 
 class RetrieverParams(BaseModel):
+    # "similarity" (dense vector; upgraded to "hybrid" when the retriever runs with
+    # HYBRID_SEARCH_ENABLED=true), "vector" (dense only, never upgraded), "hybrid"
+    # (BM25 + dense fused with RRF), "similarity_distance_threshold",
+    # "similarity_search_with_siblings".
     search_type: str = "similarity"
     k: PositiveInt = 10
     distance_threshold: Optional[float] = None
@@ -262,10 +266,18 @@ class RetrieverParams(BaseModel):
     lambda_mult: NonNegativeFloat = 0.5
     score_threshold: NonNegativeFloat = 0.2
     metadata_extraction_mode: str = "off"
+    # Hybrid search knobs (only used when the effective search_type is "hybrid").
+    # rrf_k = 0 reproduces Anthropic's weight/rank fusion; 60 is canonical RRF smoothing
+    # and only makes sense with balanced semantic/bm25 weights.
+    hybrid_candidate_k: PositiveInt = 100
+    hybrid_result_k: PositiveInt = 20
+    rrf_k: NonNegativeInt = 0
+    semantic_weight: NonNegativeFloat = 0.8
+    bm25_weight: NonNegativeFloat = 0.2
 
 
 class RerankerParams(BaseModel):
-    top_n: PositiveInt = 3
+    top_n: PositiveInt = 5
     rerank_score_threshold: Optional[float] = 0.02
 
 

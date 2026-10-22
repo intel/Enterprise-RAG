@@ -14,6 +14,7 @@ This code implements an interface for connecting to multiple vector store databa
    - 3.3. [Example usage](#example-usage)
 4. [VectorStore methods](#vectorstore-methods)
    - 4.1. [search()](#search)
+     - 4.1.1. [Hybrid search (`hybrid`)](#hybrid-search-hybrid)
    - 4.2. [add_texts()](#add_texts)
 5. [Additional Information](#additional-information)
    - 5.1. [Project Structure](#project-structure)
@@ -160,12 +161,43 @@ Based on the selected `search_type` method, additional arguments should be passe
 | Search type                      | Search method                             | Arguments                     |
 | -------------------------------- | ----------------------------------------- | ----------------------------- |
 | `similarity`                     | `similarity_search_by_vector`             | `k`                           |
+| `vector`                         | `similarity_search_by_vector`             | `k`                           |
+| `hybrid`                         | `hybrid_search_by_vector`                 | `k`, `hybrid_candidate_k`, `hybrid_result_k`, `rrf_k`, `semantic_weight`, `bm25_weight` |
 | `similarity_distance_threshold`  | `similarity_search_by_vector`             | `k`, `distance_threshold`     |
 | `similarity_search_with_siblings` | `similarity_search_with_siblings`        | `k`, `distance_threshold`     |
 
 Additional search parameters that can be added to the query to configure the search:
 - `k`: The number of nearest neighbors to retrieve from the database. It determines the size of the result set (default: `10`)
 - `distance_treshold`: The maximum distance threshold for similarity search by vector. Documents with a distance greater than the threshold will not be considered as matches. The default value is not specified. (default: `None`)
+
+#### Hybrid search (`hybrid`)
+
+`hybrid_search_by_vector()` runs a lexical BM25 search and a dense vector search over the
+same chunks and fuses the two rankings with weighted Reciprocal Rank Fusion, following
+[Anthropic's Contextual Retrieval](https://www.anthropic.com/engineering/contextual-retrieval).
+It is implemented for Redis and Redis Cluster only; the other connectors inherit the base
+class stub and raise `NotImplementedError`.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `hybrid_candidate_k` | `100` | Candidates fetched from EACH leg before fusion. Raised to `k` if smaller |
+| `hybrid_result_k` | `20` | Depth of the fused list returned (the reranker cuts it to `top_n`) |
+| `rrf_k` | `0` | Rank-smoothing constant: rank *r* contributes `weight / (rrf_k + r)`. `0` = Anthropic's `weight / rank` |
+| `semantic_weight` | `0.8` | Fusion weight of the dense leg. Set to `0` for BM25-only |
+| `bm25_weight` | `0.2` | Fusion weight of the lexical leg. Set to `0` for dense-only |
+
+Implementation notes:
+
+- The BM25 leg uses RediSearch's `BM25STD` scorer over the existing `text` content field, so
+  **no re-ingest or schema migration** is required to turn hybrid search on.
+- Both legs receive the identical `FilterExpression`, so RBAC, bucket/file filters and
+  metadata filtering behave the same in each.
+- The legs run concurrently. The dense leg is authoritative: a BM25 failure (or a query that
+  is entirely stopwords) degrades the search to dense-only; a dense failure is raised.
+- Fused documents carry `rrf_score`, `retrieval_source` (`hybrid`/`vector`/`bm25`),
+  `vector_rank`, `bm25_rank` and `bm25_score` in their metadata. Documents found only by the
+  BM25 leg have no `vector_distance`.
+- Setting both weights to `0` raises `ValueError`.
 
 ### add_texts()
 This method inserts data directly into the selected vector store database. The input is a list of `EmbedDoc` elements. It returns the list of texts saved into a database.

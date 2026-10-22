@@ -34,6 +34,67 @@ retriever = erag_retriever.EragRetriever(
     rbac_enabled=str(os.getenv('VECTOR_DB_RBAC')).lower() in ['true', '1', 't', 'y', 'yes']
 )
 
+# Hybrid search (contextual BM25 + contextual embeddings fused with Reciprocal Rank
+# Fusion). Deployed with HYBRID_SEARCH_ENABLED=True whenever contextual RAG is enabled,
+# because the blurbs that make hybrid search worthwhile are produced at ingest time.
+# When enabled, requests asking for the plain "similarity" search type are served as
+# "hybrid"; use search_type "vector" to force dense-only retrieval, or "hybrid" to force
+# hybrid retrieval on a deployment where the flag is off.
+HYBRID_SEARCH_ENABLED = str(sanitize_env(os.getenv("HYBRID_SEARCH_ENABLED", "false"))).lower() in [
+    'true', '1', 't', 'y', 'yes'
+]
+HYBRID_SEARCH_ENV_DEFAULTS = {
+    "hybrid_candidate_k": ("HYBRID_SEARCH_CANDIDATE_K", int),
+    "hybrid_result_k": ("HYBRID_SEARCH_RESULT_K", int),
+    "rrf_k": ("HYBRID_SEARCH_RRF_K", int),
+    "semantic_weight": ("HYBRID_SEARCH_SEMANTIC_WEIGHT", float),
+    "bm25_weight": ("HYBRID_SEARCH_BM25_WEIGHT", float),
+}
+
+if HYBRID_SEARCH_ENABLED:
+    logger.info(
+        "Hybrid search enabled: 'similarity' requests are served as 'hybrid' "
+        "(BM25 + dense vector search fused with RRF)."
+    )
+
+
+def _request_body_for_doc(req_data) -> dict:
+    """The JSON object the retrieval parameters were sent in (EmbedDoc or EmbedDocList)."""
+    if not isinstance(req_data, dict):
+        return {}
+    docs = req_data.get("docs")
+    if isinstance(docs, list) and docs and isinstance(docs[0], dict):
+        return docs[0]
+    return req_data
+
+
+def apply_hybrid_search_defaults(vector: EmbedDoc, req_data) -> None:
+    """Turn the deployment's hybrid-search defaults into effective request parameters.
+
+    Explicit per-request values always win: an env default is only applied to a field the
+    caller did not send.
+    """
+    if not HYBRID_SEARCH_ENABLED:
+        return
+
+    if vector.search_type == "similarity":
+        vector.search_type = "hybrid"
+
+    if vector.search_type != "hybrid":
+        return
+
+    body = _request_body_for_doc(req_data)
+    for field, (env_name, cast) in HYBRID_SEARCH_ENV_DEFAULTS.items():
+        if field in body:
+            continue  # caller set it explicitly
+        raw = sanitize_env(os.getenv(env_name))
+        if not raw:
+            continue
+        try:
+            setattr(vector, field, cast(raw))
+        except (TypeError, ValueError):
+            logger.warning(f"Ignoring invalid {env_name}={raw!r}; keeping {field}={getattr(vector, field)}")
+
 @register_microservice(
     name=USVC_NAME,
     service_type=ServiceType.RETRIEVER,
@@ -56,9 +117,11 @@ async def process(input: Union[EmbedDoc, EmbedDocList], request: Request) -> Sea
     else:
         vector = input # EmbedDoc
 
+    req_data = await request.json()
+    apply_hybrid_search_defaults(vector, req_data)
+
     logger.info(f"Retrieving documents for input: {vector.text}. K={vector.k}, Search Type={vector.search_type}")
 
-    req_data = await request.json()
     search_by = retriever.generate_search_by(req_data)
     rbac_by = retriever.generate_rbac(request.headers.get("Authorization")) if retriever.rbac_enabled else None
     
@@ -96,11 +159,13 @@ async def process(input: Union[EmbedDoc, EmbedDocList], request: Request) -> Sea
     logger.info(f"Retrieved {len(result_vectors.retrieved_docs)} documents in {time.time() - start} seconds.")
 
     for doc in result_vectors.retrieved_docs:
+        # A chunk found only by the BM25 leg of hybrid search has no vector distance.
+        score = doc.metadata.get('rrf_score', doc.metadata.get('vector_distance', 'n/a'))
         if 'file_id' in doc.metadata:
-            logger.debug(f"Score: {doc.metadata['vector_distance']} - File: {doc.metadata['file_id']} - Text: {doc.text[0:32]}...")
+            logger.debug(f"Score: {score} - File: {doc.metadata['file_id']} - Text: {doc.text[0:32]}...")
 
         if 'link_id' in doc.metadata:
-            logger.debug(f"Score: {doc.metadata['vector_distance']} - Link: {doc.metadata['link_id']} - Text: {doc.text[0:32]}...")
+            logger.debug(f"Score: {score} - Link: {doc.metadata['link_id']} - Text: {doc.text[0:32]}...")
 
     result_vectors.history_id = input.history_id
     return result_vectors

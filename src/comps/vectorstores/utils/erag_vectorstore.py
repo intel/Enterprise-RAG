@@ -89,6 +89,15 @@ class EragVectorStore():
     def search(self, input: EmbedDoc, filter_expression: Optional[str] = None) -> SearchedDoc:
         """
         Performs a search in the vector store based on the input.
+
+        Supported search types:
+            - "similarity" / "vector": dense vector search only.
+            - "hybrid": dense vector search fused with lexical BM25 by weighted
+              reciprocal rank fusion (Anthropic's Contextual Retrieval, query-time half).
+            - "bm25": lexical search only, mainly useful for A/B measurements.
+            - "similarity_search_with_siblings": dense search widened with sibling chunks.
+            - "similarity_distance_threshold": dense search with a distance cut-off.
+
         Args:
             input (EmbedDoc): The input for the search.
             filter_expression (str, optional): The filter expression for metadata filtering before the search. Defaults to None.
@@ -96,11 +105,32 @@ class EragVectorStore():
             SearchedDoc: The result of the search.
         """
         search_res = None
-        if input.search_type == "similarity":
+        if input.search_type in ("similarity", "vector"):
             search_res = self.vector_store.similarity_search_by_vector(
                 input_text=input.text,
                 embedding=input.embedding,
                 k=input.k,
+                filter_expression=filter_expression
+            )
+        elif input.search_type == "hybrid":
+            # Fetch the full fused list (hybrid_result_k) rather than input.k: the reranker
+            # downstream is what narrows it, and Anthropic's numbers come from reranking a
+            # deep candidate list. input.k is respected when it asks for more.
+            search_res = self.vector_store.hybrid_search_by_vector(
+                input_text=input.text,
+                embedding=input.embedding,
+                k=max(input.k, input.hybrid_result_k),
+                candidate_k=input.hybrid_candidate_k,
+                rrf_k=input.rrf_k,
+                semantic_weight=input.semantic_weight,
+                bm25_weight=input.bm25_weight,
+                distance_threshold=input.distance_threshold,
+                filter_expression=filter_expression
+            )
+        elif input.search_type == "bm25":
+            search_res = self.vector_store.bm25_search(
+                input_text=input.text,
+                k=max(input.k, input.hybrid_result_k),
                 filter_expression=filter_expression
             )
         elif input.search_type == "similarity_search_with_siblings":
