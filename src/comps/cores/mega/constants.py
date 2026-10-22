@@ -28,6 +28,7 @@ class ServiceType(Enum):
     LATE_CHUNKING = 35
     NAMESPACE_STATUS_WATCHER = 36
     QUERY_REWRITE = 37
+    CONTEXTUAL_RAG = 38
 
 
 class MegaServiceEndpoint(Enum):
@@ -54,6 +55,7 @@ class MegaServiceEndpoint(Enum):
     CHAT_HISTORY = "/v1/chat_history"
     LATE_CHUNKING = "/v1/late_chunking"
     QUERY_REWRITE = "/v1/query_rewrite"
+    CONTEXTUAL_RAG = "/v1/contextual_rag"
 
     def __str__(self):
         return self.value

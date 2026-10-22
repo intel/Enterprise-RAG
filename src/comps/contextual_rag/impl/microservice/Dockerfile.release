@@ -1,0 +1,11 @@
+FROM contextual-rag-base:latest
+
+COPY compliance /compliance
+
+WORKDIR /compliance/ospdt
+COPY Dockerfile .
+COPY uv.lock .
+
+# CMD from base Dockerfile
+WORKDIR /home/user/comps/contextual_rag
+CMD ["python", "erag_contextual_rag_microservice.py"]
