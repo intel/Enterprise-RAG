@@ -19,7 +19,7 @@ import allure
 import kr8s
 import pytest
 
-from tests.e2e.validation.buildcfg import cfg
+from tests.e2e.validation.buildcfg import cfg, is_openshift
 from tests.e2e.validation.constants import LLM_INFERENCE_NAMESPACE
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 NRI_ANN_PREFIX = "balloon.balloons.resource-policy.nri.io/"
 NRI_PLUGIN_NAMESPACE = "kube-system"
 NRI_PLUGIN_DAEMONSET = "nri-resource-policy-balloons"
+OPENSHIFT_BALLOON_POD_LABEL = "kserve.io/component"
+OPENSHIFT_BALLOON_POD_LABEL_VALUE = "workload"
 
 
 def _nri_plugin_deployed() -> bool:
@@ -39,6 +41,13 @@ nri_balloons_only = pytest.mark.skipif(
     not _nri_plugin_deployed(),
     reason=f"NRI balloons policy not deployed (no DaemonSet '{NRI_PLUGIN_NAMESPACE}/{NRI_PLUGIN_DAEMONSET}')",
 )
+
+
+def _in_balloon(pod) -> bool:
+    if any(key.startswith(NRI_ANN_PREFIX) for key in pod.metadata.get("annotations") or {}):
+        return True
+    labels = pod.metadata.get("labels") or {}
+    return is_openshift() and labels.get(OPENSHIFT_BALLOON_POD_LABEL) == OPENSHIFT_BALLOON_POD_LABEL_VALUE
 
 
 def _parse_cpuset(spec: str) -> list[int]:
@@ -103,26 +112,19 @@ def balloon_pod_data(k8s_helper):
     """Collect NRI balloon pods, their cpusets, and node topology.
 
     Returns a dict with:
-        - balloon_pods: list of running pods with NRI balloon annotations
+        - balloon_pods: list of running pods with NRI balloon annotations, and on OpenShift
+          the KServe workload pods the BalloonsPolicy selects by their kserve.io/component label
         - pod_cpusets: dict of {pod.name: [cpu_ids]}
         - sibling_maps: dict of {node_name: {cpu_id: sibling_cpu_id}}
     """
-    pods = k8s_helper.list_pods(LLM_INFERENCE_NAMESPACE)
-    balloon_pods = []
-    for pod in pods:
-        if pod.status.phase != "Running":
-            continue
-        anns = pod.metadata.get("annotations", {}) or {}
-        for key in anns:
-            if key.startswith(NRI_ANN_PREFIX):
-                balloon_pods.append(pod)
-                break
+    balloon_pods = [pod for pod in k8s_helper.list_pods(LLM_INFERENCE_NAMESPACE)
+                    if pod.status.phase == "Running" and _in_balloon(pod)]
 
     assert len(balloon_pods) > 0, (
-        f"No running pods with NRI balloon annotations found in namespace '{LLM_INFERENCE_NAMESPACE}'. "
+        f"No running NRI balloon pods found in namespace '{LLM_INFERENCE_NAMESPACE}'. "
         "Ensure inference models are deployed."
     )
-    logger.info(f"Found {len(balloon_pods)} pods with NRI balloon annotations")
+    logger.info(f"Found {len(balloon_pods)} NRI balloon pods")
 
     sibling_maps = {}
     for pod in balloon_pods:
@@ -285,8 +287,27 @@ PSS_NAMESPACE_BLACKLIST = {
     "local-path-storage",
 }
 
+OPENSHIFT_PSS_NAMESPACE_BLACKLIST = {
+    "openshift",
+    "cert-manager",
+    "cert-manager-operator",
+    "istio-system",
+    "istio-cni",
+    "ztunnel",
+    "kuadrant-system",
+    "redhat-ods-operator",
+}
+OPENSHIFT_NAMESPACE_PREFIX = "openshift-"
+
 PSS_ENFORCE_LABEL = "pod-security.kubernetes.io/enforce"
 VALID_PSS_PROFILES = ("privileged", "baseline", "restricted")
+
+
+def _pss_exempt(name: str) -> bool:
+    if name in PSS_NAMESPACE_BLACKLIST:
+        return True
+    return is_openshift() and (name in OPENSHIFT_PSS_NAMESPACE_BLACKLIST
+                               or name.startswith(OPENSHIFT_NAMESPACE_PREFIX))
 
 
 @pytest.mark.skipif(
@@ -309,10 +330,15 @@ def test_namespaces_have_pss_labels():
     checked except the namespaces in PSS_NAMESPACE_BLACKLIST. When a run surfaces
     a namespace that legitimately cannot be labelled, add it there with a reason
     instead of restricting the scan to a known-good set.
+
+    On OpenShift, Pod Security comes from SCCs (the cluster-wide enforce default is
+    privileged), so the OpenShift namespaces (openshift, openshift-*) and the
+    namespaces of the prerequisite operators, which the installer does not create,
+    are skipped as well (OPENSHIFT_PSS_NAMESPACE_BLACKLIST).
     """
     violations = []
     for ns in kr8s.get("namespaces"):
-        if ns.name in PSS_NAMESPACE_BLACKLIST:
+        if _pss_exempt(ns.name):
             continue
         labels = ns.metadata.get("labels") or {}
         profile = labels.get(PSS_ENFORCE_LABEL)

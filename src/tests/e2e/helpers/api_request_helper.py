@@ -110,21 +110,23 @@ class ApiRequestHelper:
         self.default_headers = {"Content-Type": "application/json"}
         self.keycloak_helper = keycloak_helper
 
-    def call_health_check_api(self, namespace, selector, port, health_path="v1/health_check"):
+    def call_health_check_api(self, namespace, selector, port, health_path="v1/health_check", scheme="http"):
         """
         API call to microservice health_check API.
         Microservices are not exposed so we need to forward their ports first.
         namespace and selector are used in order to find the specified pod
-        which handles health_check call.
+        which handles health_check call. Like the kubelet's https probes,
+        the certificate is not verified.
         """
         with CustomPortForward(port, namespace, selector) as pf:
             logger.info(f"Attempting to make a request to {namespace}/{selector}...")
-            base_url = f"http://127.0.0.1:{pf.local_port}/"
+            base_url = f"{scheme}://127.0.0.1:{pf.local_port}/"
             full_url = urljoin(base_url, health_path)
             response = requests.get(
                 full_url,
                 headers=self.default_headers,
-                timeout=10
+                timeout=10,
+                verify=False
             )
             return response
 

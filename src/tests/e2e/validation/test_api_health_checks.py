@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 def test_api_health_checks(generic_api_helper):
     """
     Find the services that expose /v1/health_check API.
-    For each service check if the health check API returns HTTP status code 200.
+    For each service check if the health check API, called with the liveness probe's
+    scheme (http or https), returns HTTP status code 200.
     Omit pods in kube-system, monitoring, monitoring-traces and auth-apisix namespaces.
     """
     svcs = []
@@ -50,13 +51,15 @@ def test_api_health_checks(generic_api_helper):
                 svcs.append({"selector": selector,
                              "namespace": ns,
                              "port": container_port,
-                             "health_path": path})
+                             "health_path": path,
+                             "scheme": lp.httpGet.get("scheme", "HTTP").lower()})
 
     failed_microservices = []
     for service in svcs:
         try:
             response = generic_api_helper.call_health_check_api(
-                service['namespace'], service['selector'], service['port'], service['health_path'])
+                service['namespace'], service['selector'], service['port'], service['health_path'],
+                service['scheme'])
 
             if response.status_code != 200:
                 error_msg = (
