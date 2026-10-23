@@ -117,7 +117,7 @@
         "yAxis": {
           "axisPlacement": "left",
           "reverse": false,
-          "unit": "ms"
+          "unit": "s"
         }
       },
       "pluginVersion": "11.1.0",
@@ -131,7 +131,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase( http_client_duration_milliseconds_bucket{net_peer_name=~\"$service\", namespace=\"$namespace\"}[$__rate_interval])) by (le)",
+          "expr": "sum(increase( http_client_request_duration_seconds_bucket{server_address=~\"$service\", namespace=\"$namespace\"}[$__rate_interval])) by (le)",
           "format": "heatmap",
           "instant": false,
           "legendFormat": "__auto",
@@ -179,7 +179,7 @@
               }
             ]
           },
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -215,10 +215,10 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "histogram_quantile($percentile, sum(rate(http_client_duration_milliseconds_bucket{net_peer_name=~\"$service\", namespace=\"$namespace\"}[$__rate_interval])) by (le,net_peer_name))",
+          "expr": "histogram_quantile($percentile, sum(rate(http_client_request_duration_seconds_bucket{server_address=~\"$service\", namespace=\"$namespace\"}[$__rate_interval])) by (le,server_address))",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{net_peer_name}}",
+          "legendFormat": "{{server_address}}",
           "range": true,
           "refId": "C"
         }
@@ -299,11 +299,11 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "topk(7,sum by (net_peer_name) (rate(http_client_duration_milliseconds_count{net_peer_name=~\"$service\", namespace=\"$namespace\"}[$__range])))",
+          "expr": "topk(7,sum by (server_address) (rate(http_client_request_duration_seconds_count{server_address=~\"$service\", namespace=\"$namespace\"}[$__range])))",
           "format": "time_series",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{net_peer_name}}",
+          "legendFormat": "{{server_address}}",
           "range": false,
           "refId": "A"
         }
@@ -368,7 +368,7 @@
               }
             ]
           },
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -404,10 +404,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "increase(http_client_duration_milliseconds_sum{net_peer_name=~\"$service\", http_status_code=\"200\", namespace=\"$namespace\"}[$__rate_interval]) / increase(http_client_duration_milliseconds_count{net_peer_name=~\"$service\", http_status_code=\"200\", namespace=\"$namespace\"}[$__rate_interval])",
+          "expr": "increase(http_client_request_duration_seconds_sum{server_address=~\"$service\", http_response_status_code=\"200\", namespace=\"$namespace\"}[$__rate_interval]) / increase(http_client_request_duration_seconds_count{server_address=~\"$service\", http_response_status_code=\"200\", namespace=\"$namespace\"}[$__rate_interval])",
           "instant": false,
           "interval": "",
-          "legendFormat": "{{net_peer_name}}",
+          "legendFormat": "{{server_address}}",
           "range": true,
           "refId": "A"
         }
@@ -1027,7 +1027,7 @@
         "yAxis": {
           "axisPlacement": "left",
           "reverse": false,
-          "unit": "ms"
+          "unit": "s"
         }
       },
       "pluginVersion": "11.4.0",
@@ -1039,7 +1039,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase( http_server_duration_milliseconds_bucket{http_route=~\"$http_route\", http_status_code=~\"$http_status_code\", namespace=\"$namespace\"}[$__rate_interval])) by (le)",
+          "expr": "sum(increase( http_server_request_duration_seconds_bucket{http_route=~\"$http_route\", http_response_status_code=~\"$http_status_code\", namespace=\"$namespace\"}[$__rate_interval])) by (le)",
           "format": "heatmap",
           "instant": false,
           "legendFormat": "__auto",
@@ -1107,7 +1107,7 @@
               }
             ]
           },
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -1143,7 +1143,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "avg by (http_route) ((increase(http_server_duration_milliseconds_sum{http_route=~\"$http_route\", http_status_code=\"200\", namespace=\"$namespace\", job=\"monitoring/router-service\"}[$__rate_interval]) / increase(http_server_duration_milliseconds_count{http_route=~\"$http_route\", http_status_code=\"200\", namespace=\"$namespace\", job=\"monitoring/router-service\"}[$__rate_interval]) >=0) )",
+          "expr": "avg by (http_route) ((increase(http_server_request_duration_seconds_sum{http_route=~\"$http_route\", http_response_status_code=\"200\", namespace=\"$namespace\"}[$__rate_interval]) / increase(http_server_request_duration_seconds_count{http_route=~\"$http_route\", http_response_status_code=\"200\", namespace=\"$namespace\"}[$__rate_interval]) >=0) )",
           "instant": false,
           "interval": "",
           "legendFormat": "{{http_route}}",
@@ -1247,10 +1247,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "avg by (http_route, http_status_code) (rate(http_server_duration_milliseconds_count{namespace=\"$namespace\"}[$__rate_interval]))",
+          "expr": "avg by (http_route, http_response_status_code) (rate(http_server_request_duration_seconds_count{namespace=\"$namespace\"}[$__rate_interval]))",
           "instant": false,
           "interval": "",
-          "legendFormat": "code=[{{http_status_code}}] - {{http_route}}",
+          "legendFormat": "code=[{{http_response_status_code}}] - {{http_route}}",
           "range": true,
           "refId": "A"
         }
@@ -1282,7 +1282,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_server_duration_milliseconds_count,http_route)",
+        "definition": "label_values(http_server_request_duration_seconds_count,http_route)",
         "hide": 0,
         "includeAll": true,
         "label": "Route (as Server)",
@@ -1291,7 +1291,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(http_server_duration_milliseconds_count,http_route)",
+          "query": "label_values(http_server_request_duration_seconds_count,http_route)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -1310,7 +1310,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_service_created{namespace=~\"chatqna|edp|docsum\"},namespace)",
+        "definition": "label_values(kube_service_info{namespace=~\"chatqna|edp|docsum\"},namespace)",
         "hide": 0,
         "includeAll": false,
         "label": "Namespace",
@@ -1319,7 +1319,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(kube_service_created{namespace=~\"chatqna|edp|docsum\"},namespace)",
+          "query": "label_values(kube_service_info{namespace=~\"chatqna|edp|docsum\"},namespace)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -1343,7 +1343,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_client_duration_milliseconds_count{namespace=~\"$namespace\"},net_peer_name)",
+        "definition": "label_values(http_client_request_duration_seconds_count{namespace=~\"$namespace\"},server_address)",
         "hide": 0,
         "includeAll": true,
         "label": "Service (as Client)",
@@ -1352,7 +1352,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(http_client_duration_milliseconds_count{namespace=~\"$namespace\"},net_peer_name)",
+          "query": "label_values(http_client_request_duration_seconds_count{namespace=~\"$namespace\"},server_address)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -1423,7 +1423,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_server_duration_milliseconds_count,http_status_code)",
+        "definition": "label_values(http_server_request_duration_seconds_count,http_response_status_code)",
         "hide": 0,
         "includeAll": true,
         "label": "HTTP status code",
@@ -1432,7 +1432,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(http_server_duration_milliseconds_count,http_status_code)",
+          "query": "label_values(http_server_request_duration_seconds_count,http_response_status_code)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,

@@ -67,9 +67,11 @@ components:
     layer: erag
     depends_on: [app_pre_install, app_apisix, app_nats]
 
+  # Skipped on OpenShift for now: it registers the cluster-wide custom metrics
+  # API (prometheus-adapter); there that belongs to the Custom Metrics Autoscaler.
   - name: app_hpa
     layer: erag
-    enabled: "{{ hpa_enabled | default(true) | bool }}"
+    enabled: "{{ hpa_enabled | default(true) | bool and cluster_distribution | default('kubernetes') != 'openshift' }}"
     depends_on: [app_pre_install]
 
   - name: app_pipeline

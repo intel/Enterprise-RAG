@@ -54,7 +54,10 @@ fingerprint:
     existingSecret: "{{ fingerprint_postgres_secret_name }}"
     secretKey: "{{ fingerprint_postgres_secret_key }}"
 
-{% if hpa_enabled is defined %}
+{# No HPAs on OpenShift yet: their custom metrics come from prometheus-adapter (app_hpa). #}
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+hpa_enabled: false
+{% elif hpa_enabled is defined %}
 hpa_enabled: {{ hpa_enabled }}
 {% endif %}
 

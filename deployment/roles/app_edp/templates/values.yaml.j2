@@ -53,7 +53,10 @@ s3PathPrefix: "{{ s3_path_prefix }}"
 edpAccessKey: {{ EDP_MINIO_ACCESS_KEY }}
 edpSecretKey: {{ EDP_MINIO_SECRET_KEY }}
 edpExternalUrl: "https://{{ s3_api_domain }}{{ s3_path_prefix }}"
-{% if hpa_enabled is defined %}
+{# No HPAs on OpenShift yet: their custom metrics come from prometheus-adapter (app_hpa). #}
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+hpa_enabled: false
+{% elif hpa_enabled is defined %}
 hpa_enabled: {{ hpa_enabled }}
 {% endif %}
 {% if edp_rbac_enabled | default(false) | bool %}
