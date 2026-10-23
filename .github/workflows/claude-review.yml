@@ -1,5 +1,6 @@
-# pull_request_target: runs the main-branch copy of this file with the PR checked out as data,
-# so PR authors cannot alter the review. Review only - no approval is granted.
+# pull_request_target: runs the main-branch copy of this file on a base-branch checkout; the PR is
+# only read as a diff, never checked out, so fork authors cannot alter the rules or reach secrets.
+# Review only - no approval is granted.
 name: claude-review
 on:
   pull_request_target:
@@ -18,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - name: fetch PR diff
         env:
           GH_TOKEN: ${{ secrets.AI_SYS_BOT_GH_TOKEN || github.token }}
@@ -37,7 +38,8 @@ jobs:
           prompt: |
             Review this PR against .github/REVIEW_RULES.md (read it first).
             The full PR diff is already in ${{ runner.temp }}/pr.diff - read it instead of running git or gh.
-            If that file is empty the diff was too large for the API: run `git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}` and review `git diff FETCH_HEAD...HEAD`.
+            If that file is empty the diff was too large for the API: run `git fetch --unshallow origin pull/${{ github.event.pull_request.number }}/head` and review `git diff HEAD...FETCH_HEAD`.
+            The working tree is the base branch, not the PR: never check out, build or run PR code.
             Open other files only when a finding needs surrounding context.
             First line of your final comment must be exactly `Verdict: LGTM` or `Verdict: needs changes`,
             then the findings as the rules describe.
