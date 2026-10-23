@@ -1,0 +1,47 @@
+# pull_request_target: runs the main-branch copy of this file with the PR checked out as data,
+# so PR authors cannot alter the review. Review only - no approval is granted.
+name: claude-review
+on:
+  pull_request_target:
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  review:
+    if: ${{ !endsWith(github.actor, '[bot]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: fetch PR diff
+        env:
+          GH_TOKEN: ${{ secrets.AI_SYS_BOT_GH_TOKEN || github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          curl -sf -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github.diff" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$PR" > "$RUNNER_TEMP/pr.diff" || true
+      - uses: anthropics/claude-code-action@v1
+        env:
+          AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
+          AWS_REGION: us-east-2
+        with:
+          use_bedrock: "true"
+          github_token: ${{ secrets.AI_SYS_BOT_GH_TOKEN || github.token }}
+          track_progress: true
+          prompt: |
+            Review this PR against .github/REVIEW_RULES.md (read it first).
+            The full PR diff is already in ${{ runner.temp }}/pr.diff - read it instead of running git or gh.
+            If that file is empty the diff was too large for the API: run `git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}` and review `git diff FETCH_HEAD...HEAD`.
+            Open other files only when a finding needs surrounding context.
+            First line of your final comment must be exactly `Verdict: LGTM` or `Verdict: needs changes`,
+            then the findings as the rules describe.
+          claude_args: --model us.anthropic.claude-opus-5-5 --fallback-model us.anthropic.claude-opus-5 --max-turns 30
+      - name: show Claude error
+        if: failure()
+        run: jq -r '.. | objects | select(.type? == "result") | .result // .error // empty' "$RUNNER_TEMP/claude-execution-output.json" | head -c 3000
