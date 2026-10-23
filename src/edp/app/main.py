@@ -1,6 +1,7 @@
 # Copyright (C) 2024-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import base64
 import os
 import re
 from typing import List, Union
@@ -776,14 +777,26 @@ def process_seaweedfs_event(event: SeaweedFSEventData):
             logger.warning(f"{event.event_type} event missing new_entry")
             raise HTTPException(status_code=400, detail="Missing new_entry")
 
-        # Example new_entry: {'name': 'text.txt', 'attributes': {'file_size': 186, 'mime': 'text/plain', 'md5': '...'}}
-        # For simplicity, we use available md5 provided by seaweedfs as a tag
         new_entry = event.message.new_entry
         attributes = new_entry.get('attributes', {})
+        extended = new_entry.get('extended', {})
         logger.info(f"Extracted attributes: {attributes}")
         size = attributes.get('file_size', 0)
         content_type = attributes.get('mime', 'application/octet-stream')
-        etag = attributes.get('md5', '')
+
+        # SeaweedFS stores the actual S3-compatible ETag (hex MD5, or multipart
+        # "hex-N") base64-encoded in extended['Seaweed-X-Amz-ETag'].  Prefer
+        # that so the stored value matches what the S3 API returns and the sync
+        # diff comparison works correctly.  Fall back to attributes.md5 for
+        # older SeaweedFS versions that do not populate the extended block.
+        seaweed_etag = extended.get('Seaweed-X-Amz-ETag', '')
+        if seaweed_etag:
+            try:
+                etag = base64.b64decode(seaweed_etag).decode('ascii').strip('"')
+            except Exception:
+                etag = attributes.get('md5', '')
+        else:
+            etag = attributes.get('md5', '')
 
         if is_directory_marker(object_name, size, content_type):
             logger.debug(f"Skipping directory marker: {object_name} in bucket {bucket_name}")
