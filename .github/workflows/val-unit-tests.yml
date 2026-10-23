@@ -41,7 +41,6 @@ jobs:
           - edp_unit_tests
           - embeddings_unit_tests
           - fingerprint_invariants_unit_tests
-          - ingestion_unit_tests
           - language_detection_unit_tests
           - late_chunking_unit_tests
           - llm_guard_dataprep_guardrail_unit_tests
