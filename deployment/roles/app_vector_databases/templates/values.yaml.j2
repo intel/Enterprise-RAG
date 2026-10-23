@@ -54,3 +54,19 @@ redis-cluster:
     size: "{{ redis.persistence.size | default('8Gi') }}"
 
 {% endif %}
+
+monitoring:
+  enabled: {{ observability_enabled | default(true) | bool | string | lower }}
+{% if cluster_distribution | default('kubernetes') == 'openshift' %}
+
+# OpenShift assigns the UID and fsGroup (restricted-v2). The Helm post-renderer
+# does not see hooks (the cluster-init Job), so unset them here too.
+podSecurityContext:
+  runAsUser: null
+  runAsGroup: null
+  fsGroup: null
+securityContext:
+  runAsUser: null
+securityContextWithTemp:
+  runAsUser: null
+{% endif %}

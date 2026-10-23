@@ -1,3 +1,8 @@
+{# OpenShift assigns the UID and fsGroup (restricted-v2); the Helm post-renderer
+   does not see the chart's hooks (bucket Job), so drop them from the values. #}
+{% set _sc_drop = ['runAsUser', 'runAsGroup', 'fsGroup'] if cluster_distribution | default('kubernetes') == 'openshift' else [] %}
+{% set _pod_sc = edp_helm_values.seaweedfs.podSecurityContext | default({}) | dict2items | rejectattr('key', 'in', _sc_drop) | items2dict %}
+{% set _container_sc = edp_helm_values.seaweedfs.containerSecurityContext | default({}) | dict2items | rejectattr('key', 'in', _sc_drop) | items2dict %}
 s3:
   enabled: true
   port: {{ edp_helm_values.seaweedfs.s3.port | default(8333) }}
@@ -37,9 +42,9 @@ s3:
 {% endif %}
 
   podSecurityContext:
-{{ edp_helm_values.seaweedfs.podSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _pod_sc | to_nice_yaml | indent(4, true) }}
   containerSecurityContext:
-{{ edp_helm_values.seaweedfs.containerSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _container_sc | to_nice_yaml | indent(4, true) }}
   ingress:
     enabled: false
 
@@ -57,9 +62,9 @@ filer:
   logs:
     type: "emptyDir"
   podSecurityContext:
-{{ edp_helm_values.seaweedfs.podSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _pod_sc | to_nice_yaml | indent(4, true) }}
   containerSecurityContext:
-{{ edp_helm_values.seaweedfs.containerSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _container_sc | to_nice_yaml | indent(4, true) }}
   s3:
     enabled: true
     enableAuth: {{ not (edp_rbac_enabled | default(false)) }}
@@ -89,9 +94,9 @@ volume:
 {% endif %}
 {% endif %}
   podSecurityContext:
-{{ edp_helm_values.seaweedfs.podSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _pod_sc | to_nice_yaml | indent(4, true) }}
   containerSecurityContext:
-{{ edp_helm_values.seaweedfs.containerSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _container_sc | to_nice_yaml | indent(4, true) }}
 master:
   data:
 {% if edp_helm_values.seaweedfs.persistence.enabled | default(false) %}
@@ -105,9 +110,9 @@ master:
   logs:
     type: "emptyDir"
   podSecurityContext:
-{{ edp_helm_values.seaweedfs.podSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _pod_sc | to_nice_yaml | indent(4, true) }}
   containerSecurityContext:
-{{ edp_helm_values.seaweedfs.containerSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _container_sc | to_nice_yaml | indent(4, true) }}
 admin:
   enabled: true
   secret:
@@ -115,9 +120,9 @@ admin:
     userKey: "adminUser"
     pwKey: "adminPassword"
   podSecurityContext:
-{{ edp_helm_values.seaweedfs.podSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _pod_sc | to_nice_yaml | indent(4, true) }}
   containerSecurityContext:
-{{ edp_helm_values.seaweedfs.containerSecurityContext | default({}) | to_nice_yaml | indent(4, true) }}
+{{ _container_sc | to_nice_yaml | indent(4, true) }}
 {% if routing_mode | default('subdomain') == 'path' %}
   urlPrefix: "{{ edp_seaweedfs_path_prefix | default('/seaweedfs') }}"
 {% endif %}

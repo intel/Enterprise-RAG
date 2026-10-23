@@ -132,7 +132,6 @@ spec:
               drop:
               - ALL
             readOnlyRootFilesystem: true
-            runAsUser: 1000
           image: {{ include "manifest.image" (list .filename .Values) }}
           imagePullPolicy: {{ toYaml (index .Values "images" .filename "pullPolicy" | default "Always") }}
           ports:

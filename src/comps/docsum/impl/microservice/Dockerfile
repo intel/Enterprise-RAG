@@ -20,11 +20,12 @@ RUN apt-get update -y && \
     rm -rf /home/user/.local/lib/python${python_version}/site-packages/* && \
     rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
-RUN useradd -m -s /bin/bash user && \
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user && \
     mkdir -p /home/user && \
     chown -R user /home/user/
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PYTHONPATH="/home/user"
 
 WORKDIR /home/user
@@ -40,10 +41,15 @@ RUN uv sync --locked --no-cache --group security-overrides && \
 
 ENV PATH="/home/user/.venv/bin:$PATH"
 
-COPY --chown=user:user ./comps/cores ./comps/cores
-COPY --chown=user:user ./comps/docsum/utils ./comps/docsum/utils
-COPY --chown=user:user ./comps/docsum/impl/microservice/.env ./comps/docsum/impl/microservice/.env
-COPY --chown=user:user ./comps/docsum/erag_docsum_microservice.py ./comps/docsum/erag_docsum_microservice.py
+COPY --chown=user:0 ./comps/cores ./comps/cores
+COPY --chown=user:0 ./comps/docsum/utils ./comps/docsum/utils
+COPY --chown=user:0 ./comps/docsum/impl/microservice/.env ./comps/docsum/impl/microservice/.env
+COPY --chown=user:0 ./comps/docsum/erag_docsum_microservice.py ./comps/docsum/erag_docsum_microservice.py
 
 WORKDIR /home/user/comps/docsum
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 CMD ["python", "erag_docsum_microservice.py"]

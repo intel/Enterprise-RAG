@@ -55,3 +55,6 @@ apisix:
     client_id: "{{ apisix_oidc_client_id | default('EnterpriseRAG-oidc-backend') }}"
     resource_registration_endpoint: "{{ _apisix_kc_base }}/realms/{{ _apisix_realm }}/authz/protection/resource_set"
     token_endpoint: "{{ _apisix_kc_base }}/realms/{{ _apisix_realm }}/protocol/openid-connect/token"
+
+monitoring:
+  enabled: {{ observability_enabled | default(true) | bool | string | lower }}

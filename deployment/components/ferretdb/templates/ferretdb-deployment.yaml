@@ -44,6 +44,9 @@ spec:
         - name: ferretdb-final
           mountPath: /var/run/ferretdb-config
           readOnly: true
+        # FerretDB persists state.json here; the image's /state is not writable for every UID.
+        - name: ferretdb-state
+          mountPath: /state
         resources:
           {{- toYaml .Values.resources.ferretdb | nindent 10 }}
         livenessProbe:
@@ -72,6 +75,8 @@ spec:
       - name: ferretdb-final
         emptyDir:
           medium: Memory
+      - name: ferretdb-state
+        emptyDir: {}
       initContainers:
       - name: build-ferretdb-url
         image: "busybox:latest"

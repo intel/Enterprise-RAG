@@ -23,9 +23,10 @@ RUN rm -f /usr/bin/dmesg /usr/bin/base64 /usr/bin/perl
 RUN rm -rf /home/user/.local/lib/python${python_version}/site-packages/*
 RUN rm -rf /usr/local/lib/python${python_version}/site-packages/*
 
-RUN useradd -m -s /bin/bash user
+RUN useradd -m -s /bin/bash -u 1000 -g 0 user
 
-USER user
+USER 1000
+ENV HOME=/home/user
 ENV PATH="$PATH:/home/user/.local/bin"
 ENV PYTHONPATH="/home/user"
 
@@ -38,11 +39,16 @@ COPY comps/tts/impl/model_server/fastapi/docker/uv.lock uv.lock
 RUN uv sync --locked --no-cache --group security-overrides
 ENV PATH="/home/user/.venv/bin:$PATH"
 
-COPY --chown=user:user comps/tts/impl/model_server/fastapi/docker/.env .env
-COPY --chown=user:user comps/tts/impl/model_server/fastapi/model_handler.py model_handler.py
-COPY --chown=user:user comps/tts/impl/model_server/fastapi/server.py server.py
-COPY --chown=user:user comps/cores/mega/logger.py ./comps/cores/mega/logger.py
-COPY --chown=user:user comps/cores/utils/utils.py ./comps/cores/utils/utils.py
+COPY --chown=user:0 comps/tts/impl/model_server/fastapi/docker/.env .env
+COPY --chown=user:0 comps/tts/impl/model_server/fastapi/model_handler.py model_handler.py
+COPY --chown=user:0 comps/tts/impl/model_server/fastapi/server.py server.py
+COPY --chown=user:0 comps/cores/mega/logger.py ./comps/cores/mega/logger.py
+COPY --chown=user:0 comps/cores/utils/utils.py ./comps/cores/utils/utils.py
 
 ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libtcmalloc.so"
+# OpenShift (restricted-v2) runs the container as an arbitrary UID in group 0:
+# let group 0 create files wherever the owner can.
+USER root
+RUN find /home/user -name .venv -prune -o -type d -exec chmod g=u {} +
+USER 1000
 CMD ["python", "server.py"]

@@ -42,7 +42,9 @@ spec:
       restartPolicy: Never
       securityContext:
         runAsNonRoot: true
+{% if cluster_distribution | default('kubernetes') != 'openshift' %}
         runAsUser: {{ data_consistency_job_run_as_user }}
+{% endif %}
         seccompProfile:
           type: RuntimeDefault
       containers:
