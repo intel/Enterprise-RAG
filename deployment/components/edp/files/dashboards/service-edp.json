@@ -1292,7 +1292,7 @@
         "enableLogDetails": true,
         "prettifyLogMessage": false,
         "showCommonLabels": false,
-        "showLabels": false,
+        "showLabels": true,
         "showTime": false,
         "sortOrder": "Descending",
         "wrapLogMessage": false
@@ -1306,69 +1306,9 @@
           },
           "direction": "backward",
           "editorMode": "builder",
-          "expr": "{k8s_container_name=\"edp-dataprep\"} |= ``",
+          "expr": "{k8s_container_name=~\"$container\"} |= ``",
           "queryType": "range",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "direction": "backward",
-          "editorMode": "builder",
-          "expr": "{k8s_container_name=\"edp-embedding\"} |= ``",
-          "hide": false,
-          "queryType": "range",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "direction": "backward",
-          "editorMode": "builder",
-          "expr": "{k8s_container_name=\"edp-ingestion\"} |= ``",
-          "hide": false,
-          "queryType": "range",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "direction": "backward",
-          "editorMode": "builder",
-          "expr": "{k8s_container_name=\"edp-backend\"} |= ``",
-          "hide": false,
-          "queryType": "range",
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "direction": "backward",
-          "editorMode": "builder",
-          "expr": "{k8s_container_name=\"edp-dpguard\"} |= ``",
-          "hide": false,
-          "queryType": "range",
-          "refId": "E"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "direction": "backward",
-          "editorMode": "builder",
-          "expr": "{k8s_container_name=\"edp-late-chunking\"} |= ``",
-          "hide": false,
-          "queryType": "range",
-          "refId": "F"
         }
       ],
       "title": "Logs",
@@ -2237,7 +2177,38 @@
     "edp"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "loki"
+        },
+        "definition": "label_values({k8s_container_name=~\"edp-.*\"}, k8s_container_name)",
+        "includeAll": true,
+        "label": "Container",
+        "multi": true,
+        "name": "container",
+        "options": [],
+        "query": {
+          "label": "k8s_container_name",
+          "stream": "{k8s_container_name=~\"edp-.*\"}",
+          "type": 1,
+          "refId": "LokiVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-30m",
