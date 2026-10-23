@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./ChatHistoryItem.scss";
+import "./ChatHistoryItem.css";
 
 import { Anchor, Button, Tooltip } from "@intel-enterprise-rag-ui/components";
 import { PinFilledIcon } from "@intel-enterprise-rag-ui/icons";

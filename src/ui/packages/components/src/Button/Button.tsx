@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./Button.scss";
+import "./Button.css";
 
 import { IconName, icons } from "@intel-enterprise-rag-ui/icons";
 import classNames from "classnames";

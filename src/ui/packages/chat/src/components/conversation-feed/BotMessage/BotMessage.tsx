@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./BotMessage.scss";
+import "./BotMessage.css";
 
 import { CopyButton } from "@intel-enterprise-rag-ui/components";
 import { ChatBotIcon, ErrorIcon } from "@intel-enterprise-rag-ui/icons";

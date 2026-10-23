@@ -1,0 +1,30 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.retriever-debug-dialog__trigger-button {
+  @apply absolute top-4 right-4;
+}
+.retriever-debug-dialog__container {
+  @apply grid grid-cols-[14rem_1fr] px-3 py-3;
+}
+.retriever-debug-dialog__left-panel {
+  @apply h-[calc(100vh_-_12rem)] [scrollbar-gutter:stable] overflow-y-auto pr-3 pl-1;
+}
+.retriever-debug-dialog__params-heading {
+  @apply text-lg font-medium;
+}
+.retriever-debug-dialog__section-heading {
+  @apply mt-3 mb-2;
+}
+.retriever-debug-dialog__error-message {
+  @apply mb-2 text-xs italic;
+  color: var(--error-color, #dc2626);
+}
+.retriever-debug-dialog__right-panel {
+  @apply flex h-[calc(100vh_-_12rem)] flex-col text-sm;
+}
+.retriever-debug-dialog__chat-grid {
+  @apply grid h-full grid-rows-[1fr_auto];
+}

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./AppNameText.scss";
+import "./AppNameText.css";
 
 interface AppNameProps {
   /** Application name to display */

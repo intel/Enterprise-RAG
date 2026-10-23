@@ -1,0 +1,18 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.scroll-to-bottom-button {
+  @apply z-10 h-8 w-8 shadow-md shadow-black/50;
+  @apply absolute right-1/2 bottom-4 translate-x-1/2 rounded-full;
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply text-sm text-light-text-inverse dark:text-dark-text-primary;
+  @apply transition-all duration-300 ease-in-out;
+}
+.scroll-to-bottom-button.invisible {
+  @apply pointer-events-none translate-y-4 opacity-0;
+}
+.scroll-to-bottom-button.visible {
+  @apply pointer-events-auto translate-y-0 opacity-100;
+}

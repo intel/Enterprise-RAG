@@ -1,0 +1,41 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.graph-controls {
+  @apply absolute z-10 mt-4 ml-12 flex flex-col gap-2 rounded-sm p-4;
+  @apply bg-light-bg-1/50 dark:bg-dark-bg-1/70;
+}
+.graph-controls__legend {
+  @apply flex flex-col gap-2;
+}
+.graph-controls__legend-item {
+  @apply grid grid-cols-[1rem_1fr] items-center gap-2;
+}
+.graph-controls__legend-label {
+  @apply m-0 text-xs whitespace-nowrap text-light-text-primary dark:text-dark-text-primary;
+}
+.graph-controls__actions {
+  @apply flex flex-col gap-3;
+  @apply mt-3 pt-3;
+  @apply border-t border-light-border/30 dark:border-dark-border/30;
+}
+.graph-controls__actions-item {
+  @apply flex items-center gap-2;
+}
+.graph-controls__actions-item > p {
+  @apply text-xs;
+}
+.graph-controls__refresh-button {
+  @apply flex cursor-pointer items-center justify-center;
+  @apply text-xs;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply transition-transform hover:scale-110;
+}
+.graph-controls__refresh-button--spinning {
+  @apply animate-spin;
+}
+.graph-controls__refresh-button:disabled {
+  @apply cursor-not-allowed opacity-50;
+}

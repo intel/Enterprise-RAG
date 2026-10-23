@@ -1,4 +1,4 @@
-import "./SearchBar.scss";
+import "./SearchBar.css";
 
 import { ClearIcon, SearchIcon } from "@intel-enterprise-rag-ui/icons";
 import classNames from "classnames";

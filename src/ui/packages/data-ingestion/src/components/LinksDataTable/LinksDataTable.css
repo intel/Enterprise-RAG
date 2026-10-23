@@ -1,0 +1,31 @@
+/* LinksDataTable.scss */
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.links-data-table-wrapper {
+  @apply flex flex-col justify-center gap-2;
+}
+.links-data-table-wrapper__header {
+  @apply flex items-center justify-between gap-2;
+}
+
+.links-data-table th:nth-child(1) {
+  @apply w-10;
+}
+.links-data-table td:nth-child(1) {
+  @apply w-10;
+}
+.links-data-table th:nth-child(4) {
+  @apply w-1/5;
+}
+.links-data-table td:nth-child(4) {
+  @apply w-1/5;
+}
+.links-data-table th:nth-child(3) {
+  @apply w-2/5;
+}
+.links-data-table td:nth-child(3) {
+  @apply w-2/5;
+}

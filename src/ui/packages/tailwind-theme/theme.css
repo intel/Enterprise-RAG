@@ -1,0 +1,179 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@import "tailwindcss";
+
+@plugin "tailwindcss-react-aria-components";
+
+/* v3 `darkMode: "class"` selector, kept as-is so `dark:` specificity is unchanged */
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* light mode */
+  --color-light-primary: #3d447f;
+  --color-light-secondary: #3d447f;
+  --color-light-accent: #3d447f;
+  --color-light-focus: #3d447f;
+  --color-light-focus-inverse: #f2f3ff;
+  --color-light-border: #3d447f;
+  --color-light-border-2: #6a6f78;
+  --color-light-text-primary: #2b2c30;
+  --color-light-text-disabled: #b2b3b9;
+  --color-light-text-placeholder: #6a6f78;
+  --color-light-text-inverse: #f2f3ff;
+  --color-light-text-error: #eb0004;
+  --color-light-text-accent: #3d447f;
+  --color-light-text-accent-2: #3d447f;
+  --color-light-bg-1: #f2f3ff;
+  --color-light-bg-2: #e6e8fd;
+  --color-light-bg-disabled: #e9eaeb;
+  --color-light-bg-inverse: #000000;
+  --color-light-bg-contrast: #ffffff;
+  --color-light-status-success: #3f9752;
+  --color-light-status-error: #eb0004;
+  --color-light-status-unknown: #6a6f78;
+
+  /* dark mode */
+  --color-dark-primary: #4850b8;
+  --color-dark-secondary: #fef0d3;
+  --color-dark-accent: #ffffff;
+  --color-dark-focus: #fef0d3;
+  --color-dark-border: #4850b8;
+  --color-dark-border-2: #6a6f78;
+  --color-dark-text-primary: #ffffff;
+  --color-dark-text-disabled: #6b6e76;
+  --color-dark-text-placeholder: #6a6f78;
+  --color-dark-text-inverse: #090b1c;
+  --color-dark-text-error: #eb0004;
+  --color-dark-text-accent: #ffffff;
+  --color-dark-text-accent-2: #f3b1f5;
+  --color-dark-bg-1: #090b1c;
+  --color-dark-bg-2: #1f2133;
+  --color-dark-bg-disabled: #3c3e42;
+  --color-dark-bg-inverse: #ffffff;
+  --color-dark-bg-contrast: #000000;
+  --color-dark-status-success: #3f9752;
+  --color-dark-status-error: #eb0004;
+  --color-dark-status-unknown: #6a6f78;
+
+  /* common colors for both modes */
+  --color-tooltip-text: #ffffff;
+  --color-tooltip-background: #242528;
+  --color-scrollbar-thumb: #a1a1a1cc;
+  --color-scrollbar-track: #a1a1a180;
+
+  --animate-pulsing-dot: pulsing-dot 600ms ease-out infinite;
+  --animate-recording-pulse: recording-pulse 1.5s ease-in-out infinite;
+
+  @keyframes pulsing-dot {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.5);
+    }
+  }
+
+  @keyframes recording-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+}
+
+/* Tailwind v3 preflight defaults that v4 changed — kept so the UI renders unchanged */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    transition: color 0.3s ease;
+    transition: border 0.3s ease;
+    transition: background-color 0.3s ease;
+  }
+
+  * *::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  * *::-webkit-scrollbar-track {
+    @apply my-2 rounded-xl bg-scrollbar-track;
+  }
+
+  * *::-webkit-scrollbar-thumb {
+    @apply rounded-xl bg-scrollbar-thumb;
+  }
+
+  html {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Helvetica",
+      "Arial",
+      sans-serif;
+    font-weight: normal;
+    font-size: 16px;
+  }
+
+  #root {
+    @apply bg-light-bg-1 text-light-text-primary caret-light-text-primary;
+    @apply dark:bg-dark-bg-1 dark:text-dark-text-primary dark:caret-dark-text-primary;
+  }
+
+  *::selection {
+    @apply bg-light-primary text-light-text-inverse;
+    @apply dark:bg-dark-primary dark:text-dark-text-primary;
+  }
+
+  *:focus-visible {
+    @apply focus-visible:outline-2;
+    @apply focus-visible:outline-light-focus dark:focus-visible:outline-dark-focus;
+  }
+
+  p.error {
+    @apply text-light-text-error dark:text-dark-text-error;
+  }
+
+  label {
+    @apply mb-2 inline-block;
+  }
+
+  h2 {
+    @apply mb-2 font-medium;
+  }
+
+  h3 {
+    @apply mb-1 font-medium;
+  }
+}

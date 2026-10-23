@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./dataTableCells.scss";
+import "./dataTableCells.css";
 
 import { Button, Tooltip } from "@intel-enterprise-rag-ui/components";
 import { ColumnDef } from "@tanstack/react-table";

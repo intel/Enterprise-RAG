@@ -1,0 +1,22 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.tabs {
+  @apply flex h-8 gap-16 border-b border-b-light-border px-16 dark:border-b-dark-border;
+}
+.tabs .tab-button {
+  @apply cursor-pointer;
+  @apply border-b-transparent transition-colors;
+  @apply rounded-none border-b-4 bg-transparent px-0;
+  @apply text-light-text-accent dark:text-dark-text-accent;
+}
+.tabs .tab-button.active-tab {
+  @apply border-b-light-accent dark:border-b-dark-accent;
+}
+
+.tab-panel {
+  @apply relative;
+  @apply max-h-[calc(100vh_-_8rem)] overflow-y-auto;
+}

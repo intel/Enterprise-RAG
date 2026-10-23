@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./FileSelectedToSummarize.scss";
+import "./FileSelectedToSummarize.css";
 
 import { Button } from "@intel-enterprise-rag-ui/components";
 import { useMemo } from "react";

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./NewChatButton.scss";
+import "./NewChatButton.css";
 
 import { IconButton } from "@/IconButton/IconButton";
 import { Tooltip } from "@/Tooltip/Tooltip";

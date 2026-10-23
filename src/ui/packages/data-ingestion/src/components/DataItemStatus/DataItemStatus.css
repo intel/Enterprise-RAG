@@ -1,0 +1,44 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.data-item-status {
+  @apply mr-2 inline-flex cursor-default flex-nowrap items-center gap-2;
+}
+.data-item-status .data-item-status__text {
+  @apply text-xs;
+}
+.data-item-status.data-item-status--with-tooltip {
+  @apply cursor-help;
+}
+.data-item-status--uploaded {
+  @apply text-light-status-success dark:text-dark-status-success;
+}
+.data-item-status--embedding {
+  @apply text-light-accent dark:text-dark-accent;
+}
+.data-item-status--text_extracting {
+  @apply text-light-accent dark:text-dark-accent;
+}
+.data-item-status--text_compression {
+  @apply text-light-accent dark:text-dark-accent;
+}
+.data-item-status--text_splitting {
+  @apply text-light-accent dark:text-dark-accent;
+}
+.data-item-status--late_chunking {
+  @apply text-light-accent dark:text-dark-accent;
+}
+.data-item-status--ingested {
+  @apply text-light-accent dark:text-dark-accent;
+}
+.data-item-status--deleting {
+  @apply text-light-status-error dark:text-dark-status-error;
+}
+.data-item-status--error {
+  @apply text-light-status-error dark:text-dark-status-error;
+}
+.data-item-status--processing {
+  @apply text-light-status-unknown dark:text-dark-status-unknown;
+}

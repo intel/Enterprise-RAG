@@ -1,0 +1,22 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.batch-actions-menu {
+  @apply min-w-40;
+}
+.batch-actions-menu__item {
+  @apply flex cursor-pointer items-center gap-2 px-3 py-2;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply hover:bg-light-bg-2 dark:hover:bg-dark-bg-2;
+}
+.batch-actions-menu__item--disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+.batch-actions-menu__item--delete {
+  @apply text-light-status-error dark:text-dark-status-error;
+}
+.batch-actions-menu__icon {
+  @apply text-base;
+}

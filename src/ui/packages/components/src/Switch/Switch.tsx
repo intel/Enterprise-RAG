@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./Switch.scss";
+import "./Switch.css";
 
 import {
   Switch as AriaSwitch,

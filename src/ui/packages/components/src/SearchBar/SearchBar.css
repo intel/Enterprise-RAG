@@ -1,0 +1,40 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.search-bar {
+  @apply flex h-8 w-full max-w-[350px] items-center gap-2 rounded-lg border border-light-border px-[10px] py-[6px] dark:border-dark-border;
+  @apply bg-light-bg-contrast dark:bg-dark-bg-contrast;
+}
+.search-bar:is(:focus, :focus-within, :focus-visible) {
+  @apply outline-2 outline-light-border dark:outline-dark-border;
+}
+.search-bar__icon {
+  @apply flex h-3 w-3 shrink-0 items-center justify-center;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+}
+.search-bar__input {
+  @apply m-0 flex-1 appearance-none border-0 bg-transparent p-0 text-xs leading-[1.6] shadow-none outline-hidden;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply caret-light-text-primary dark:caret-dark-text-primary;
+}
+.search-bar__input:focus,
+.search-bar__input :focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.search-bar__input:focus::-webkit-input-placeholder {
+  color: transparent;
+}
+.search-bar__input::placeholder {
+  @apply text-light-text-placeholder italic opacity-90 dark:text-dark-text-placeholder;
+}
+.search-bar__clear-icon {
+  @apply flex h-3 w-3 shrink-0 cursor-pointer items-center justify-center;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+}
+.search-bar__clear-icon:hover {
+  @apply opacity-70;
+}

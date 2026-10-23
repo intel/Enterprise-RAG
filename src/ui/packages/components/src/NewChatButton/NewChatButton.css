@@ -1,0 +1,14 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.new-chat-btn {
+  @apply transition-all duration-300 ease-in;
+}
+.new-chat-btn.visible {
+  @apply pointer-events-auto opacity-100;
+}
+.new-chat-btn.invisible {
+  @apply pointer-events-none opacity-0;
+}

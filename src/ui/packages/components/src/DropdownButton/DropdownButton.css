@@ -1,0 +1,42 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.dropdown-button {
+  @apply flex w-full gap-0;
+  @apply relative;
+}
+.dropdown-button__main {
+  @apply flex flex-1 items-center justify-center gap-2;
+  @apply rounded-l-sm rounded-tr-none rounded-br-none;
+  @apply cursor-pointer px-4 py-2.5 text-sm font-medium whitespace-nowrap select-none;
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply text-white dark:text-white;
+  @apply transition-colors;
+}
+.dropdown-button__main:hover {
+  @apply opacity-90;
+}
+.dropdown-button__main:disabled {
+  @apply cursor-not-allowed opacity-50;
+  @apply bg-light-bg-disabled dark:bg-dark-bg-disabled;
+  @apply text-light-text-disabled dark:text-dark-text-disabled;
+}
+.dropdown-button__trigger {
+  @apply flex items-center justify-center px-2 py-2.5;
+  @apply cursor-pointer select-none;
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply text-white dark:text-white;
+  @apply border-l border-white/20 transition-colors;
+  @apply rounded-tl-none rounded-r-sm rounded-bl-none;
+}
+.dropdown-button__trigger:hover {
+  @apply opacity-90;
+}
+.dropdown-button__trigger:disabled {
+  @apply cursor-not-allowed opacity-50;
+  @apply bg-light-bg-disabled dark:bg-dark-bg-disabled;
+  @apply text-light-text-disabled dark:text-dark-text-disabled;
+  @apply border-transparent;
+}

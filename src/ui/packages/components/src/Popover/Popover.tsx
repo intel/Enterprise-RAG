@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./Popover.scss";
+import "./Popover.css";
 
 import { ReactNode } from "react";
 import {
@@ -21,7 +21,7 @@ interface PopoverProps extends AriaPopoverProps {
  * Popover component for displaying content in a floating dialog.
  */
 export const Popover = ({ ariaLabel, children, ...rest }: PopoverProps) => (
-  <AriaPopover {...rest} className="popover !z-[101]">
+  <AriaPopover {...rest} className="popover z-[101]!">
     <AriaDialog aria-label={ariaLabel}>{children}</AriaDialog>
   </AriaPopover>
 );

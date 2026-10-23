@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./EmbeddingModelMigrationBanner.scss";
+import "./EmbeddingModelMigrationBanner.css";
 
 import { Button } from "@intel-enterprise-rag-ui/components";
 import { RefreshIcon, WarningIcon } from "@intel-enterprise-rag-ui/icons";

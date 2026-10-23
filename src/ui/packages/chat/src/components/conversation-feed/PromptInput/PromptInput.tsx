@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./PromptInput.scss";
+import "./PromptInput.css";
 
 import { sanitizeString } from "@intel-enterprise-rag-ui/utils";
 import classNames from "classnames";

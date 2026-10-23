@@ -1,0 +1,60 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.icon-button {
+  @apply h-10 w-10 rounded-sm p-2;
+  @apply flex items-center justify-center;
+  @apply cursor-pointer;
+  @apply bg-transparent dark:bg-transparent;
+  @apply hover:bg-light-bg-2 dark:hover:bg-dark-bg-2;
+  @apply text-xl text-light-text-accent dark:text-dark-text-accent;
+}
+.icon-button:disabled {
+  @apply disabled:cursor-not-allowed;
+  @apply disabled:text-light-text-disabled dark:disabled:text-dark-text-disabled;
+}
+.icon-button.icon-button--sm {
+  @apply h-8 w-8 p-2 text-sm;
+}
+.icon-button.icon-button--error {
+  @apply text-light-text-error dark:text-dark-text-error;
+  @apply hover:bg-black/30 dark:hover:bg-black/30;
+}
+.icon-button.icon-button--success {
+  @apply text-light-status-success dark:text-dark-status-success;
+  @apply hover:bg-black/30 dark:hover:bg-black/30;
+}
+.icon-button.icon-button--contained {
+  @apply p-0;
+  @apply text-light-text-inverse dark:text-dark-text-primary;
+  @apply bg-light-primary dark:bg-dark-primary;
+  @apply hover:bg-light-primary/80 dark:hover:bg-dark-primary/80;
+}
+.icon-button.icon-button--contained.icon-button--sm {
+  @apply h-8 w-8 p-2 text-sm;
+}
+.icon-button.icon-button--outlined {
+  @apply border;
+  @apply bg-transparent p-0 dark:bg-transparent;
+  @apply disabled:border-transparent dark:disabled:border-transparent;
+  @apply disabled:hover:cursor-default;
+  @apply disabled:bg-light-bg-disabled dark:disabled:bg-transparent;
+  @apply disabled:text-light-text-disabled dark:disabled:text-dark-text-disabled;
+}
+.icon-button.icon-button--outlined.icon-button--outlined-primary {
+  @apply border-light-primary dark:border-dark-accent;
+  @apply text-light-primary dark:text-dark-accent;
+  @apply hover:bg-light-accent/50 dark:hover:bg-dark-accent/50;
+}
+.icon-button.icon-button--outlined.icon-button--outlined-error {
+  @apply border-light-status-error dark:border-dark-status-error;
+  @apply text-light-text-error dark:text-dark-text-error;
+  @apply hover:bg-light-status-error/50 dark:hover:bg-dark-status-error/50;
+}
+.icon-button.icon-button--outlined.icon-button--outlined-success {
+  @apply border-light-status-success dark:border-dark-status-success;
+  @apply text-light-status-success dark:text-dark-status-success;
+  @apply hover:bg-light-status-success/50 dark:hover:bg-dark-status-success/50;
+}

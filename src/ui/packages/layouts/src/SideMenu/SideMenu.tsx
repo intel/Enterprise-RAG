@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./SideMenu.scss";
+import "./SideMenu.css";
 
 import { IconButton, Tooltip } from "@intel-enterprise-rag-ui/components";
 import { IconName } from "@intel-enterprise-rag-ui/icons";

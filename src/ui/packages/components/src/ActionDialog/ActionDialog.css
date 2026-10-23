@@ -1,0 +1,11 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.action-dialog {
+  @apply px-4 pb-4;
+}
+.action-dialog__actions {
+  @apply mt-4 flex justify-end gap-2;
+}

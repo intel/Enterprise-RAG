@@ -1,0 +1,14 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.s3-certificate-alert-banner {
+  @apply mb-4 rounded-md bg-light-status-error px-4 py-3 text-sm dark:bg-dark-status-error;
+}
+.s3-certificate-alert-banner .s3-certificate-alert-banner__text {
+  @apply text-light-text-inverse;
+}
+.s3-certificate-alert-banner .s3-certificate-alert-banner__dismiss-hint {
+  @apply my-2;
+}

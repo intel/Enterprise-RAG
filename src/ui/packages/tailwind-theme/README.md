@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/tailwind-theme
 
-This package provides a custom Tailwind CSS theme for the Intel® AI for Enterprise RAG UI, including a shared Tailwind CSS configuration (tailwind.config.js) with a custom color palette, dark/light mode, and design tokens, as well as index.scss with base styles, font, scrollbar, and theme variables.
+This package provides a custom Tailwind CSS theme for the Intel® AI for Enterprise RAG UI, including a custom color palette, dark/light mode and design tokens (`@theme`), and base styles for font, scrollbar and focus, all in `theme.css`.
 
 ## Table of Contents
 
@@ -21,22 +21,18 @@ Add the package as a dependency in `package.json`:
 }
 ```
 
-> [!NOTE] No build step is required for this package. It only contains SCSS and config.js files that are consumed directly. After installing, you can immediately import and use its configuration and styles in your project.
+> [!NOTE] No build step is required for this package. It only contains `theme.css` (Tailwind CSS v4 — `@import "tailwindcss"`, `@theme` tokens, dark variant and base styles), consumed directly.
 
-Use Tailwind theme config from this package in your `tailwind.config.js`:
+Add `@tailwindcss/vite` to the consumer's `vite.config.ts` (`plugins: [tailwindcss(), ...]`), then import the theme into the main stylesheet:
 
-```js
-const sharedConfig = require("@intel-enterprise-rag-ui/tailwind-theme/tailwind.config.js");
-
-module.exports = {
-  ...sharedConfig,
-};
+```css
+@import "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
 ```
 
-Import `index.scss` from this package into main SCSS file:
+Component stylesheets that use `@apply` or theme tokens must reference it (emits no CSS):
 
-```scss
-@import "@intel-enterprise-rag-ui/tailwind-theme/index.scss";
+```css
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
 ```
 
 > [!IMPORTANT]

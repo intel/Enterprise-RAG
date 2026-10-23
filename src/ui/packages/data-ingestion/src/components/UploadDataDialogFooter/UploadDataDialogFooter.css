@@ -1,0 +1,8 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.upload-dialog__footer {
+  @apply flex items-center gap-4;
+}

@@ -34,10 +34,10 @@ export default {
       highlightedCode = escapeHtml(text);
     }
 
-    return `<div class="markdown-code-block mb-4 rounded ${CSS_CLASSES.CONTRAST_BG}" data-lang="${escapedLangLabel}">
-      <div class="${CSS_CLASSES.PRIMARY_BG} flex items-center justify-between rounded-t pl-3 pr-2 py-2 text-xs">
+    return `<div class="markdown-code-block mb-4 rounded-sm ${CSS_CLASSES.CONTRAST_BG}" data-lang="${escapedLangLabel}">
+      <div class="${CSS_CLASSES.PRIMARY_BG} flex items-center justify-between rounded-t-sm pl-3 pr-2 py-2 text-xs">
         <span class="select-none font-medium">${escapedLangLabel}</span>
-        <button type="button" data-markdown-copy="true" class="markdown-copy-btn flex items-center gap-1.5 px-2 h-6 min-w-fit rounded transition-colors bg-black/20 hover:bg-black/40" aria-label="Copy code">
+        <button type="button" data-markdown-copy="true" class="markdown-copy-btn flex items-center gap-1.5 px-2 h-6 min-w-fit rounded-sm transition-colors bg-black/20 hover:bg-black/40" aria-label="Copy code">
           <span class="markdown-copy-text">Copy</span>
           <span class="markdown-copy-icon">${COPY_ICON}</span>
         </button>
@@ -117,7 +117,7 @@ export default {
       "text-center": align === "center",
       "text-right": align === "right",
       [CSS_CLASSES.PRIMARY_BG]: header,
-      "font-semibold h-8 first:rounded-tl last:rounded-tr": header,
+      "font-semibold h-8 first:rounded-tl-sm last:rounded-tr-sm": header,
       "h-10": !header,
     });
     return `<${tag} class="${classes}">${text}</${tag}>`;
@@ -139,7 +139,7 @@ export default {
 
   codespan({ text }) {
     const escapedText = escapeHtml(text);
-    return `<code class="whitespace-pre-wrap p-1 rounded bg-gray-100 dark:bg-dark-bg-contrast text-light-text-primary dark:text-dark-text-primary text-sm">${escapedText}</code>`;
+    return `<code class="whitespace-pre-wrap p-1 rounded-sm bg-gray-100 dark:bg-dark-bg-contrast text-light-text-primary dark:text-dark-text-primary text-sm">${escapedText}</code>`;
   },
 
   br() {
@@ -164,6 +164,6 @@ export default {
     const escapedAlt = escapeHtml(text);
     const escapedTitle = title ? escapeHtml(title) : "";
     const titleAttr = escapedTitle ? ` title="${escapedTitle}"` : "";
-    return `<img src="${sanitizedSrc}" alt="${escapedAlt}"${titleAttr} class="h-64 rounded" />`;
+    return `<img src="${sanitizedSrc}" alt="${escapedAlt}"${titleAttr} class="h-64 rounded-sm" />`;
   },
 } as RendererObject;

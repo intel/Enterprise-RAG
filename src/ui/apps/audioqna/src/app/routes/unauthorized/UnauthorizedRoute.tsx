@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./UnauthorizedRoute.scss";
+import "./UnauthorizedRoute.css";
 
 import { keycloakService } from "@intel-enterprise-rag-ui/auth";
 import { Button } from "@intel-enterprise-rag-ui/components";

@@ -1,0 +1,20 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.upload-file-tab {
+  @apply h-[calc(100vh-8rem)];
+  @apply px-16 pt-6 pb-16;
+  @apply grid grid-cols-2 gap-8;
+}
+.upload-file-tab__upload-col {
+  @apply flex flex-col;
+}
+.upload-file-tab__upload-col > p {
+  @apply mb-2 font-medium;
+}
+.upload-file-tab__summary-col {
+  @apply min-h-0 flex-1 overflow-y-auto;
+  @apply h-full;
+}

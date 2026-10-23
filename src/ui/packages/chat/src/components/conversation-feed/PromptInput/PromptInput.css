@@ -1,0 +1,46 @@
+/* Copyright (C) 2024-2026 Intel Corporation */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+@reference "@intel-enterprise-rag-ui/tailwind-theme/theme.css";
+
+.prompt-input__form {
+  @apply rounded-[1.875rem] shadow-[0_0_0.5rem_0];
+  @apply grid grid-cols-[1fr_auto] gap-2.5;
+  @apply mx-4 md:mx-auto;
+  @apply py-2.5 pr-2.5 pl-11;
+  @apply z-10 w-[calc(100%_-_2rem)] max-w-full md:w-[46rem];
+  @apply bg-light-bg-2 dark:bg-dark-bg-contrast;
+  @apply shadow-light-border/40 dark:shadow-dark-border/80;
+  @apply border-light-border/0 dark:border-dark-border;
+  border-width: 0.03125rem;
+  border-style: solid;
+}
+
+.prompt-input__form--with-microphone {
+  @apply grid-cols-[1fr_auto_auto];
+}
+
+.prompt-input__text-field {
+  @apply pt-1.5;
+}
+
+.prompt-input {
+  @apply w-full resize-none self-center bg-transparent text-base font-normal;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply caret-light-text-primary dark:caret-dark-text-primary;
+  @apply resize-none;
+  @apply max-h-[15rem] min-h-6;
+  @apply transition-[height] duration-300 ease-in-out;
+}
+.prompt-input[data-focused][data-rac] {
+  @apply outline-hidden outline-0 outline-transparent;
+}
+.prompt-input[data-focus-visible][data-rac] {
+  @apply outline-hidden outline-0 outline-transparent;
+}
+.prompt-input {
+  @apply focus-visible:outline-hidden focus-visible:outline-0 focus-visible:outline-transparent;
+}
+.prompt-input::placeholder {
+  @apply text-light-text-placeholder not-italic dark:text-dark-text-placeholder;
+}

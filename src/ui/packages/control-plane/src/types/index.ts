@@ -34,10 +34,7 @@ export interface ServiceNodeData extends Record<string, unknown> {
 export type ServiceArgumentCheckboxValue = boolean;
 
 export type ServiceArgumentNumberInputValue =
-  | string
-  | number
-  | undefined
-  | null;
+  string | number | undefined | null;
 
 export type ServiceArgumentSelectInputValue = string;
 

@@ -1,7 +1,7 @@
 // Copyright (C) 2024-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./BatchDeleteDialog.scss";
+import "./BatchDeleteDialog.css";
 
 import { Button, Dialog, DialogRef } from "@intel-enterprise-rag-ui/components";
 import { useRef } from "react";

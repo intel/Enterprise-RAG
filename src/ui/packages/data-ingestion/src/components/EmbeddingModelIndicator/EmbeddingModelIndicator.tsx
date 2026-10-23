@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import "./EmbeddingModelIndicator.scss";
+import "./EmbeddingModelIndicator.css";
 
 import { Tooltip } from "@intel-enterprise-rag-ui/components";
 import { WarningIcon } from "@intel-enterprise-rag-ui/icons";
