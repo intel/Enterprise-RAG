@@ -74,7 +74,7 @@ inference_models:
     role: reranking
 ```
 
-Each model name correspods to model definition defined in `env/<name>/models-rag.yaml` (seeded from `deployment/models.yaml`). Roles: `llm`, `embedding`, `reranking` are adding specific VLLM parameters to specific VLLM categories.
+Each model name correspods to model definition defined in `env/<name>/models-rag.yaml` (seeded from `deployment/models.yaml`). Roles: `llm`, `embedding`, `reranking` are adding specific VLLM parameters to specific VLLM categories. The optional `contextual_rag` role declares the blurb model for [Contextual RAG](models.md#contextual-rag) (`qwen3-4b-w8a8-blurb`).
 
 If you'd like to use a model, not listed in `models-rag.yaml`, add a new entry there with `name` + `model_id` and reference to it in `config.erag.yaml`.
 
@@ -104,6 +104,8 @@ Details: [`deployment/components/vector_databases/README.md`](../../deployment/c
 | `edp_namespace` | `edp` | |
 | `edp_storage_type` | `seaweedfs` | `seaweedfs` \| `s3` \| `s3compatible` |
 | `edp_late_chunking_enabled` | `false` | Not supported - [models.md](models.md#late-chunking) |
+| `edp_contextual_rag_enabled` | `false` | Needs a `role: contextual_rag` model - [models.md](models.md#contextual-rag) |
+| `edp_contextual_rag_max_prompt_tokens` | `16384` | Per-request budget; larger documents get no blurbs |
 | `edp_rbac_enabled` | `false` | Must be `false` for ONTAP S3, MSSQL |
 | `edp_scheduled_sync_enabled` | `false` | For S3-compatible sans SQS |
 
@@ -205,6 +207,7 @@ inference_models:
 # edp_namespace: "edp"
 # edp_storage_type: "seaweedfs"
 # edp_late_chunking_enabled: false
+# edp_contextual_rag_enabled: false
 # edp_rbac_enabled: false
 # edp_scheduled_sync_enabled: false
 # edp_s3_compatible_access_key_id: ""

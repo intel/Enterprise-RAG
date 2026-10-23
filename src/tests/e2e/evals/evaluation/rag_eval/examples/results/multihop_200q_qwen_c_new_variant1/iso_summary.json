@@ -1,0 +1,255 @@
+{
+ "A": {
+  "documents": 21,
+  "chunks": 1142,
+  "e2e_per_doc_mean": 6.14,
+  "e2e_per_doc_median": 6.09,
+  "e2e_per_chunk": 0.1129,
+  "blurb_per_chunk_all": 0.0,
+  "blurb_per_chunk_ctx": 0.0,
+  "blurb_per_doc_all": 0.0,
+  "docs_skipped": 0,
+  "largest": {
+   "document": "520_78-absolute-best-october-prime-day-deals-2023.txt",
+   "kb": 69.5,
+   "chunks": 200,
+   "e2e_s": 7.956,
+   "blurb_s": 0.0,
+   "skipped": false
+  },
+  "per_document": {
+   "520_78-absolute-best-october-prime-day-deals-2023.txt": {
+    "e2e_s": 7.956,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "213_the-best-video-games-of-the-year-so-far.txt": {
+    "e2e_s": 7.358,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "094_the-best-movies-of-2023-so-far.txt": {
+    "e2e_s": 7.573,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "576_54-best-apple-black-friday-deals-2023-ipad-apple-watch-airpo.txt": {
+    "e2e_s": 6.69,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "023_it-happens-all-blacks-defend-star-centre-after-spray-as-chei.txt": {
+    "e2e_s": 6.095,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "172_bleeds-green-and-gold-ballsy-career-saving-call-that-s-deliv.txt": {
+    "e2e_s": 4.187,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "287_what-we-expect-at-apple-s-scary-fast-event-m3-powered-macboo.txt": {
+    "e2e_s": 5.717,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "300_liverpool-vs-everton-begins-epic-saturday-with-world-cup-sem.txt": {
+    "e2e_s": 4.687,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "577_ufc-295-predictions-best-bets-odds-tom-aspinall-mackenzie-de.txt": {
+    "e2e_s": 4.329,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "073_psagot-worth-80-less-since-rani-zim-bought-it.txt": {
+    "e2e_s": 6.246,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "472_could-crispr-cure-hiv-someday.txt": {
+    "e2e_s": 5.606,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "171_how-shooting-beyonc-and-kamala-harris-made-this-photographer.txt": {
+    "e2e_s": 5.888,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "556_see-stunning-images-of-steve-and-auroras-from-this-weekend-s.txt": {
+    "e2e_s": 5.451,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "221_this-horror-flick-boasts-the-best-opening-13-minutes-of-a-fi.txt": {
+    "e2e_s": 4.618,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "448_israel-s-startup-ecosystem-down-but-not-out.txt": {
+    "e2e_s": 8.12,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "470_fifth-third-1-67-cash-back-card-one-of-the-simplest-cash-bac.txt": {
+    "e2e_s": 4.755,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "034_chiefs-vs-packers-live-score-updates-highlights-from-nfl-sun.txt": {
+    "e2e_s": 5.94,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "091_the-best-apple-cyber-monday-deals-of-2023-save-on-airpods-ip.txt": {
+    "e2e_s": 7.334,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "190_tires-are-saving-us-and-killing-us-too.txt": {
+    "e2e_s": 7.405,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "250_the-30-best-amazon-prime-day-deals-for-october-2023.txt": {
+    "e2e_s": 6.744,
+    "blurb_s": 0.0,
+    "skipped": false
+   },
+   "575_some-of-our-favorite-devices-are-on-sale-for-black-friday.txt": {
+    "e2e_s": 6.219,
+    "blurb_s": 0.0,
+    "skipped": false
+   }
+  }
+ },
+ "C_new": {
+  "documents": 21,
+  "chunks": 1142,
+  "e2e_per_doc_mean": 27.58,
+  "e2e_per_doc_median": 15.24,
+  "e2e_per_chunk": 0.5073,
+  "blurb_per_chunk_all": 0.3715,
+  "blurb_per_chunk_ctx": 0.4503,
+  "blurb_per_doc_all": 20.2,
+  "docs_skipped": 1,
+  "largest": {
+   "document": "520_78-absolute-best-october-prime-day-deals-2023.txt",
+   "kb": 69.5,
+   "chunks": 200,
+   "e2e_s": 9.252,
+   "blurb_s": 0.0,
+   "skipped": true
+  },
+  "per_document": {
+   "520_78-absolute-best-october-prime-day-deals-2023.txt": {
+    "e2e_s": 9.252,
+    "blurb_s": 0.0,
+    "skipped": true
+   },
+   "213_the-best-video-games-of-the-year-so-far.txt": {
+    "e2e_s": 137.175,
+    "blurb_s": 124.6,
+    "skipped": false
+   },
+   "094_the-best-movies-of-2023-so-far.txt": {
+    "e2e_s": 116.664,
+    "blurb_s": 104.4,
+    "skipped": false
+   },
+   "576_54-best-apple-black-friday-deals-2023-ipad-apple-watch-airpo.txt": {
+    "e2e_s": 47.228,
+    "blurb_s": 36.4,
+    "skipped": false
+   },
+   "023_it-happens-all-blacks-defend-star-centre-after-spray-as-chei.txt": {
+    "e2e_s": 12.957,
+    "blurb_s": 7.1,
+    "skipped": false
+   },
+   "172_bleeds-green-and-gold-ballsy-career-saving-call-that-s-deliv.txt": {
+    "e2e_s": 14.012,
+    "blurb_s": 6.2,
+    "skipped": false
+   },
+   "287_what-we-expect-at-apple-s-scary-fast-event-m3-powered-macboo.txt": {
+    "e2e_s": 12.528,
+    "blurb_s": 7.4,
+    "skipped": false
+   },
+   "300_liverpool-vs-everton-begins-epic-saturday-with-world-cup-sem.txt": {
+    "e2e_s": 13.948,
+    "blurb_s": 7.7,
+    "skipped": false
+   },
+   "577_ufc-295-predictions-best-bets-odds-tom-aspinall-mackenzie-de.txt": {
+    "e2e_s": 11.782,
+    "blurb_s": 6.7,
+    "skipped": false
+   },
+   "073_psagot-worth-80-less-since-rani-zim-bought-it.txt": {
+    "e2e_s": 13.315,
+    "blurb_s": 7.4,
+    "skipped": false
+   },
+   "472_could-crispr-cure-hiv-someday.txt": {
+    "e2e_s": 12.832,
+    "blurb_s": 7.0,
+    "skipped": false
+   },
+   "171_how-shooting-beyonc-and-kamala-harris-made-this-photographer.txt": {
+    "e2e_s": 15.236,
+    "blurb_s": 7.3,
+    "skipped": false
+   },
+   "556_see-stunning-images-of-steve-and-auroras-from-this-weekend-s.txt": {
+    "e2e_s": 12.346,
+    "blurb_s": 7.8,
+    "skipped": false
+   },
+   "221_this-horror-flick-boasts-the-best-opening-13-minutes-of-a-fi.txt": {
+    "e2e_s": 15.784,
+    "blurb_s": 8.3,
+    "skipped": false
+   },
+   "448_israel-s-startup-ecosystem-down-but-not-out.txt": {
+    "e2e_s": 14.087,
+    "blurb_s": 7.7,
+    "skipped": false
+   },
+   "470_fifth-third-1-67-cash-back-card-one-of-the-simplest-cash-bac.txt": {
+    "e2e_s": 18.532,
+    "blurb_s": 9.3,
+    "skipped": false
+   },
+   "034_chiefs-vs-packers-live-score-updates-highlights-from-nfl-sun.txt": {
+    "e2e_s": 16.167,
+    "blurb_s": 9.5,
+    "skipped": false
+   },
+   "091_the-best-apple-cyber-monday-deals-of-2023-save-on-airpods-ip.txt": {
+    "e2e_s": 18.41,
+    "blurb_s": 12.6,
+    "skipped": false
+   },
+   "190_tires-are-saving-us-and-killing-us-too.txt": {
+    "e2e_s": 16.773,
+    "blurb_s": 10.5,
+    "skipped": false
+   },
+   "250_the-30-best-amazon-prime-day-deals-for-october-2023.txt": {
+    "e2e_s": 21.807,
+    "blurb_s": 15.0,
+    "skipped": false
+   },
+   "575_some-of-our-favorite-devices-are-on-sale-for-black-friday.txt": {
+    "e2e_s": 28.449,
+    "blurb_s": 21.3,
+    "skipped": false
+   }
+  },
+  "added_vs_A_per_doc_mean": 21.45
+ }
+}

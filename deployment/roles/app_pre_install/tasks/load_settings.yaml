@@ -101,6 +101,12 @@
         • EDP: {{ edp_enabled | default('undefined') }}
       {% if edp_enabled | default(false) | bool %}
         • Late Chunking: {{ edp_late_chunking_enabled | default(false) }}
+        • Contextual RAG: {{ edp_contextual_rag_enabled | default(false) }}
+        {% if edp_contextual_rag_enabled | default(false) | bool %}
+        • Contextual RAG Blurb LLM: {{ edp_contextual_rag_model_name | default(contextual_rag_model_name, true) | default('undefined', true) }} ({{ edp_contextual_rag_endpoint | default(contextual_rag_endpoint, true) | default('undefined', true) }})
+        • Contextual RAG Prompt Budget: {{ edp_contextual_rag_max_prompt_tokens | default(16384) }} tokens (larger documents are indexed without blurbs)
+        • Contextual RAG Hybrid Search: {{ edp_contextual_rag_hybrid_search_enabled | default(true) }}
+        {% endif %}
       {% endif %}
         • UI: {{ ui_enabled | default('undefined') }}
         • Telemetry: {{ telemetry_enabled | default('undefined') }}

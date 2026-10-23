@@ -33,6 +33,10 @@ inference_models:
     role: embedding
   - name: bge-reranker-v2-m3
     role: reranking
+  # Contextual RAG's blurb writer, sized like the answer LLM and deployed next to it.
+  # Uncomment together with edp_contextual_rag_enabled below.
+  # - name: qwen3-4b-w8a8-blurb
+  #   role: contextual_rag
 
 # --- Ansible settings ---
 #secure_logs: false
@@ -48,6 +52,23 @@ inference_models:
 # edp_late_chunking_enabled: false
 # edp_rbac_enabled: false
 # edp_scheduled_sync_enabled: false
+#
+# Contextual RAG (Anthropic Contextual Retrieval): at ingest time an LLM writes a short
+# blurb situating each chunk in its own source document and prepends it to the chunk
+# before embedding; at query time the retriever fuses a lexical BM25 ranking over those
+# same contextualised chunks with the dense one (weighted RRF). The blurbs are written by
+# a dedicated model, qwen3-4b-w8a8-blurb, declared above with role: contextual_rag; its
+# endpoint and served name are propagated to EDP, so enabling the feature is that entry
+# plus the flag below -- no address is typed in by hand.
+# A document is contextualised only if its blurb prompt (whole document + chunk +
+# max_new_tokens) fits edp_contextual_rag_max_prompt_tokens; larger documents are
+# indexed without blurbs, never truncated. Everything below has a working default; see
+# roles/app_edp/defaults/main.yaml for the full list.
+# edp_contextual_rag_enabled: false
+# edp_contextual_rag_max_prompt_tokens: 16384  # per-request budget; larger documents are skipped
+# edp_contextual_rag_max_concurrency: 32       # chunks of one document in flight at once
+# edp_text_processing_timeout_seconds: 300     # one LLM call per chunk - raise for big documents
+# edp_contextual_rag_hybrid_search_enabled: true   # query-time BM25 + dense fusion (Redis only)
 #
 # External S3-compatible object store (for example ONTAP S3). See
 # docs/netapp_ontap_s3.md; the array-side ontap_* values go in global_config.yaml.

@@ -1,0 +1,42 @@
+{{- if .Values.contextualRag.enabled -}}
+# Copyright (C) 2024-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edp-contextual-rag-configmap
+  namespace: edp
+data:
+  {{- /* The LLM that writes the blurbs: a dedicated blurb model, deployed next to the
+         answer LLM. Both values are mandatory and both are propagated by Ansible from
+         the inference_models entry with role: contextual_rag — its own KServe Service,
+         not the AI gateway — and that model is deployed independently of this chart
+         (model-manager / KServe, qwen3-4b-w8a8-blurb in deployment/models.yaml).
+         app_pre_install fails the deployment earlier when the flag is on and no such
+         model is declared; this guard only catches a chart installed with the values
+         left empty. */}}
+  VLLM_SERVER_ENDPOINT: {{ required "contextualRag.config.vllm_endpoint is required when contextual RAG is enabled — declare the blurb model in inference_models with role: contextual_rag, or set edp_contextual_rag_endpoint" .Values.contextualRag.config.vllm_endpoint | quote }}
+  CONTEXT_MODEL_NAME: {{ required "contextualRag.config.context_model_name is required when contextual RAG is enabled — declare the blurb model in inference_models with role: contextual_rag, or set edp_contextual_rag_model_name" .Values.contextualRag.config.context_model_name | quote }}
+  MAX_NEW_TOKENS: {{ .Values.contextualRag.config.max_new_tokens | quote }}
+  CONTEXT_MAX_CONCURRENCY: {{ .Values.contextualRag.config.max_concurrency | quote }}
+  {{- /* Token budget for one blurb request: whole document + whole chunk + template +
+         max_new_tokens. A document is contextualised only if every chunk's request
+         fits, and skipped otherwise; it is never truncated. Capped at the served window,
+         "0" = the whole served window. hasKey rather than `default`, which would turn an
+         explicit integer 0 into 16384. */}}
+  CONTEXT_MAX_PROMPT_TOKENS: {{ hasKey .Values.contextualRag.config "max_prompt_tokens" | ternary (toString .Values.contextualRag.config.max_prompt_tokens) "16384" | quote }}
+  CONTEXT_CHARS_PER_TOKEN: {{ .Values.contextualRag.config.chars_per_token | default "3.5" | quote }}
+  CONTEXT_REQUEST_TIMEOUT: {{ .Values.contextualRag.config.request_timeout | quote }}
+  CONTEXT_MAX_RETRIES: {{ .Values.contextualRag.config.max_retries | default "2" | quote }}
+  {{- /* Document-sticky routing keeps every chunk of a document on one model-server
+         replica so the replica-local prefix cache is reused. It needs pod IPs, which a
+         ClusterIP Service hides, hence the headless Service name below. Behind a
+         gateway the lookup finds nothing and the configured URL is used as-is. */}}
+  CONTEXT_STICKY_ROUTING: {{ .Values.contextualRag.config.sticky_routing | default "true" | quote }}
+  {{- /* Left empty on purpose: the service then derives "<endpoint host>-headless",
+         which stays correct if the endpoint is repointed at another model. */}}
+  CONTEXT_VLLM_REPLICA_HOST: {{ .Values.contextualRag.config.vllm_replica_host | default "" | quote }}
+  CONTEXT_VLLM_REPLICA_TTL: {{ .Values.contextualRag.config.vllm_replica_ttl | default "60" | quote }}
+  CONTEXT_TRUST_ENV_PROXY: {{ .Values.contextualRag.config.trust_env_proxy | default "false" | quote }}
+{{- end }}

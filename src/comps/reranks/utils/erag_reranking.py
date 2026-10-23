@@ -299,20 +299,28 @@ class EragReranker:
 
     def _filter_top_n_by_vector_distance(self, retrieved_docs: DocList[TextDoc], top_n: int) -> DocList[TextDoc]:
         """
-        Filter and return the top N documents based on their vector distances.
+        Filter and return the top N documents based on their retrieval score.
         Lower vector distance means higher similarity.
+
+        Documents produced by hybrid search carry an `rrf_score` (higher is better) instead
+        of a comparable vector distance -- a chunk found only by the BM25 leg has no vector
+        distance at all -- so the fused score is used when present, negated so that the
+        same ascending sort applies.
 
         Args:
             retrieved_docs (DocList[TextDoc]): The list of retrieved documents with vector distances.
             top_n (int): The number of top documents to filter.
 
         Returns:
-            DocList[TextDoc]: The filtered list of top documents sorted by vector distance (ascending).
+            DocList[TextDoc]: The filtered list of top documents sorted by score (best first).
         """
         # Extract vector_distance from metadata, use a large default if not present
         docs_with_distances = []
         for doc in retrieved_docs:
-            vector_distance = doc.metadata.get('vector_distance', float('inf'))
+            if 'rrf_score' in doc.metadata:
+                vector_distance = -float(doc.metadata['rrf_score'])
+            else:
+                vector_distance = doc.metadata.get('vector_distance', float('inf'))
             docs_with_distances.append((doc, vector_distance))
         
         # Sort by vector_distance (ascending - lower is better)

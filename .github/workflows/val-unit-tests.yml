@@ -36,6 +36,7 @@ jobs:
         test-name:
           - asr_unit_tests
           - chat_history_unit_tests
+          - contextual_rag_unit_tests
           - deployment_scripts_unit_tests
           - docsum_unit_tests
           - edp_unit_tests

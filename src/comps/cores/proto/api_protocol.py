@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 import shortuuid
 from fastapi import File, Form, UploadFile
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, NonNegativeFloat, PositiveInt
+from pydantic import BaseModel, Field, NonNegativeFloat, NonNegativeInt, PositiveInt
 
 
 class ServiceCard(BaseModel):
@@ -218,12 +218,19 @@ class EmbeddingResponse(BaseModel):
 class RetrievalRequest(BaseModel):
     embedding: Union[EmbeddingResponse, List[float]] = None
     input: Optional[str] = None  # search_type maybe need, like "mmr"
-    search_type: str = "similarity"
+    search_type: str = "similarity"  # "similarity", "vector", "hybrid", ...
     k: PositiveInt = 4
     distance_threshold: Optional[float] = None
     fetch_k: PositiveInt = 20
     lambda_mult: NonNegativeFloat = 0.5
     score_threshold: NonNegativeFloat = 0.2
+    # Hybrid search (search_type "hybrid"): BM25 leg + dense vector leg fused with
+    # weighted Reciprocal Rank Fusion. rrf_k=0 is Anthropic's weight/rank scoring.
+    hybrid_candidate_k: PositiveInt = 100
+    hybrid_result_k: PositiveInt = 20
+    rrf_k: NonNegativeInt = 0
+    semantic_weight: NonNegativeFloat = 0.8
+    bm25_weight: NonNegativeFloat = 0.2
 
     # define
     request_type: Literal["retrieval"] = "retrieval"

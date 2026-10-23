@@ -27,6 +27,11 @@ class VectorStoreConnector(ABC):
             Performs similarity search with relevance scores and returns a SearchedDoc object.
         max_marginal_relevance_search(input: EmbedDoc) -> SearchedDoc:
             Performs max marginal relevance search and returns a SearchedDoc object.
+        bm25_search(input: EmbedDoc) -> SearchedDoc:
+            Performs lexical BM25 search and returns a SearchedDoc object.
+        hybrid_search_by_vector(input: EmbedDoc) -> SearchedDoc:
+            Performs hybrid (vector + BM25) search fused with reciprocal rank fusion
+            and returns a SearchedDoc object.
     """
     def __new__(cls):
         """
@@ -58,6 +63,14 @@ class VectorStoreConnector(ABC):
         raise NotImplementedError
 
     def similarity_search_with_relevance_scores(self, input_text: str, embedding: List, k: int, score_threshold: float, **kwargs) -> SearchedDoc:
+        raise NotImplementedError
+
+    def bm25_search(self, input_text: str, k: int, **kwargs) -> SearchedDoc:
+        raise NotImplementedError
+
+    def hybrid_search_by_vector(self, input_text: str, embedding: List, k: int, candidate_k: int=100, rrf_k: int=0,
+                                semantic_weight: float=0.8, bm25_weight: float=0.2,
+                                distance_threshold: float=None, **kwargs) -> SearchedDoc:
         raise NotImplementedError
 
     def max_marginal_relevance_search(self, input_text: str, embedding: List, k: int, fetch_k: float, lambda_mult: float, **kwargs) -> SearchedDoc:

@@ -10,6 +10,7 @@ proxy:
 
 balloonsEnabled: {{ balloons_enabled | default(false) }}
 pipelineNamespace: {{ pipeline_namespace }}
+textProcessingTimeoutSeconds: "{{ edp_text_processing_timeout_seconds | default('300') }}"
 {# _deploy_overrides is only set when app_inference_models ran with an embedding role #}
 embeddingReplicas: {{ _deploy_overrides.embedding.replicas | default(1) | int }}
 {% if (minimal_configuration | default(false) | bool) or (edp_minimal_configuration | default(false) | bool) %}
@@ -162,6 +163,34 @@ textSplitter:
 {% if edp_semantic_chunking_enabled is true %}
     use_semantic_chunking: "True"
 {% endif %}
+{% endif %}
+{% if edp_contextual_rag_enabled | default(false) | bool %}
+{# Contextual RAG (https://www.anthropic.com/engineering/contextual-retrieval): one LLM
+    call per chunk, situating that chunk inside its own source document. The blurbs are
+    written by the dedicated blurb model (inference_models role: contextual_rag) - deployed
+    by model-manager / KServe, not by this chart - so both the endpoint and the model name
+    are mandatory and validated by app_pre_install. #}
+contextualRag:
+  enabled: true
+  tag: "{{ tag }}"
+  repository: "{{ registry }}"
+  name: "enterprise-rag-contextual-rag"
+  config:
+    vllm_endpoint: "{{ edp_contextual_rag_endpoint }}"
+    context_model_name: "{{ edp_contextual_rag_model_name }}"
+    max_new_tokens: "{{ edp_contextual_rag_max_new_tokens | default('100') }}"
+    max_concurrency: "{{ edp_contextual_rag_max_concurrency | default('32') }}"
+{# Token budget for one blurb request (whole document + whole chunk + template +
+    max_new_tokens). Documents whose requests do not all fit it are skipped, never
+    truncated; '0' means the whole window the LLM is served with. #}
+    max_prompt_tokens: "{{ edp_contextual_rag_max_prompt_tokens | default('16384') }}"
+    chars_per_token: "{{ edp_contextual_rag_chars_per_token | default('3.5') }}"
+    request_timeout: "{{ edp_contextual_rag_request_timeout | default('300') }}"
+    max_retries: "{{ edp_contextual_rag_max_retries | default('2') }}"
+    sticky_routing: "{{ edp_contextual_rag_sticky_routing | default(true) | bool | string | lower }}"
+    vllm_replica_host: "{{ edp_contextual_rag_replica_host | default('') }}"
+    vllm_replica_ttl: "{{ edp_contextual_rag_replica_ttl | default('60') }}"
+    trust_env_proxy: "{{ edp_contextual_rag_trust_env_proxy | default(false) | bool | string | lower }}"
 {% endif %}
 ingestion:
   tag: "{{ tag }}"

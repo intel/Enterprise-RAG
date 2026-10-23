@@ -1,0 +1,459 @@
+{
+ "dataset": "MultiHop-RAG",
+ "queries": {
+  "A": 200,
+  "B": 200,
+  "C": 200
+ },
+ "query_sample_manifest": "output/sample200_manifest.json",
+ "settings": {
+  "A": {
+   "report": "output/report_s200_A.json",
+   "log": "output/s200_A.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "<erag-2.3.0-checkout>/src/tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path /tmp/crag200/MultiHopRAG_sample200.json --docs_path <erag-2.3.0-checkout>/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir /tmp/crag200/work/output --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --llm_judge_model TechxGenus/Meta-Llama-3-8B-Instruct-AWQ --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-checkout>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-checkout>/deployment/inventory/test-cluster/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 0.73,
+    "mean": 0.732,
+    "phase_minutes": 2.4
+   },
+   "retrieved_list_depth": {
+    "10": 200
+   },
+   "reranked_chunks": {
+    "total": 1071,
+    "mean_per_query": 5.36,
+    "queries_with_full_top10": 19,
+    "found_by_bm25_leg_only": 0,
+    "found_by_bm25_leg_only_pct": 0.0
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.7561
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.6081
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.7045
+    }
+   }
+  },
+  "B": {
+   "report": "output/report_s200_B.json",
+   "log": "output/s200_B.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "<erag-2.3.0-checkout>/src/tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path /tmp/crag200/MultiHopRAG_sample200.json --docs_path <erag-2.3.0-checkout>/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir /tmp/crag200/work/output --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --llm_judge_model TechxGenus/Meta-Llama-3-8B-Instruct-AWQ --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-checkout>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-checkout>/deployment/inventory/test-cluster/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 0.777,
+    "mean": 0.782,
+    "phase_minutes": 2.6
+   },
+   "retrieved_list_depth": {
+    "10": 200
+   },
+   "reranked_chunks": {
+    "total": 1437,
+    "mean_per_query": 7.18,
+    "queries_with_full_top10": 55,
+    "found_by_bm25_leg_only": 0,
+    "found_by_bm25_leg_only_pct": 0.0
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.8171
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.7973
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.75
+    }
+   }
+  },
+  "C": {
+   "report": "output/report_s200_C.json",
+   "log": "output/s200_C.log",
+   "overall_sources": {
+    "generation": "scraped from run log",
+    "ragas": "scraped from run log",
+    "retrieval": "report overall (last pass)"
+   },
+   "run_cmd": "<erag-2.3.0-checkout>/src/tests/e2e/evals/evaluation/rag_eval/examples/eval_multihop.py --dataset_path /tmp/crag200/MultiHopRAG_sample200.json --docs_path <erag-2.3.0-checkout>/src/tests/e2e/evals/evaluation/rag_eval/examples/multihop_dataset/corpus.json --output_dir /tmp/crag200/work/output --ingest_batch_size 64 --ingest_timeout 14400 --ingest_max_failures 0 --generation_metrics --retrieval_metrics --ragas_metrics --limits 0 --keep_checkpoint --llm_judge_endpoint http://localhost:8000 --llm_judge_model TechxGenus/Meta-Llama-3-8B-Instruct-AWQ --embedding_endpoint http://localhost:8090/embed --auth_file <erag-2.3.0-checkout>/deployment/ansible-logs/default_credentials.txt --cluster_config_file <erag-2.3.0-checkout>/deployment/inventory/test-cluster/config.yaml",
+   "retrieval_phase_latency_s": {
+    "median": 1.064,
+    "mean": 1.067,
+    "phase_minutes": 3.5
+   },
+   "retrieved_list_depth": {
+    "20": 200
+   },
+   "reranked_chunks": {
+    "total": 1764,
+    "mean_per_query": 8.82,
+    "queries_with_full_top10": 146,
+    "found_by_bm25_leg_only": 25,
+    "found_by_bm25_leg_only_pct": 1.42
+   },
+   "hits_at_10_by_question_type": {
+    "comparison_query": {
+     "n": 82,
+     "hits_at_10": 0.878
+    },
+    "inference_query": {
+     "n": 74,
+     "hits_at_10": 0.8649
+    },
+    "temporal_query": {
+     "n": 44,
+     "hits_at_10": 0.7045
+    }
+   }
+  }
+ },
+ "retrieval_failure_rate_hits_at_10": {
+  "A": 0.31,
+  "B": 0.205,
+  "C": 0.165,
+  "reduction_pct_B_vs_A": 33.87,
+  "reduction_pct_C_vs_A": 46.77,
+  "reduction_pct_C_vs_B": 19.51
+ },
+ "metrics": {
+  "avg. Hits@10": {
+   "A": 0.69,
+   "B": 0.795,
+   "C": 0.835,
+   "delta_B_vs_A": 0.105,
+   "improve_pct_B_vs_A": 15.22,
+   "delta_C_vs_A": 0.145,
+   "improve_pct_C_vs_A": 21.01,
+   "delta_C_vs_B": 0.04,
+   "improve_pct_C_vs_B": 5.03
+  },
+  "avg. Hits@4": {
+   "A": 0.635,
+   "B": 0.72,
+   "C": 0.72,
+   "delta_B_vs_A": 0.085,
+   "improve_pct_B_vs_A": 13.39,
+   "delta_C_vs_A": 0.085,
+   "improve_pct_C_vs_A": 13.39,
+   "delta_C_vs_B": 0.0,
+   "improve_pct_C_vs_B": 0.0
+  },
+  "avg. MAP@10": {
+   "A": 0.2527,
+   "B": 0.2646,
+   "C": 0.2887,
+   "delta_B_vs_A": 0.0119,
+   "improve_pct_B_vs_A": 4.71,
+   "delta_C_vs_A": 0.036,
+   "improve_pct_C_vs_A": 14.25,
+   "delta_C_vs_B": 0.0241,
+   "improve_pct_C_vs_B": 9.11
+  },
+  "avg. MRR@10": {
+   "A": 0.5374,
+   "B": 0.5885,
+   "C": 0.5979,
+   "delta_B_vs_A": 0.0511,
+   "improve_pct_B_vs_A": 9.51,
+   "delta_C_vs_A": 0.0605,
+   "improve_pct_C_vs_A": 11.26,
+   "delta_C_vs_B": 0.0094,
+   "improve_pct_C_vs_B": 1.6
+  },
+  "avg. Hits@10_retrieved": {
+   "A": 0.785,
+   "B": 0.82,
+   "C": 0.835,
+   "delta_B_vs_A": 0.035,
+   "improve_pct_B_vs_A": 4.46,
+   "delta_C_vs_A": 0.05,
+   "improve_pct_C_vs_A": 6.37,
+   "delta_C_vs_B": 0.015,
+   "improve_pct_C_vs_B": 1.83
+  },
+  "avg. Hits@4_retrieved": {
+   "A": 0.635,
+   "B": 0.635,
+   "C": 0.675,
+   "delta_B_vs_A": 0.0,
+   "improve_pct_B_vs_A": 0.0,
+   "delta_C_vs_A": 0.04,
+   "improve_pct_C_vs_A": 6.3,
+   "delta_C_vs_B": 0.04,
+   "improve_pct_C_vs_B": 6.3
+  },
+  "avg. MAP@10_retrieved": {
+   "A": 0.2189,
+   "B": 0.2272,
+   "C": 0.2373,
+   "delta_B_vs_A": 0.0083,
+   "improve_pct_B_vs_A": 3.79,
+   "delta_C_vs_A": 0.0184,
+   "improve_pct_C_vs_A": 8.41,
+   "delta_C_vs_B": 0.0101,
+   "improve_pct_C_vs_B": 4.45
+  },
+  "avg. MRR@10_retrieved": {
+   "A": 0.4693,
+   "B": 0.498,
+   "C": 0.5092,
+   "delta_B_vs_A": 0.0287,
+   "improve_pct_B_vs_A": 6.12,
+   "delta_C_vs_A": 0.0399,
+   "improve_pct_C_vs_A": 8.5,
+   "delta_C_vs_B": 0.0112,
+   "improve_pct_C_vs_B": 2.25
+  },
+  "avg. gain_Hits@10": {
+   "A": -0.095,
+   "B": -0.025,
+   "C": 0.0,
+   "delta_B_vs_A": 0.07,
+   "improve_pct_B_vs_A": 73.68,
+   "delta_C_vs_A": 0.095,
+   "improve_pct_C_vs_A": 100.0,
+   "delta_C_vs_B": 0.025,
+   "improve_pct_C_vs_B": 100.0
+  },
+  "avg. gain_Hits@4": {
+   "A": 0.0,
+   "B": 0.085,
+   "C": 0.045,
+   "delta_B_vs_A": 0.085,
+   "improve_pct_B_vs_A": null,
+   "delta_C_vs_A": 0.045,
+   "improve_pct_C_vs_A": null,
+   "delta_C_vs_B": -0.04,
+   "improve_pct_C_vs_B": -47.06
+  },
+  "avg. gain_MAP@10": {
+   "A": 0.0338,
+   "B": 0.0375,
+   "C": 0.0514,
+   "delta_B_vs_A": 0.0037,
+   "improve_pct_B_vs_A": 10.95,
+   "delta_C_vs_A": 0.0176,
+   "improve_pct_C_vs_A": 52.07,
+   "delta_C_vs_B": 0.0139,
+   "improve_pct_C_vs_B": 37.07
+  },
+  "avg. gain_MRR@10": {
+   "A": 0.0681,
+   "B": 0.0905,
+   "C": 0.0887,
+   "delta_B_vs_A": 0.0224,
+   "improve_pct_B_vs_A": 32.89,
+   "delta_C_vs_A": 0.0206,
+   "improve_pct_C_vs_A": 30.25,
+   "delta_C_vs_B": -0.0018,
+   "improve_pct_C_vs_B": -1.99
+  },
+  "answer_correctness": {
+   "A": 0.5535,
+   "B": 0.6223,
+   "C": 0.6198,
+   "delta_B_vs_A": 0.0688,
+   "improve_pct_B_vs_A": 12.43,
+   "delta_C_vs_A": 0.0663,
+   "improve_pct_C_vs_A": 11.98,
+   "delta_C_vs_B": -0.0025,
+   "improve_pct_C_vs_B": -0.4
+  },
+  "answer_relevancy": {
+   "A": 0.7355,
+   "B": 0.7311,
+   "C": 0.7395,
+   "delta_B_vs_A": -0.0044,
+   "improve_pct_B_vs_A": -0.6,
+   "delta_C_vs_A": 0.004,
+   "improve_pct_C_vs_A": 0.54,
+   "delta_C_vs_B": 0.0084,
+   "improve_pct_C_vs_B": 1.15
+  },
+  "answer_similarity": {
+   "A": 0.5045,
+   "B": 0.5073,
+   "C": 0.5116,
+   "delta_B_vs_A": 0.0028,
+   "improve_pct_B_vs_A": 0.56,
+   "delta_C_vs_A": 0.0071,
+   "improve_pct_C_vs_A": 1.41,
+   "delta_C_vs_B": 0.0043,
+   "improve_pct_C_vs_B": 0.85
+  },
+  "context_precision": {
+   "A": 0.6379,
+   "B": 0.7772,
+   "C": 0.7645,
+   "delta_B_vs_A": 0.1393,
+   "improve_pct_B_vs_A": 21.84,
+   "delta_C_vs_A": 0.1266,
+   "improve_pct_C_vs_A": 19.85,
+   "delta_C_vs_B": -0.0127,
+   "improve_pct_C_vs_B": -1.63
+  },
+  "context_recall": {
+   "A": 0.7291,
+   "B": 0.8002,
+   "C": 0.8197,
+   "delta_B_vs_A": 0.0711,
+   "improve_pct_B_vs_A": 9.75,
+   "delta_C_vs_A": 0.0906,
+   "improve_pct_C_vs_A": 12.43,
+   "delta_C_vs_B": 0.0195,
+   "improve_pct_C_vs_B": 2.44
+  },
+  "faithfulness": {
+   "A": 0.6069,
+   "B": 0.6171,
+   "C": 0.6283,
+   "delta_B_vs_A": 0.0102,
+   "improve_pct_B_vs_A": 1.68,
+   "delta_C_vs_A": 0.0214,
+   "improve_pct_C_vs_A": 3.53,
+   "delta_C_vs_B": 0.0112,
+   "improve_pct_C_vs_B": 1.81
+  },
+  "avg. bleu-avg": {
+   "A": 0.0053,
+   "B": 0.0075,
+   "C": 0.0073,
+   "delta_B_vs_A": 0.0022,
+   "improve_pct_B_vs_A": 41.51,
+   "delta_C_vs_A": 0.002,
+   "improve_pct_C_vs_A": 37.74,
+   "delta_C_vs_B": -0.0002,
+   "improve_pct_C_vs_B": -2.67
+  },
+  "avg. bleu-1": {
+   "A": 0.0129,
+   "B": 0.0155,
+   "C": 0.0187,
+   "delta_B_vs_A": 0.0026,
+   "improve_pct_B_vs_A": 20.16,
+   "delta_C_vs_A": 0.0058,
+   "improve_pct_C_vs_A": 44.96,
+   "delta_C_vs_B": 0.0032,
+   "improve_pct_C_vs_B": 20.65
+  },
+  "avg. bleu-2": {
+   "A": 0.0073,
+   "B": 0.01,
+   "C": 0.0131,
+   "delta_B_vs_A": 0.0027,
+   "improve_pct_B_vs_A": 36.99,
+   "delta_C_vs_A": 0.0058,
+   "improve_pct_C_vs_A": 79.45,
+   "delta_C_vs_B": 0.0031,
+   "improve_pct_C_vs_B": 31.0
+  },
+  "avg. bleu-3": {
+   "A": 0.0053,
+   "B": 0.0074,
+   "C": 0.0097,
+   "delta_B_vs_A": 0.0021,
+   "improve_pct_B_vs_A": 39.62,
+   "delta_C_vs_A": 0.0044,
+   "improve_pct_C_vs_A": 83.02,
+   "delta_C_vs_B": 0.0023,
+   "improve_pct_C_vs_B": 31.08
+  },
+  "avg. bleu-4": {
+   "A": 0.0033,
+   "B": 0.0046,
+   "C": 0.0045,
+   "delta_B_vs_A": 0.0013,
+   "improve_pct_B_vs_A": 39.39,
+   "delta_C_vs_A": 0.0012,
+   "improve_pct_C_vs_A": 36.36,
+   "delta_C_vs_B": -0.0001,
+   "improve_pct_C_vs_B": -2.17
+  },
+  "avg. rouge-L": {
+   "A": 0.0243,
+   "B": 0.0291,
+   "C": 0.0322,
+   "delta_B_vs_A": 0.0048,
+   "improve_pct_B_vs_A": 19.75,
+   "delta_C_vs_A": 0.0079,
+   "improve_pct_C_vs_A": 32.51,
+   "delta_C_vs_B": 0.0031,
+   "improve_pct_C_vs_B": 10.65
+  },
+  "avg. LLM-score": {
+   "A": 0.0,
+   "B": 0.0,
+   "C": 0.0,
+   "delta_B_vs_A": 0.0,
+   "improve_pct_B_vs_A": null,
+   "delta_C_vs_A": 0.0,
+   "improve_pct_C_vs_A": null,
+   "delta_C_vs_B": 0.0,
+   "improve_pct_C_vs_B": null
+  },
+  "avg. length": {
+   "A": 574.975,
+   "B": 630.47,
+   "C": 606.06,
+   "delta_B_vs_A": 55.495,
+   "improve_pct_B_vs_A": 9.65,
+   "delta_C_vs_A": 31.085,
+   "improve_pct_C_vs_A": 5.41,
+   "delta_C_vs_B": -24.41,
+   "improve_pct_C_vs_B": -3.87
+  }
+ },
+ "paired_per_query_hits_at_10": {
+  "B_vs_A": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 27,
+   "broken": 6,
+   "both_hit": 132,
+   "both_miss": 35,
+   "net": 21,
+   "mean_delta": 0.105,
+   "mcnemar_p_exact": 0.0003240634687244892
+  },
+  "C_vs_A": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 34,
+   "broken": 5,
+   "both_hit": 133,
+   "both_miss": 28,
+   "net": 29,
+   "mean_delta": 0.145,
+   "mcnemar_p_exact": 2.4299079086631536e-06
+  },
+  "C_vs_B": {
+   "metric": "Hits@10",
+   "n_shared_queries": 200,
+   "fixed": 12,
+   "broken": 4,
+   "both_hit": 155,
+   "both_miss": 29,
+   "net": 8,
+   "mean_delta": 0.04,
+   "mcnemar_p_exact": 0.076812744140625
+  }
+ }
+}

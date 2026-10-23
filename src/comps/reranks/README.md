@@ -138,7 +138,7 @@ curl http://localhost:8000/v1/health_check \
 
 #### Sending a Request
 
-The `top_n` parameter allows you to specify the number of results returned by the reranker model. By default, the reranker returns only the top three result (top_n=3). Adding the top_n parameter enables you to retrieve multiple ranked results, with the option to adjust it as needed.
+The `top_n` parameter allows you to specify the number of results returned by the reranker model. By default, the reranker returns the top five results (top_n=5). Adding the top_n parameter enables you to retrieve a different number of ranked results, with the option to adjust it as needed.
 
 Additionally, you can pass `rerank_score_threshold` to filter received docs based on the model output. Reranking model returns a similarity distance that is mapped to a float value between 0 and 1 using a sigmoid function. For reranker the higher value, the better similarity to the prompt. If rerank_score_threshold is defined, the microservice will ignore all chunks that returned a score equal or lower than this value.
 
@@ -177,6 +177,26 @@ The reranking microservice outputs a JSON containing the original user question 
 ```
 
 ## Additional Information
+
+### Documents produced by hybrid search
+
+When the retriever runs [hybrid search](../retrievers/README.md#hybrid-search-contextual-bm25--contextual-embeddings),
+the documents it sends here carry an `rrf_score` (higher is better) instead of a directly
+comparable `vector_distance`; a chunk that only the BM25 leg found has no vector distance
+at all. This matters in two places:
+
+- **Normal operation.** The reranker scores `(user_prompt, chunk_text)` pairs, so retrieval
+  scores are irrelevant and hybrid results need no special handling. This is the path that
+  produces Anthropic's 67% failure reduction: the retriever hands over a fused list deeper
+  than `k` (`hybrid_result_k`, default 20) and the reranker cuts it to `top_n` (default 5).
+- **Late chunking (`RERANKING_LATE_CHUNKING_ENABLED=true`).** The reranker model is bypassed
+  and documents are ordered by their retrieval score. `_filter_top_n_by_vector_distance()`
+  therefore prefers `rrf_score` (negated, so the same ascending sort applies) and falls back
+  to `vector_distance` only for documents that were not produced by fusion.
+
+Hybrid metadata (`rrf_score`, `retrieval_source`, `vector_rank`, `bm25_rank`, `bm25_score`)
+is passed through untouched alongside `reranker_score`.
+
 ### Project Structure
 
 The project is organized into several directories:

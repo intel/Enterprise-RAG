@@ -90,3 +90,66 @@ def test_import_redis_failure(caplog):
                 MockConnectorRedis("redis")
                 assert "exception when loading ConnectorRedis" in caplog.text
                 assert MockConnectorRedis.vector_store is None
+
+# ---------------------------------------------------------------------------
+# Hybrid search dispatch
+# ---------------------------------------------------------------------------
+
+def test_search_type_hybrid_dispatches_to_hybrid_search_by_vector():
+    EragVectorStore._instance = None
+    vectorstore = EragVectorStore("redis")
+    with mock.patch.object(vectorstore.vector_store, 'hybrid_search_by_vector') as mock_hybrid:
+        search_text = EmbedDoc(
+            text='Hello, how are you?',
+            embedding=[0.1, 0.2, 0.3],
+            search_type='hybrid',
+            k=10
+        )
+        vectorstore.search(input=search_text)
+
+        kwargs = mock_hybrid.call_args.kwargs
+        assert kwargs['input_text'] == 'Hello, how are you?'
+        # Model defaults: 100 candidates per leg, 0.8/0.2 weighting and Anthropic's
+        # weight/rank fusion (rrf_k=0).
+        assert kwargs['candidate_k'] == 100
+        assert kwargs['semantic_weight'] == 0.8
+        assert kwargs['bm25_weight'] == 0.2
+        assert kwargs['rrf_k'] == 0
+        # The fused list handed downstream is deeper than k -- the reranker is what cuts it.
+        assert kwargs['k'] == 20
+    EragVectorStore._instance = None
+
+def test_search_type_hybrid_never_returns_fewer_than_k():
+    EragVectorStore._instance = None
+    vectorstore = EragVectorStore("redis")
+    with mock.patch.object(vectorstore.vector_store, 'hybrid_search_by_vector') as mock_hybrid:
+        vectorstore.search(input=EmbedDoc(
+            text='Hello?', embedding=[0.1], search_type='hybrid', k=80, hybrid_result_k=50
+        ))
+        assert mock_hybrid.call_args.kwargs['k'] == 80
+    EragVectorStore._instance = None
+
+def test_search_type_bm25_dispatches_to_bm25_search():
+    EragVectorStore._instance = None
+    vectorstore = EragVectorStore("redis")
+    with mock.patch.object(vectorstore.vector_store, 'bm25_search') as mock_bm25:
+        vectorstore.search(input=EmbedDoc(
+            text='Hello?', embedding=[0.1], search_type='bm25', k=10
+        ))
+        kwargs = mock_bm25.call_args.kwargs
+        assert kwargs['input_text'] == 'Hello?'
+        # Same depth as the fused list: max(k, hybrid_result_k).
+        assert kwargs['k'] == 20
+    EragVectorStore._instance = None
+
+def test_search_type_vector_stays_dense_only():
+    EragVectorStore._instance = None
+    vectorstore = EragVectorStore("redis")
+    with mock.patch.object(vectorstore.vector_store, 'similarity_search_by_vector') as mock_dense, \
+         mock.patch.object(vectorstore.vector_store, 'hybrid_search_by_vector') as mock_hybrid:
+        vectorstore.search(input=EmbedDoc(
+            text='Hello?', embedding=[0.1], search_type='vector', k=10
+        ))
+        mock_dense.assert_called_once()
+        mock_hybrid.assert_not_called()
+    EragVectorStore._instance = None

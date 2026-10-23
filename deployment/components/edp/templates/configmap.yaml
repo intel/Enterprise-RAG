@@ -12,6 +12,13 @@ data:
   TEXT_SPLITTER_ENDPOINT: {{ print "http://" .Values.textSplitter.nameOverride ":9399/v1/text_splitter" | quote }}
   LATE_CHUNKING_ENABLED: {{ .Values.lateChunking.enabled | quote }}
   LATE_CHUNKING_ENDPOINT: {{ if .Values.lateChunking.enabled }}{{ print "http://" .Values.lateChunking.nameOverride ":8003/v1/late_chunking" | quote }}{{ else }}""{{ end }}
+  CONTEXTUAL_RAG_ENABLED: {{ .Values.contextualRag.enabled | quote }}
+  CONTEXTUAL_RAG_ENDPOINT: {{ if .Values.contextualRag.enabled }}{{ print "http://" .Values.contextualRag.nameOverride ":8004/v1/contextual_rag" | quote }}{{ else }}""{{ end }}
+  {{- /* Per-request timeout the celery worker applies to the compression, splitting
+         and contextual-RAG stages. Contextual RAG is the slowest of the three: it
+         issues one LLM call per chunk, so documents with many chunks need a larger
+         value than the 300s default. */}}
+  TEXT_PROCESSING_TIMEOUT_SECONDS: {{ .Values.textProcessingTimeoutSeconds | default "300" | quote }}
   EMBEDDING_ENDPOINT: {{ if .Values.embedding.enabled }}{{ print "http://" .Values.embedding.nameOverride ":6000/v1/embeddings" | quote }}{{ else }}{{ .Values.embedding.remoteEmbeddingUri | quote }}{{ end }}
   INGESTION_ENDPOINT: {{ print "http://" .Values.ingestion.nameOverride ":6120/v1/ingestion" | quote }}
   RETRIEVER_ENDPOINT: http://retriever-svc.{{ .Values.pipelineNamespace }}.svc:6620/v1/retrieval

@@ -14,6 +14,12 @@ llm_model_name: ""                                 # app_inference_models
 embedding_model_name: ""                           # app_inference_models
 embedding_model_id: ""                             # app_inference_models
 reranking_model_name: ""                           # app_inference_models
+# Blurb LLM for contextual RAG - the KServe Service and served name of the dedicated model
+# app_inference_models resolved from the inference_models entry with role: contextual_rag,
+# consumed by solution_config (which fails the deploy when contextual RAG is enabled and
+# no such model is declared) and by the load_settings summary. Empty for a standalone run.
+contextual_rag_endpoint: ""                        # app_inference_models
+contextual_rag_model_name: ""                      # app_inference_models
 # vector_databases_vector_dims is deliberately NOT declared here: unset means
 # "auto-detect", and load_settings.yaml keys the detection gate off that.
 

@@ -104,6 +104,24 @@ class EmbedDoc(BaseDoc):
     metadata_extraction_mode: Optional[str] = None
     metadata: Optional[dict] = {}
     history_id: Optional[str] = None
+    # Hybrid search ("hybrid" search_type): a lexical BM25 leg and the dense vector leg
+    # are queried independently and fused with weighted Reciprocal Rank Fusion. Fusion
+    # scoring follows Anthropic's Contextual Retrieval reference implementation
+    # (https://www.anthropic.com/engineering/contextual-retrieval), which scores a hit as
+    # weight * 1/rank with no smoothing constant.
+    hybrid_candidate_k: PositiveInt = 100  # candidates fetched from EACH leg before fusion
+    # Fused list handed downstream (the reranker cuts it to top_n). Anthropic fuse 150 per
+    # leg and rerank to 20; a fused list truncated to k=10 is what separates their 49% and
+    # 67% failure-reduction figures, so keep this above k. Raising it towards 150/50 trades
+    # query latency (the reranker scores every fused chunk) for recall.
+    hybrid_result_k: PositiveInt = 20
+    # RRF rank-smoothing constant. 0 = Anthropic's weight/rank. The canonical Cormack RRF
+    # value is 60, but it flattens ranks so much that with 0.8/0.2 weighting the lexical
+    # leg can no longer promote a chunk the dense leg missed; use 60 only with balanced
+    # (0.5/0.5) weights.
+    rrf_k: NonNegativeInt = 0
+    semantic_weight: NonNegativeFloat = 0.8
+    bm25_weight: NonNegativeFloat = 0.2
 
 class EmbedDocList(BaseDoc):
     docs: List[EmbedDoc]
@@ -138,7 +156,7 @@ class SearchedDoc(BaseDoc):
     retrieved_docs: DocList[TextDoc]
     user_prompt: str
     sibling_docs: Optional[Dict[str, DocList[TextDoc]]] = None
-    top_n: PositiveInt = 3
+    top_n: PositiveInt = 5
     rerank_score_threshold: Optional[float] = 0.02
     history_id: Optional[str] = None
 
@@ -348,6 +366,23 @@ class LateChunkingInput(BaseDoc):
     docs: List[TextDoc]
     chunk_size: Optional[PositiveInt] = None
     chunk_overlap: Optional[NonNegativeInt] = None
+
+
+class ContextualRagInput(BaseDoc):
+    # The chunks of ONE source document. Contextual Retrieval situates each chunk
+    # within its own parent document, so a request must never mix documents.
+    docs: List[TextDoc]
+    # The full text of the source document the chunks were split from. The caller
+    # owns this: reconstructing it by concatenating the chunks loses whatever the
+    # splitter dropped and double-counts chunk overlap. When omitted the service
+    # falls back to joining the chunks, which is a degraded approximation.
+    whole_document: Optional[str] = None
+    # Stable identifier of the source document. Used to pin every chunk of a
+    # document to the same model server replica so the cached document prefix is reused.
+    document_id: Optional[str] = None
+    # Optional per-request overrides (fall back to the service .env defaults).
+    context_model_name: Optional[str] = None
+    max_new_tokens: Optional[PositiveInt] = None
 
 
 class LLMPromptTemplate(BaseDoc):

@@ -68,6 +68,30 @@ models:
     replicas: 1
     args: [--max-num-seqs, "32", --max-num-batched-tokens, "1024", --enable-chunked-prefill, --max-num-partial-prefills, "1", --long-prefill-token-threshold, "2048", --enable-prefix-caching ]
 
+  # LLM — Qwen3 4B Instruct 2507, W8A8 int8: the blurb writer for contextual RAG
+  # Declared in inference_models with role: contextual_rag (pipelines/chatqna/config.yaml);
+  # app_inference_models deploys it next to the answer LLM and propagates its KServe
+  # Service and served name to EDP, so no endpoint is typed in by hand. Sized like
+  # llama3-8b-awq above -- same cpu, memory, replicas and engine args -- and deployed
+  # separately from it, so contextualising documents never takes capacity from query
+  # serving. W8A8 (int8 weights and activations, compressed-tensors) is the 8-bit format
+  # vLLM's CPU backend runs, on AMX int8; 8-bit GPTQ checkpoints do not load on CPU.
+  # --max-model-len 16384 is the contextual-RAG token budget (edp_contextual_rag_max_prompt_tokens):
+  # a document gets blurbs only if every chunk's blurb request (whole document + chunk +
+  # template + max_new_tokens) fits it, which 606 of the 607 MultiHop-RAG documents do;
+  # larger documents are indexed without blurbs, never truncated.
+  # --enable-prefix-caching is what makes one call per chunk affordable: every chunk of a
+  # document repeats the same document prefix, so its KV cache is computed once.
+  - name: qwen3-4b-w8a8-blurb
+    model_id: RedHatAI/Qwen3-4B-Instruct-2507-quantized.w8a8
+    category: llm
+    runtime: vllm
+    server_version: "0.24.0"
+    cpu: 32
+    memory: 24Gi
+    replicas: 1
+    args: [--max-model-len, "16384", --max-num-seqs, "32", --max-num-batched-tokens, "1024", --enable-chunked-prefill, --max-num-partial-prefills, "1", --long-prefill-token-threshold, "2048", --enable-prefix-caching ]
+
   # LLM — Meta Llama 3.1 8B Instruct
   - name: llama3-1-8b
     model_id: meta-llama/Llama-3.1-8B-Instruct

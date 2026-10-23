@@ -19,8 +19,28 @@ inference_aigw_endpoint: "http://ai-gateway.envoy-gateway-system.svc"
 inference_model_manager_path: "{{ playbook_dir }}/../model-manager"
 
 # Models to deploy — each must exist in model-manager's models.yaml.
-# The 'role' field maps to the endpoint var (llm|embedding|reranking).
+# The 'role' field is how a deployed model reaches the rest of the solution: this
+# role exports <role>_endpoint / <role>_model_name per declared role (see
+# "Set endpoint vars" in tasks/install.yaml) and app_pipeline, app_edp and
+# app_fingerprint consume those vars. No endpoint is ever configured by hand.
+# Exactly one entry per role, and the role must be in inference_known_roles.
 inference_models: []
+
+# Roles a model entry may declare.
+#   llm | embedding | reranking  — the query path; sized jointly by
+#                                  calculate_replicas.py so they fit one NUMA node.
+#   contextual_rag               — EDP's ingest-time blurb writer for contextual RAG
+#                                  (edp_contextual_rag_enabled). Deployed and sized
+#                                  independently of the query path, so contextualising
+#                                  a document never competes with query serving; see
+#                                  the sizing note in tasks/install.yaml.
+# Validated in tasks/install.yaml: an unknown role would otherwise fail deep in the
+# deploy step on an undefined _deploy_overrides key.
+inference_known_roles:
+  - llm
+  - embedding
+  - reranking
+  - contextual_rag
 
 # ── Accelerator ─────────────────────────────────────────────────────────────
 # Mirrors the core repo's configs/defaults/accelerators.yaml. Cluster default is
@@ -100,6 +120,9 @@ inference_calc_replicas_script: "{{ playbook_dir }}/../ext/enterprise.ai-erag/de
 inference_default_llm_cpu: 32
 inference_default_embedding_cpu: 4
 inference_default_reranking_cpu: 4
+# Blurb writer for contextual RAG. Mirrors the qwen3-4b-w8a8-blurb catalog entry, which is
+# sized like the answer LLM (llama3-8b-awq). Only a fallback: the catalog values win.
+inference_default_contextual_rag_cpu: 32
 
 # Baseline memory per role — same fallback rule as the CPU defaults above.
 # calculate_replicas.py assumes ~64 GiB per LLM / 4 GiB per embed+rerank when
@@ -107,6 +130,17 @@ inference_default_reranking_cpu: 4
 inference_default_llm_memory: "64Gi"
 inference_default_embedding_memory: "4Gi"
 inference_default_reranking_memory: "4Gi"
+# The int8 weights are ~4.5 GiB; a full 16384-token window is 16384 x 144 KiB = 2.25 GiB of
+# KV cache per sequence, and the chunks of one document share its prefix (prefix caching).
+inference_default_contextual_rag_memory: "24Gi"
+
+# Replicas for the contextual_rag role. The replica calculator has no knob for it
+# (--vllm-size / --embedding-size / --reranking-size only), so this role is deployed
+# at the catalog's `replicas:` if it declares one and at this value otherwise. Its
+# cores and memory therefore sit OUTSIDE the calculator's NUMA and memory accounting —
+# raise it for ingest throughput only if the node has cores and memory to spare beyond
+# the query path.
+inference_default_contextual_rag_replicas: 1
 
 # Prefer more replicas at reduced per-replica CPU (true) vs one large replica
 # per NUMA node (false). See calculate_replicas.py --throughput-mode.

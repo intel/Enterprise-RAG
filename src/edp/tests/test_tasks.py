@@ -90,7 +90,9 @@ def test_process_file_task_success():
         text_extractor_response = MagicMock(status_code=200)
         text_extractor_response.json.return_value = {'loaded_docs': ['doc1', 'doc2']}
         text_compression_response = MagicMock(status_code=200)
-        text_compression_response.json.return_value = {'loaded_docs': ['compressed1', 'compressed2']}
+        # TextSplitterInput.loaded_docs is a List[TextDoc], so these are dicts with a text field.
+        text_compression_response.json.return_value = {'loaded_docs': [
+            {'text': 'compressed1', 'metadata': {}}, {'text': 'compressed2', 'metadata': {}}]}
         text_splitter_response = MagicMock(status_code=200)
         text_splitter_response.json.return_value = {'docs': [{'text': 'chunk1', 'metadata': {}}, {'text': 'chunk2', 'metadata': {}}]}
         embedding_response = MagicMock(status_code=200)
@@ -170,7 +172,9 @@ def test_process_link_task_success():
         text_extractor_response = MagicMock(status_code=200)
         text_extractor_response.json.return_value = {'loaded_docs': [{'text': 'doc1', 'metadata': {}}]}
         text_compression_response = MagicMock(status_code=200)
-        text_compression_response.json.return_value = {'loaded_docs': ['compressed1', 'compressed2']}
+        # TextSplitterInput.loaded_docs is a List[TextDoc], so these are dicts with a text field.
+        text_compression_response.json.return_value = {'loaded_docs': [
+            {'text': 'compressed1', 'metadata': {}}, {'text': 'compressed2', 'metadata': {}}]}
         text_splitter_response = MagicMock(status_code=200)
         text_splitter_response.json.return_value = {'docs': [{'text': 'chunk1', 'metadata': {}}, {'text': 'chunk2', 'metadata': {}}]}
         embedding_response = MagicMock(status_code=200)

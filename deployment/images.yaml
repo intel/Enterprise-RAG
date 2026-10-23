@@ -51,6 +51,10 @@ images:
     image_name: late-chunking
     dockerfile_path: src/comps/late_chunking/impl/microservice/Dockerfile
     docker_context: src
+  contextualRagUsvc:
+    image_name: contextual-rag
+    dockerfile_path: src/comps/contextual_rag/impl/microservice/Dockerfile
+    docker_context: src
   llmUsvc:
     image_name: llm
     dockerfile_path: src/comps/llms/impl/microservice/Dockerfile

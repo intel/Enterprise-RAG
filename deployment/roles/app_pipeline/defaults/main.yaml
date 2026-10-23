@@ -65,6 +65,15 @@ nats_namespace: "nats"             # app_nats
 keycloak_namespace: "keycloak"     # core/keycloak
 erag_keycloak_realm: "EnterpriseRAG"     # app_keycloak_config
 edp_late_chunking_enabled: false             # app_edp
+# Contextual RAG - the retriever's hybrid-search environment is rendered from these
+# (query-time half of the recipe; the ingest-time half lives in app_edp).
+edp_contextual_rag_enabled: false                  # app_edp
+edp_contextual_rag_hybrid_search_enabled: true     # app_edp
+edp_contextual_rag_hybrid_candidate_k: 100         # app_edp
+edp_contextual_rag_hybrid_result_k: 20             # app_edp
+edp_contextual_rag_hybrid_rrf_k: 0                 # app_edp
+edp_contextual_rag_hybrid_semantic_weight: 0.8     # app_edp
+edp_contextual_rag_hybrid_bm25_weight: 0.2         # app_edp
 vector_databases_enabled: false                    # app_vector_databases
 ui_domain_name: "solutions.ai"         # app_ui
 ui_keycloak_realm: "EnterpriseRAG"      # app_ui

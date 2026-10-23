@@ -137,6 +137,22 @@ images:
 {% if edp_rbac_enabled is true  %}
       VECTOR_DB_RBAC: "true"
 {% endif %}
+{#
+  Hybrid search: contextual BM25 + contextual embeddings, fused with Reciprocal Rank
+  Fusion (Anthropic Contextual Retrieval). Enabled by default whenever contextual RAG is
+  enabled, because the indexed chunk text is then `blurb + chunk`, which is what makes the
+  lexical leg worth running. Requires a Redis vector store (RediSearch full-text index).
+#}
+{% if (edp_contextual_rag_enabled | default(false) | bool)
+      and (edp_contextual_rag_hybrid_search_enabled | default(true) | bool)
+      and (vector_databases_vector_store | default('redis', true)) in ['redis', 'redis-cluster'] %}
+      HYBRID_SEARCH_ENABLED: "True"
+      HYBRID_SEARCH_CANDIDATE_K: "{{ edp_contextual_rag_hybrid_candidate_k | default(100) }}"
+      HYBRID_SEARCH_RESULT_K: "{{ edp_contextual_rag_hybrid_result_k | default(20) }}"
+      HYBRID_SEARCH_RRF_K: "{{ edp_contextual_rag_hybrid_rrf_k | default(0) }}"
+      HYBRID_SEARCH_SEMANTIC_WEIGHT: "{{ edp_contextual_rag_hybrid_semantic_weight | default(0.8) }}"
+      HYBRID_SEARCH_BM25_WEIGHT: "{{ edp_contextual_rag_hybrid_bm25_weight | default(0.2) }}"
+{% endif %}
 {% if vector_databases_enabled %}
       VECTOR_STORE: {{ vector_databases_vector_store }}
       VECTOR_DATATYPE: {{ vector_databases_vector_datatype }}

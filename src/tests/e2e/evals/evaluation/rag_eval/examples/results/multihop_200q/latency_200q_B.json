@@ -1,0 +1,71 @@
+{
+ "label": "B",
+ "dataset": "/tmp/crag200/MultiHopRAG_sample200.json",
+ "n_queries": 200,
+ "n_failed": 0,
+ "parameters": {
+  "stream": true,
+  "temperature": 0.01,
+  "max_new_tokens": 1024,
+  "top_p": 0.95,
+  "top_k": 10,
+  "typical_p": 0.95,
+  "repetition_penalty": 1.03
+ },
+ "per_query_file": "/tmp/crag200/work/output/latency_200q_B.jsonl",
+ "latency": {
+  "ttft_s": {
+   "n": 200,
+   "mean": 1.376,
+   "median": 1.409,
+   "p90": 1.564,
+   "min": 0.673,
+   "max": 1.731
+  },
+  "inter_token_ms": {
+   "n": 200,
+   "mean": 43.67,
+   "median": 43.0,
+   "p90": 46.43,
+   "min": 39.67,
+   "max": 58.09
+  },
+  "time_to_docs_event_s": {
+   "n": 200,
+   "mean": 6.617,
+   "median": 6.388,
+   "p90": 10.761,
+   "min": 1.695,
+   "max": 14.439
+  },
+  "generation_s": {
+   "n": 200,
+   "mean": 5.197,
+   "median": 4.863,
+   "p90": 9.323,
+   "min": 0.522,
+   "max": 13.721
+  },
+  "total_s": {
+   "n": 200,
+   "mean": 6.617,
+   "median": 6.388,
+   "p90": 10.762,
+   "min": 1.695,
+   "max": 14.44
+  },
+  "tokens": {
+   "n": 200,
+   "mean": 120.8,
+   "median": 113.5,
+   "p90": 218.0,
+   "min": 12.0,
+   "max": 313.0
+  }
+ },
+ "pooled": {
+  "total_tokens": 24169,
+  "total_generation_s": 1039.305,
+  "inter_token_ms_pooled": 43.36
+ }
+}

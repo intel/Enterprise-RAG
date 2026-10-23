@@ -1,0 +1,30 @@
+{
+ "logs": [
+  "/tmp/crag200/logs/pods/edp-contextual-rag-5b84db5995-4mbgz.log",
+  "/tmp/crag200/logs/pods/edp-contextual-rag-5b84db5995-gxmdc.log"
+ ],
+ "log_files": 2,
+ "contextual_rag_replicas": 2,
+ "documents_indexed": 607,
+ "documents_contextualised_in_log": 608,
+ "documents_matched": 607,
+ "documents_indexed_without_blurb": 0,
+ "documents_blurbed_but_not_indexed": 1,
+ "document_coverage_percent": 100.0,
+ "chunks_indexed": 17589,
+ "chunks_contextualised_matched": 17589,
+ "chunk_count_disagreements": [],
+ "files_not_indexed": [
+  {
+   "id": "5c7dbcac-d989-4d18-887a-5c4927e8f310",
+   "status": "error",
+   "object_name": "179_2024-nfl-mock-draft-bengals-joe-burrow-gets-another-playmake.txt"
+  },
+  {
+   "id": "157e10ea-c7d8-499d-8b7c-00a00790aab8",
+   "status": "error",
+   "object_name": "477_attorney-general-going-after-jeffrey-epstein-s-estate-says-s.txt"
+  }
+ ],
+ "sample_indexed_without_blurb": []
+}
